@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/splash/presentation/splash_screen.dart';
@@ -7,6 +6,7 @@ import '../../features/onboarding/presentation/age_verification_screen.dart';
 import '../../features/onboarding/presentation/interests_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
 import '../constants/app_constants.dart';
 
 class AppRouter {
@@ -56,27 +56,10 @@ class AppRouter {
       GoRoute(
         path: home,
         name: 'home',
-        builder: (context, state) => const _HomePlaceholder(),
+        builder: (context, state) => const HomeScreen(),
       ),
     ],
   );
-}
-
-// Placeholder pour HomeScreen (Task 02)
-class _HomePlaceholder extends StatelessWidget {
-  const _HomePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text(
-          'Home — Task 02',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-    );
-  }
 }
 
 // Helper pour lire les prefs en dehors du widget tree

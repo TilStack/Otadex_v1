@@ -223,12 +223,12 @@ class _AgeVerificationScreenState extends State<AgeVerificationScreen> {
             ),
           ),
           // Top separator
-          Positioned(
+          const Positioned(
             top: separatorTop,
             left: 0,
             right: 0,
             height: 1,
-            child: const ColoredBox(color: AppColors.borderSubtle),
+            child: ColoredBox(color: AppColors.borderSubtle),
           ),
           // Bottom separator
           const Positioned(

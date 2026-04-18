@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/google_sign_in_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -68,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  void _register() {
+  Future<void> _register() async {
     if (!_acceptTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -83,13 +85,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
     if (_formKey.currentState?.validate() ?? false) {
       setState(() => _isLoading = true);
-      // Task 02 : implémenter auth réelle
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
-          setState(() => _isLoading = false);
-          context.go(AppRouter.home);
-        }
-      });
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_pseudo', _pseudoController.text.trim());
+      final onboardingCompleted =
+          prefs.getBool(AppConstants.keyOnboardingCompleted) ?? false;
+
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      if (onboardingCompleted) {
+        context.go(AppRouter.home);
+      } else {
+        context.go(AppRouter.ageVerification);
+      }
     }
   }
 

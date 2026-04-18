@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../theme/otadex_theme.dart';
 
 class OtadexButton extends StatefulWidget {
   final String label;
@@ -28,6 +28,9 @@ class _OtadexButtonState extends State<OtadexButton> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = OtadexTheme.of(context);
+    final isDisabled = widget.onPressed == null;
+
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
@@ -45,17 +48,19 @@ class _OtadexButtonState extends State<OtadexButton> {
             width: widget.fullWidth ? double.infinity : widget.width,
             height: AppSpacing.buttonHeight,
             decoration: BoxDecoration(
-              color: widget.onPressed == null
-                  ? AppColors.primary.withValues(alpha: 0.4)
-                  : AppColors.primary,
+              color: isDisabled
+                  ? theme.accentColor.withValues(alpha: 0.4)
+                  : theme.accentColor,
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+              boxShadow: isDisabled
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: theme.accentGlow,
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
             ),
             child: Center(
               child: widget.isLoading

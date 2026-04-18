@@ -1,0 +1,273 @@
+import 'package:flutter/material.dart';
+import '../models/character.dart';
+import '../models/featured_slide.dart';
+
+class MockData {
+  MockData._();
+
+  static const List<String> categories = [
+    'Tous',
+    'Shōnen',
+    'Seinen',
+    'Isekai',
+    'Shōjo',
+    'Manhwa',
+    'Mecha',
+  ];
+
+  static const List<FeaturedSlide> featuredSlides = [
+    FeaturedSlide(
+      id: 'f1',
+      title: 'Solo Leveling',
+      subtitle: 'Saison 2 — Arise from the Shadow',
+      tag: 'NOUVEAU',
+      primaryColor: Color(0xFF1A0D2E),
+      secondaryColor: Color(0xFF9B59B6),
+      category: 'Manhwa',
+    ),
+    FeaturedSlide(
+      id: 'f2',
+      title: 'Demon Slayer',
+      subtitle: 'Arc Infinity Castle — Épisodes exclusifs',
+      tag: 'TRENDING',
+      primaryColor: Color(0xFF1A0A0A),
+      secondaryColor: Color(0xFFE53935),
+      category: 'Shōnen',
+    ),
+    FeaturedSlide(
+      id: 'f3',
+      title: 'Jujutsu Kaisen',
+      subtitle: 'Arc Culling Games — Nouvel événement',
+      tag: 'ÉVÉNEMENT',
+      primaryColor: Color(0xFF0A1A0A),
+      secondaryColor: Color(0xFF00C853),
+      category: 'Shōnen',
+    ),
+    FeaturedSlide(
+      id: 'f4',
+      title: 'Vinland Saga',
+      subtitle: 'Saison 3 — La quête de la terre promise',
+      tag: 'ATTENDU',
+      primaryColor: Color(0xFF0D1520),
+      secondaryColor: Color(0xFF1565C0),
+      category: 'Seinen',
+    ),
+  ];
+
+  static const List<Character> allCharacters = [
+    // ── Trending ────────────────────────────────────────────────────
+    Character(
+      id: 'c1',
+      name: 'Sung Jin-Woo',
+      animeName: 'Solo Leveling',
+      cardColor: Color(0xFF1A0D2E),
+      accentColor: Color(0xFF9B59B6),
+      tier: CharacterTier.ss,
+      rating: 9.8,
+      category: 'Manhwa',
+      isTrending: true,
+      isNew: true,
+    ),
+    Character(
+      id: 'c2',
+      name: 'Tanjiro Kamado',
+      animeName: 'Demon Slayer',
+      cardColor: Color(0xFF1A0A0A),
+      accentColor: Color(0xFFE53935),
+      tier: CharacterTier.s,
+      rating: 9.5,
+      category: 'Shōnen',
+      isTrending: true,
+    ),
+    Character(
+      id: 'c3',
+      name: 'Gojo Satoru',
+      animeName: 'Jujutsu Kaisen',
+      cardColor: Color(0xFF0A1520),
+      accentColor: Color(0xFF1565C0),
+      tier: CharacterTier.ss,
+      rating: 9.9,
+      category: 'Shōnen',
+      isTrending: true,
+    ),
+    Character(
+      id: 'c4',
+      name: 'Levi Ackerman',
+      animeName: 'Attack on Titan',
+      cardColor: Color(0xFF0D1A0A),
+      accentColor: Color(0xFF388E3C),
+      tier: CharacterTier.ss,
+      rating: 9.7,
+      category: 'Seinen',
+      isTrending: true,
+    ),
+    Character(
+      id: 'c5',
+      name: 'Rimuru Tempest',
+      animeName: 'That Time I Got Reincarnated',
+      cardColor: Color(0xFF0A1520),
+      accentColor: Color(0xFF00BCD4),
+      tier: CharacterTier.ss,
+      rating: 9.4,
+      category: 'Isekai',
+      isTrending: true,
+    ),
+    // ── Nouveautés ──────────────────────────────────────────────────
+    Character(
+      id: 'c6',
+      name: 'Denji',
+      animeName: 'Chainsaw Man',
+      cardColor: Color(0xFF200A0A),
+      accentColor: Color(0xFFFF5722),
+      tier: CharacterTier.s,
+      rating: 9.2,
+      category: 'Seinen',
+      isNew: true,
+    ),
+    Character(
+      id: 'c7',
+      name: 'Anya Forger',
+      animeName: 'Spy x Family',
+      cardColor: Color(0xFF1A1020),
+      accentColor: Color(0xFFE91E63),
+      tier: CharacterTier.a,
+      rating: 9.1,
+      category: 'Shōnen',
+      isNew: true,
+    ),
+    Character(
+      id: 'c8',
+      name: 'Askeladd',
+      animeName: 'Vinland Saga',
+      cardColor: Color(0xFF0D1520),
+      accentColor: Color(0xFF607D8B),
+      tier: CharacterTier.ss,
+      rating: 9.6,
+      category: 'Seinen',
+      isNew: true,
+    ),
+    Character(
+      id: 'c9',
+      name: 'Nami',
+      animeName: 'One Piece',
+      cardColor: Color(0xFF1A1200),
+      accentColor: Color(0xFFFFC107),
+      tier: CharacterTier.a,
+      rating: 8.9,
+      category: 'Shōnen',
+      isNew: true,
+    ),
+    Character(
+      id: 'c10',
+      name: 'Violet Evergarden',
+      animeName: 'Violet Evergarden',
+      cardColor: Color(0xFF0A1020),
+      accentColor: Color(0xFF5C6BC0),
+      tier: CharacterTier.s,
+      rating: 9.3,
+      category: 'Shōjo',
+      isNew: true,
+    ),
+    Character(
+      id: 'c11',
+      name: 'Thorfinn',
+      animeName: 'Vinland Saga',
+      cardColor: Color(0xFF101520),
+      accentColor: Color(0xFF78909C),
+      tier: CharacterTier.s,
+      rating: 9.4,
+      category: 'Seinen',
+      isNew: true,
+    ),
+    Character(
+      id: 'c12',
+      name: 'Zero Two',
+      animeName: 'Darling in the FranXX',
+      cardColor: Color(0xFF200A10),
+      accentColor: Color(0xFFF06292),
+      tier: CharacterTier.s,
+      rating: 9.0,
+      category: 'Mecha',
+      isNew: true,
+    ),
+    // ── Recommandés ─────────────────────────────────────────────────
+    Character(
+      id: 'c13',
+      name: 'Roronoa Zoro',
+      animeName: 'One Piece',
+      cardColor: Color(0xFF0A200A),
+      accentColor: Color(0xFF2E7D32),
+      tier: CharacterTier.ss,
+      rating: 9.8,
+      category: 'Shōnen',
+      isRecommended: true,
+    ),
+    Character(
+      id: 'c14',
+      name: 'Rem',
+      animeName: 'Re:Zero',
+      cardColor: Color(0xFF0A1020),
+      accentColor: Color(0xFF1976D2),
+      tier: CharacterTier.s,
+      rating: 9.3,
+      category: 'Isekai',
+      isRecommended: true,
+    ),
+    Character(
+      id: 'c15',
+      name: 'Mikasa Ackerman',
+      animeName: 'Attack on Titan',
+      cardColor: Color(0xFF1A0A0A),
+      accentColor: Color(0xFFC62828),
+      tier: CharacterTier.ss,
+      rating: 9.6,
+      category: 'Seinen',
+      isRecommended: true,
+    ),
+    Character(
+      id: 'c16',
+      name: 'Killua Zoldyck',
+      animeName: 'Hunter x Hunter',
+      cardColor: Color(0xFF0A1520),
+      accentColor: Color(0xFF00BCD4),
+      tier: CharacterTier.ss,
+      rating: 9.7,
+      category: 'Shōnen',
+      isRecommended: true,
+    ),
+    Character(
+      id: 'c17',
+      name: 'Saitama',
+      animeName: 'One Punch Man',
+      cardColor: Color(0xFF1A1000),
+      accentColor: Color(0xFFFF9800),
+      tier: CharacterTier.ss,
+      rating: 9.5,
+      category: 'Seinen',
+      isRecommended: true,
+    ),
+    Character(
+      id: 'c18',
+      name: 'Itachi Uchiha',
+      animeName: 'Naruto',
+      cardColor: Color(0xFF1A0A1A),
+      accentColor: Color(0xFF7B1FA2),
+      tier: CharacterTier.ss,
+      rating: 9.8,
+      category: 'Shōnen',
+      isRecommended: true,
+    ),
+  ];
+
+  static List<Character> trending() =>
+      allCharacters.where((c) => c.isTrending).toList();
+
+  static List<Character> newCharacters({String? category}) {
+    final filtered = allCharacters.where((c) => c.isNew);
+    if (category == null || category == 'Tous') return filtered.toList();
+    return filtered.where((c) => c.category == category).toList();
+  }
+
+  static List<Character> recommended() =>
+      allCharacters.where((c) => c.isRecommended).toList();
+}

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
+import '../theme/otadex_theme.dart';
 
 class OtadexTextField extends StatefulWidget {
   final String label;
@@ -54,14 +54,16 @@ class _OtadexTextFieldState extends State<OtadexTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = OtadexTheme.of(context);
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         boxShadow: _isFocused
-            ? const [
+            ? [
                 BoxShadow(
-                  color: AppColors.glowPrimary,
+                  color: theme.accentGlow,
                   blurRadius: 12,
                   spreadRadius: 1,
                 ),
@@ -76,16 +78,16 @@ class _OtadexTextFieldState extends State<OtadexTextField> {
         keyboardType: widget.keyboardType,
         textInputAction: widget.textInputAction,
         onChanged: widget.onChanged,
-        cursorColor: AppColors.primary,
+        cursorColor: theme.accentColor,
         style: GoogleFonts.nunitoSans(
           fontSize: 15,
-          color: AppColors.textPrimary,
+          color: theme.textPrimary,
         ),
         decoration: InputDecoration(
           labelText: widget.label,
           hintText: widget.hint,
           prefixIcon: widget.prefixIcon != null
-              ? Icon(widget.prefixIcon, size: 20, color: AppColors.textSecondary)
+              ? Icon(widget.prefixIcon, size: 20, color: theme.textSecondary)
               : null,
           suffixIcon: widget.suffixIcon,
         ),
@@ -94,7 +96,6 @@ class _OtadexTextFieldState extends State<OtadexTextField> {
   }
 }
 
-// Champ mot de passe avec toggle visibilité
 class OtadexPasswordField extends StatefulWidget {
   final String label;
   final TextEditingController? controller;
@@ -118,6 +119,7 @@ class _OtadexPasswordFieldState extends State<OtadexPasswordField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = OtadexTheme.of(context);
     return OtadexTextField(
       label: widget.label,
       prefixIcon: Icons.lock_outline,
@@ -130,7 +132,7 @@ class _OtadexPasswordFieldState extends State<OtadexPasswordField> {
         child: Icon(
           _visible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
           size: 20,
-          color: AppColors.textSecondary,
+          color: theme.textSecondary,
         ),
       ),
     );
