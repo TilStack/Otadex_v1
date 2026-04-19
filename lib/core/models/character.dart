@@ -10,6 +10,8 @@ class Character {
   final Color accentColor;
   final CharacterTier tier;
   final double rating;
+  final int likes;
+  final String? imagePath;
   final String category;
   final bool isTrending;
   final bool isNew;
@@ -23,6 +25,8 @@ class Character {
     required this.accentColor,
     required this.tier,
     required this.rating,
+    required this.likes,
+    this.imagePath,
     required this.category,
     this.isTrending = false,
     this.isNew = false,

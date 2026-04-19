@@ -4,7 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../../core/models/character.dart';
 import '../../../../../core/theme/otadex_theme.dart';
 
-class TrendingCharacterCard extends StatelessWidget {
+class TrendingCharacterCard extends StatefulWidget {
   final Character character;
   final int index;
 
@@ -15,177 +15,254 @@ class TrendingCharacterCard extends StatelessWidget {
   });
 
   @override
+  State<TrendingCharacterCard> createState() => _TrendingCharacterCardState();
+}
+
+class _TrendingCharacterCardState extends State<TrendingCharacterCard> {
+  double _scale = 1.0;
+
+  void _onTapDown(TapDownDetails _) => setState(() => _scale = 0.94);
+  void _onTapUp(TapUpDetails _) => setState(() => _scale = 1.0);
+  void _onTapCancel() => setState(() => _scale = 1.0);
+
+  String _formatLikes(int likes) {
+    if (likes >= 1000000) return '${(likes / 1000000).toStringAsFixed(1)}M';
+    if (likes >= 1000) return '${(likes / 1000).toStringAsFixed(1)}k';
+    return likes.toString();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = OtadexTheme.of(context);
-    return Container(
-      width: 130,
-      margin: EdgeInsets.only(
-        left: index == 0 ? 16 : 8,
-        right: 8,
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: theme.hasGlowEffect
-            ? [
-                BoxShadow(
-                  color: theme.accentGlow,
-                  blurRadius: 16,
-                  spreadRadius: 1,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            // Card background gradient
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    character.cardColor,
-                    character.accentColor.withValues(alpha: 0.3),
+    final character = widget.character;
+
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: const Duration(milliseconds: 130),
+        curve: Curves.easeOut,
+        child: Container(
+          width: 130,
+          margin: EdgeInsets.only(
+            left: widget.index == 0 ? 16 : 8,
+            right: 8,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: theme.hasGlowEffect
+                ? [
+                    BoxShadow(
+                      color: theme.accentGlow,
+                      blurRadius: 16,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
                   ],
-                ),
-              ),
-            ),
-            // Character icon placeholder
-            Positioned(
-              top: 20,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: character.accentColor.withValues(alpha: 0.2),
-                    border: Border.all(
-                      color: character.accentColor.withValues(alpha: 0.5),
-                      width: 2,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Full-bleed image or fallback gradient
+                if (character.imagePath != null)
+                  Image.asset(
+                    character.imagePath!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildFallbackBg(character),
+                  )
+                else
+                  _buildFallbackBg(character),
+
+                // Cinema-style scrim
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: [0.0, 0.4, 1.0],
+                      colors: [
+                        Color(0x20000000),
+                        Color(0x00000000),
+                        Color(0xCC000000),
+                      ],
                     ),
                   ),
-                  child: Icon(
-                    Icons.person,
-                    color: character.accentColor,
-                    size: 32,
+                ),
+
+                // Rank index indicator — top left
+                Positioned(
+                  top: 10,
+                  left: 10,
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '#${widget.index + 1}',
+                        style: GoogleFonts.rajdhani(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            // Tier badge
-            Positioned(
-              top: 10,
-              right: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: character.tierColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: character.tierColor.withValues(alpha: 0.6),
-                  ),
-                ),
-                child: Text(
-                  character.tierLabel,
-                  style: GoogleFonts.rajdhani(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: character.tierColor,
-                  ),
-                ),
-              ),
-            ),
-            // Info at bottom
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      character.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+
+                // Tier badge — top right
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: character.tierColor.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: character.tierColor.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    child: Text(
+                      character.tierLabel,
                       style: GoogleFonts.rajdhani(
-                        fontSize: 13,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: character.tierColor,
                       ),
                     ),
-                    Text(
-                      character.animeName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.nunitoSans(
-                        fontSize: 10,
-                        color: Colors.white.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
+                  ),
+                ),
+
+                // Info panel — bottom
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.star_rounded,
-                            color: Color(0xFFFFC107), size: 12),
-                        const SizedBox(width: 2),
                         Text(
-                          character.rating.toStringAsFixed(1),
-                          style: GoogleFonts.nunitoSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFFFFC107),
+                          character.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.rajdhani(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
+                        ),
+                        Text(
+                          character.animeName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.nunitoSans(
+                            fontSize: 10,
+                            color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFFFC107),
+                              size: 12,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              character.rating.toStringAsFixed(1),
+                              style: GoogleFonts.nunitoSans(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFFFFC107),
+                              ),
+                            ),
+                            const Spacer(),
+                            const Icon(
+                              Icons.favorite_rounded,
+                              color: Color(0xFFFF4D6D),
+                              size: 10,
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              _formatLikes(character.likes),
+                              style: GoogleFonts.nunitoSans(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white.withValues(alpha: 0.75),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            // Shimmer overlay (Kage only)
-            if (theme.hasShimmerEffect)
-              Positioned.fill(
-                child: Shimmer.fromColors(
-                  baseColor: Colors.transparent,
-                  highlightColor: theme.accentShimmer,
-                  period: const Duration(milliseconds: 2500),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.transparent,
-                          Colors.white.withValues(alpha: 0.04),
-                          Colors.transparent,
-                        ],
+
+                // Shimmer (Kage only)
+                if (theme.hasShimmerEffect)
+                  Positioned.fill(
+                    child: Shimmer.fromColors(
+                      baseColor: Colors.transparent,
+                      highlightColor: theme.accentShimmer,
+                      period: const Duration(milliseconds: 2500),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.transparent,
+                              Colors.white.withValues(alpha: 0.04),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackBg(Character character) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            character.cardColor,
+            character.accentColor.withValues(alpha: 0.3),
           ],
         ),
       ),
