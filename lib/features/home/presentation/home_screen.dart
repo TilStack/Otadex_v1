@@ -29,6 +29,21 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _navIndex = 0;
   int _selectedCategory = 0;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLoginStatus();
+  }
+
+  Future<void> _loadLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() =>
+          _isLoggedIn = prefs.getBool(AppConstants.keyIsLoggedIn) ?? false);
+    }
+  }
 
   Future<void> _onNavTap(int index) async {
     if (index == 2 || index == 3) {
@@ -62,7 +77,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Tab 0 — Accueil
                   CustomScrollView(
                     slivers: [
-                      SliverToBoxAdapter(child: HomeAppBar(rank: rank)),
+                      SliverToBoxAdapter(
+                        child: HomeAppBar(
+                          rank: rank,
+                          isLoggedIn: _isLoggedIn,
+                          onLoginTap: () => showAuthGateModal(context),
+                        ),
+                      ),
                       const SliverPersistentHeader(
                         delegate: SearchBarSliverDelegate(),
                         pinned: true,

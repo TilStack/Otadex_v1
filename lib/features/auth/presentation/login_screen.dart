@@ -36,6 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = true);
       await Future.delayed(const Duration(seconds: 1));
       if (!mounted) return;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(AppConstants.keyIsLoggedIn, true);
       setState(() => _isLoading = false);
       await _navigateAfterAuth();
     }
@@ -53,6 +55,8 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _continueAsGuest() => context.go(AppRouter.home);
+
   Future<void> _loginWithGoogle() async {
     setState(() => _isLoading = true);
     final account = await GoogleSignInService.signIn();
@@ -60,6 +64,8 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (account != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(AppConstants.keyIsLoggedIn, true);
       await _navigateAfterAuth();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -365,6 +371,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ).animate().fadeIn(duration: 400.ms, delay: 820.ms),
+
+                    const SizedBox(height: AppSpacing.sm),
+
+                    TextButton(
+                      onPressed: _continueAsGuest,
+                      child: Text(
+                        'Continuer sans compte',
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ).animate().fadeIn(duration: 400.ms, delay: 900.ms),
 
                     const SizedBox(height: AppSpacing.lg),
                   ],
