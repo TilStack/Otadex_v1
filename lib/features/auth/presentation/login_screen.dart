@@ -55,7 +55,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _continueAsGuest() => context.go(AppRouter.home);
+  Future<void> _continueAsGuest() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(AppConstants.keyIsLoggedIn, false);
+    if (mounted) context.go(AppRouter.home);
+  }
 
   Future<void> _loginWithGoogle() async {
     setState(() => _isLoading = true);
