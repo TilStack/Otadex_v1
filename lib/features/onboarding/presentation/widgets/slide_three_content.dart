@@ -2,9 +2,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/otadex_button.dart';
+import 'onboarding_rank_card.dart';
 
 class SlideThreeContent extends StatefulWidget {
   final VoidCallback? onFinish;
@@ -46,10 +48,11 @@ class _SlideThreeContentState extends State<SlideThreeContent>
     final screenH = mq.size.height;
     final imgZoneH = (screenH * 0.44).clamp(200.0, 330.0);
     final totalHeroH = imgZoneH + topPad;
+    final s = AppStrings.of(context);
 
     return Stack(
       children: [
-        // ── Hero zone: image + aura (fixed at top, above content) ──────────
+        // ── Hero zone: image + aura ──────────────────────────────────────────
         Positioned(
           top: 0,
           left: 0,
@@ -58,7 +61,6 @@ class _SlideThreeContentState extends State<SlideThreeContent>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Aura: glow blob + expanding pulse rings
               AnimatedBuilder(
                 animation: Listenable.merge([_floatCtrl, _auraCtrl]),
                 builder: (_, __) => SizedBox.expand(
@@ -74,7 +76,7 @@ class _SlideThreeContentState extends State<SlideThreeContent>
                 ),
               ),
 
-              // Floating image (no frame, transparent bg)
+              // Floating image
               Padding(
                 padding: EdgeInsets.only(top: topPad + 4),
                 child: AnimatedBuilder(
@@ -128,7 +130,7 @@ class _SlideThreeContentState extends State<SlideThreeContent>
           ),
         ),
 
-        // ── Scrollable content (sits behind hero, padding pushes it below) ──
+        // ── Scrollable content ───────────────────────────────────────────────
         SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
             AppSpacing.lg,
@@ -140,7 +142,7 @@ class _SlideThreeContentState extends State<SlideThreeContent>
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                'Quel fan es-tu ?',
+                s.slide3Title,
                 style: GoogleFonts.rajdhani(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
@@ -155,7 +157,7 @@ class _SlideThreeContentState extends State<SlideThreeContent>
                   ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Choisis ta voie, grimpe les rangs',
+                s.slide3Subtitle,
                 style: GoogleFonts.nunitoSans(
                   fontSize: 15,
                   color: AppColors.textSecondary,
@@ -163,43 +165,43 @@ class _SlideThreeContentState extends State<SlideThreeContent>
                 textAlign: TextAlign.center,
               ).animate().fadeIn(duration: 400.ms, delay: 280.ms),
               const SizedBox(height: AppSpacing.xl),
-              const _RankCard(
+              OnboardingRankCard(
                 rank: 'GENIN',
                 color: AppColors.rankGenin,
                 bgColor: AppColors.rankGeninBg,
                 icon: Icons.flash_on_outlined,
-                priceLabel: 'GRATUIT',
+                priceLabel: s.rankGeninFreeLabel,
                 isPriceBadge: true,
                 badgeIsGreen: true,
-                description: 'Accès gratuit · Découverte',
+                description: s.rankGeninDesc,
                 delay: 380,
               ),
               const SizedBox(height: AppSpacing.md),
-              const _RankCard(
+              OnboardingRankCard(
                 rank: 'JONIN',
                 color: AppColors.rankJonin,
                 bgColor: AppColors.rankJoninBg,
                 icon: Icons.auto_awesome_outlined,
-                priceLabel: '2 000 FCFA/mois',
+                priceLabel: s.joninMonthlyPrice,
                 isPriceBadge: false,
-                description: 'Sans pub · Collections avancées',
+                description: s.rankJoninDesc,
                 delay: 500,
               ),
               const SizedBox(height: AppSpacing.md),
-              const _RankCard(
+              OnboardingRankCard(
                 rank: 'KAGE',
                 color: AppColors.rankKage,
                 bgColor: AppColors.rankKageBg,
                 icon: Icons.workspace_premium_outlined,
-                priceLabel: '5 000 FCFA/mois',
+                priceLabel: s.kageMonthlyPrice,
                 isPriceBadge: false,
                 premiumBadge: true,
-                description: 'Accès IA · Exclusif · Statut ultime',
+                description: s.rankKageDesc,
                 delay: 620,
               ),
               const SizedBox(height: AppSpacing.xl),
               OtadexButton(
-                label: "Commencer l'aventure →",
+                label: s.startAdventureButton,
                 onPressed: widget.onFinish,
               ).animate().fadeIn(duration: 500.ms, delay: 750.ms).slideY(
                     begin: 0.12,
@@ -209,7 +211,7 @@ class _SlideThreeContentState extends State<SlideThreeContent>
                   ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Tu pourras changer de rang plus tard',
+                s.canChangeRankLater,
                 style: GoogleFonts.nunitoSans(
                   fontSize: 13,
                   color: AppColors.textDisabled,
@@ -224,41 +226,7 @@ class _SlideThreeContentState extends State<SlideThreeContent>
   }
 }
 
-// ── Tag badge ─────────────────────────────────────────────────────────────────
-
-// ignore: unused_element
-class _TagBadge extends StatelessWidget {
-  const _TagBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-      decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        border: Border.all(
-          color: AppColors.accent.withValues(alpha: 0.40),
-          width: 1.0,
-        ),
-      ),
-      child: Text(
-        '✦  CHOISISSEZ VOTRE VOIE  ✦',
-        style: GoogleFonts.rajdhani(
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          color: AppColors.accent,
-          letterSpacing: 2.2,
-        ),
-      ),
-    )
-        .animate()
-        .fadeIn(duration: 600.ms, delay: 250.ms)
-        .slideY(begin: -0.3, end: 0, duration: 500.ms, delay: 250.ms);
-  }
-}
-
-// ── Aura painter: soft glow + 3 staggered expanding pulse rings ──────────────
+// ── Aura painter ──────────────────────────────────────────────────────────────
 
 class _AuraPainter extends CustomPainter {
   final double glowAlpha;
@@ -306,171 +274,4 @@ class _AuraPainter extends CustomPainter {
   @override
   bool shouldRepaint(_AuraPainter old) =>
       old.glowAlpha != glowAlpha || old.ringProgress != ringProgress;
-}
-
-// ── Rank card ─────────────────────────────────────────────────────────────────
-
-class _RankCard extends StatelessWidget {
-  final String rank;
-  final Color color;
-  final Color bgColor;
-  final IconData icon;
-  final String priceLabel;
-  final bool isPriceBadge;
-  final bool badgeIsGreen;
-  final bool premiumBadge;
-  final String description;
-  final int delay;
-
-  const _RankCard({
-    required this.rank,
-    required this.color,
-    required this.bgColor,
-    required this.icon,
-    required this.priceLabel,
-    required this.description,
-    required this.delay,
-    this.isPriceBadge = false,
-    this.badgeIsGreen = false,
-    this.premiumBadge = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.md,
-      ),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(
-          color: color.withValues(alpha: 0.45),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.10),
-            blurRadius: 18,
-            spreadRadius: 0,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color.withValues(alpha: 0.12),
-              border: Border.all(
-                color: color.withValues(alpha: 0.30),
-                width: 1.0,
-              ),
-            ),
-            child: Icon(icon, color: color, size: 26),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  rank,
-                  style: TextStyle(
-                    fontFamily: 'Rajdhani',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 17,
-                    color: color,
-                    letterSpacing: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  description,
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (isPriceBadge)
-                _PillBadge(
-                  label: priceLabel,
-                  color: badgeIsGreen ? AppColors.success : AppColors.accent,
-                )
-              else
-                Text(
-                  priceLabel,
-                  style: GoogleFonts.rajdhani(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.accent,
-                  ),
-                  textAlign: TextAlign.end,
-                ),
-              if (premiumBadge) ...[
-                const SizedBox(height: 4),
-                const _PillBadge(
-                  label: 'PREMIUM',
-                  color: AppColors.accent,
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
-    )
-        .animate()
-        .fadeIn(
-          duration: 400.ms,
-          delay: Duration(milliseconds: delay),
-        )
-        .slideX(
-          begin: 0.06,
-          end: 0,
-          duration: 400.ms,
-          delay: Duration(milliseconds: delay),
-        );
-  }
-}
-
-// ── Pill badge ────────────────────────────────────────────────────────────────
-
-class _PillBadge extends StatelessWidget {
-  final String label;
-  final Color color;
-
-  const _PillBadge({required this.label, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        border: Border.all(color: color.withValues(alpha: 0.45), width: 1.0),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'Rajdhani',
-          fontWeight: FontWeight.w700,
-          fontSize: 10,
-          color: color,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
 }

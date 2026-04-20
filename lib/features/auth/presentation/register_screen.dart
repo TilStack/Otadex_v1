@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/google_sign_in_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -44,14 +45,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
+    final s = AppStrings.of(context);
     if (account != null) {
-      // Pré-remplir pseudo + email depuis le compte Google
       _pseudoController.text = account.displayName ?? '';
       _emailController.text = account.email;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Compte Google lié — choisis ton rang et confirme',
+            s.googleLinked,
             style: GoogleFonts.nunitoSans(color: Colors.white),
           ),
           backgroundColor: AppColors.success,
@@ -61,7 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Connexion Google annulée ou non configurée',
+            s.googleAuthCancelled,
             style: GoogleFonts.nunitoSans(color: Colors.white),
           ),
           backgroundColor: AppColors.error,
@@ -71,11 +72,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _register() async {
+    if (!mounted) return;
+    final s = AppStrings.of(context);
     if (!_acceptTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Accepte les conditions pour continuer',
+            s.acceptTermsError,
             style: GoogleFonts.nunitoSans(color: Colors.white),
           ),
           backgroundColor: AppColors.error,
@@ -89,7 +92,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_pseudo', _pseudoController.text.trim());
+      await prefs.setString(
+        AppConstants.keyUserPseudo,
+        _pseudoController.text.trim(),
+      );
       final onboardingCompleted =
           prefs.getBool(AppConstants.keyOnboardingCompleted) ?? false;
 
@@ -105,6 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.backgroundDeep,
       appBar: AppBar(
@@ -120,7 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       body: Stack(
         children: [
-          // Dégradé radial violet en haut
+          // Purple radial glow
           Positioned(
             top: -100,
             left: -50,
@@ -151,9 +158,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     const SizedBox(height: AppSpacing.lg),
 
-                    // Titre
                     Text(
-                      'Crée ton compte',
+                      s.createAccount,
                       style: GoogleFonts.rajdhani(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
@@ -166,9 +172,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: AppSpacing.sm),
 
-                    // Sous-titre
                     Text(
-                      'Rejoins des milliers de fans otaku',
+                      s.joinFansSubtitle,
                       style: GoogleFonts.nunitoSans(
                         fontSize: 15,
                         color: AppColors.textSecondary,
@@ -176,15 +181,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     )
                         .animate()
                         .fadeIn(duration: 500.ms, delay: 100.ms)
-                        .slideY(
-                            begin: 0.15,
-                            end: 0,
-                            duration: 500.ms,
-                            delay: 100.ms),
+                        .slideY(begin: 0.15, end: 0, duration: 500.ms, delay: 100.ms),
 
                     const SizedBox(height: AppSpacing.lg),
 
-                    // ── Bouton Google ──
+                    // Google button
                     SizedBox(
                       width: double.infinity,
                       height: AppSpacing.buttonHeight,
@@ -193,7 +194,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: OutlinedButton.styleFrom(
                           backgroundColor: AppColors.backgroundCard,
                           side: const BorderSide(
-                              color: AppColors.borderDefault, width: 1.2),
+                            color: AppColors.borderDefault,
+                            width: 1.2,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius:
                                 BorderRadius.circular(AppSpacing.radiusLg),
@@ -202,7 +205,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         icon: const Icon(Icons.g_mobiledata,
                             color: Colors.white, size: 24),
                         label: Text(
-                          'Continuer avec Google',
+                          s.continueWithGoogle,
                           style: GoogleFonts.nunitoSans(
                             fontSize: 15,
                             color: Colors.white,
@@ -212,26 +215,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     )
                         .animate()
                         .fadeIn(duration: 400.ms, delay: 150.ms)
-                        .slideY(
-                            begin: 0.1,
-                            end: 0,
-                            duration: 400.ms,
-                            delay: 150.ms),
+                        .slideY(begin: 0.1, end: 0, duration: 400.ms, delay: 150.ms),
 
                     const SizedBox(height: AppSpacing.lg),
 
-                    // ── Séparateur "ou" ──
+                    // Separator
                     Row(
                       children: [
                         Expanded(
-                            child: Container(
-                                height: 1,
-                                color: AppColors.borderSubtle)),
+                          child: Container(height: 1, color: AppColors.borderSubtle),
+                        ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                           child: Text(
-                            'ou',
+                            s.orSeparator,
                             style: GoogleFonts.nunitoSans(
                               fontSize: 14,
                               color: AppColors.textDisabled,
@@ -239,9 +236,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         Expanded(
-                            child: Container(
-                                height: 1,
-                                color: AppColors.borderSubtle)),
+                          child: Container(height: 1, color: AppColors.borderSubtle),
+                        ),
                       ],
                     ).animate().fadeIn(duration: 300.ms, delay: 200.ms),
 
@@ -249,95 +245,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Pseudo
                     OtadexTextField(
-                      label: 'Pseudo / Nom de ninja',
+                      label: s.pseudoLabel,
                       prefixIcon: Icons.person_outline,
                       controller: _pseudoController,
                       textInputAction: TextInputAction.next,
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Pseudo requis';
-                        if (v.length < 3) return 'Minimum 3 caractères';
+                        if (v == null || v.isEmpty) return s.pseudoRequired;
+                        if (v.length < 3) return s.pseudoMinLength;
                         return null;
                       },
                     )
                         .animate()
                         .fadeIn(duration: 400.ms, delay: 200.ms)
-                        .slideX(
-                            begin: -0.08,
-                            end: 0,
-                            duration: 400.ms,
-                            delay: 200.ms),
+                        .slideX(begin: -0.08, end: 0, duration: 400.ms, delay: 200.ms),
 
                     const SizedBox(height: AppSpacing.md),
 
                     // Email
                     OtadexTextField(
-                      label: 'Adresse e-mail',
+                      label: s.emailAddressLabel,
                       prefixIcon: Icons.mail_outline,
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Email requis';
-                        if (!v.contains('@')) return 'Email invalide';
+                        if (v == null || v.isEmpty) return s.emailRequired;
+                        if (!v.contains('@')) return s.emailInvalid;
                         return null;
                       },
                     )
                         .animate()
                         .fadeIn(duration: 400.ms, delay: 290.ms)
-                        .slideX(
-                            begin: -0.08,
-                            end: 0,
-                            duration: 400.ms,
-                            delay: 290.ms),
+                        .slideX(begin: -0.08, end: 0, duration: 400.ms, delay: 290.ms),
 
                     const SizedBox(height: AppSpacing.md),
 
-                    // Mot de passe
+                    // Password
                     OtadexPasswordField(
-                      label: 'Mot de passe',
+                      label: s.passwordLabel,
                       controller: _passwordController,
                       textInputAction: TextInputAction.next,
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Mot de passe requis';
-                        if (v.length < 6) return 'Minimum 6 caractères';
+                        if (v == null || v.isEmpty) return s.passwordRequired;
+                        if (v.length < 6) return s.passwordMinLength;
                         return null;
                       },
                     )
                         .animate()
                         .fadeIn(duration: 400.ms, delay: 380.ms)
-                        .slideX(
-                            begin: -0.08,
-                            end: 0,
-                            duration: 400.ms,
-                            delay: 380.ms),
+                        .slideX(begin: -0.08, end: 0, duration: 400.ms, delay: 380.ms),
 
                     const SizedBox(height: AppSpacing.md),
 
-                    // Confirmer mot de passe
+                    // Confirm password
                     OtadexPasswordField(
-                      label: 'Confirmer mot de passe',
+                      label: s.confirmPasswordLabel,
                       controller: _confirmPasswordController,
                       textInputAction: TextInputAction.done,
                       validator: (v) {
                         if (v != _passwordController.text) {
-                          return 'Les mots de passe ne correspondent pas';
+                          return s.passwordsMismatch;
                         }
                         return null;
                       },
                     )
                         .animate()
                         .fadeIn(duration: 400.ms, delay: 460.ms)
-                        .slideX(
-                            begin: -0.08,
-                            end: 0,
-                            duration: 400.ms,
-                            delay: 460.ms),
+                        .slideX(begin: -0.08, end: 0, duration: 400.ms, delay: 460.ms),
 
                     const SizedBox(height: AppSpacing.xl),
 
-                    // Section rang — titre
+                    // Rank section title
                     Text(
-                      'Choisis ton rang de départ',
+                      s.chooseStartingRank,
                       style: GoogleFonts.rajdhani(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -348,7 +328,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 4),
 
                     Text(
-                      'Tu pourras changer plus tard',
+                      s.canChangeLater,
                       style: GoogleFonts.nunitoSans(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -357,7 +337,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: AppSpacing.md),
 
-                    // RankSelector
                     RankSelector(
                       initialRank: _selectedRank,
                       onRankChanged: (r) =>
@@ -365,15 +344,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     )
                         .animate()
                         .fadeIn(duration: 500.ms, delay: 650.ms)
-                        .slideY(
-                            begin: 0.1,
-                            end: 0,
-                            duration: 500.ms,
-                            delay: 650.ms),
+                        .slideY(begin: 0.1, end: 0, duration: 500.ms, delay: 650.ms),
 
                     const SizedBox(height: AppSpacing.lg),
 
-                    // Checkbox CGU
+                    // Terms checkbox
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -389,20 +364,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 fontSize: 14,
                                 color: AppColors.textSecondary,
                               ),
-                              children: const [
-                                TextSpan(text: "J'accepte les "),
+                              children: [
+                                TextSpan(text: s.acceptTermsPrefix),
                                 TextSpan(
-                                  text: 'Conditions',
-                                  style: TextStyle(
+                                  text: s.termsWord,
+                                  style: const TextStyle(
                                     color: AppColors.accent,
                                     decoration: TextDecoration.underline,
                                     decorationColor: AppColors.accent,
                                   ),
                                 ),
-                                TextSpan(text: ' et la '),
+                                TextSpan(text: s.acceptTermsConjunction),
                                 TextSpan(
-                                  text: 'Confidentialité',
-                                  style: TextStyle(
+                                  text: s.privacyWord,
+                                  style: const TextStyle(
                                     color: AppColors.accent,
                                     decoration: TextDecoration.underline,
                                     decorationColor: AppColors.accent,
@@ -417,19 +392,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: AppSpacing.xl),
 
-                    // Bouton créer compte
+                    // Create account button
                     OtadexButton(
-                      label: 'Créer mon compte →',
+                      label: s.createAccountButton,
                       onPressed: _isLoading ? null : _register,
                       isLoading: _isLoading,
                     )
                         .animate()
                         .fadeIn(duration: 500.ms, delay: 850.ms)
-                        .slideY(
-                            begin: 0.12,
-                            end: 0,
-                            duration: 500.ms,
-                            delay: 850.ms),
+                        .slideY(begin: 0.12, end: 0, duration: 500.ms, delay: 850.ms),
 
                     const SizedBox(height: AppSpacing.xl),
 
@@ -439,7 +410,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Déjà un compte ? ',
+                            '${s.alreadyHaveAccount} ',
                             style: GoogleFonts.nunitoSans(
                               fontSize: 15,
                               color: AppColors.textSecondary,
@@ -448,7 +419,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           GestureDetector(
                             onTap: () => context.go(AppRouter.login),
                             child: Text(
-                              'Se connecter',
+                              s.login,
                               style: GoogleFonts.nunitoSans(
                                 fontSize: 15,
                                 color: AppColors.accent,

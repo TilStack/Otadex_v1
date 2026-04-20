@@ -1,13 +1,21 @@
 class AppConstants {
   AppConstants._();
 
-  // SharedPreferences keys
+  // SharedPreferences keys — auth
   static const String keyHasSeenOnboarding = 'has_seen_onboarding';
   static const String keyIsLoggedIn = 'is_logged_in';
-  static const String keyUserRank = 'user_rank';
-
-  // Post-login onboarding keys
   static const String keyOnboardingCompleted = 'onboarding_completed';
+
+  // SharedPreferences keys — user identity
+  static const String keyUserId = 'user_id';
+  static const String keyUserEmail = 'user_email';
+  static const String keyUserPseudo = 'user_pseudo';
+  static const String keyUserDisplayName = 'user_display_name';
+  static const String keyUserAvatarUrl = 'user_avatar_url';
+  static const String keyUserRank = 'user_rank';
+  static const String keySubscriptionPlan = 'subscription_plan';
+
+  // SharedPreferences keys — onboarding data
   static const String keyBirthDate = 'user_birth_date';
   static const String keyUserAge = 'user_age';
   static const String keyUserInterests = 'user_interests';
@@ -17,10 +25,16 @@ class AppConstants {
   static const String rankJonin = 'jonin';
   static const String rankKage = 'kage';
 
+  // Subscription plans
+  static const String planFree = 'free';
+  static const String planJonin = 'jonin';
+  static const String planKage = 'kage';
+
   // Splash
   static const Duration splashDuration = Duration(milliseconds: 3500);
 
   // App info
   static const String appName = 'OTADEX';
+  static const String appVersion = '1.0.0';
   static const String appTagline = 'The Ultimate Anime Character Encyclopedia';
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../../core/l10n/app_strings.dart';
 import '../../../../../core/models/user_rank.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/otadex_theme.dart';
@@ -20,6 +21,7 @@ class HomeAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = OtadexTheme.of(context);
+    final s = AppStrings.of(context);
     return SizedBox(
       height: 64,
       child: Stack(
@@ -133,7 +135,7 @@ class HomeAppBar extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Se connecter',
+                      s.login,
                       style: GoogleFonts.rajdhani(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,

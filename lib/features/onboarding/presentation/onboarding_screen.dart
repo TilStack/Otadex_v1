@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -131,11 +132,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   ignoring: _currentPage >= 2,
                   child: TextButton(
                     onPressed: _skipToLast,
-                    child: Text(
-                      'Passer',
-                      style: GoogleFonts.nunitoSans(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
+                    child: Builder(
+                      builder: (ctx) => Text(
+                        AppStrings.of(ctx).skip,
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   ),

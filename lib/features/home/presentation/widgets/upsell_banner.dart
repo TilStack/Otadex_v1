@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/otadex_theme.dart';
+import '../../../../../core/widgets/subscription_modal.dart';
 
 class UpsellBanner extends StatelessWidget {
   const UpsellBanner({super.key});
@@ -67,7 +68,7 @@ class UpsellBanner extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           TextButton(
-            onPressed: () {},
+            onPressed: () => showSubscriptionModal(context, SubscriptionPlan.kage),
             style: TextButton.styleFrom(
               backgroundColor: AppColors.rankKage,
               foregroundColor: Colors.black,

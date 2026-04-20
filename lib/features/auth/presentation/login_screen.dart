@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/google_sign_in_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -72,10 +73,12 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setBool(AppConstants.keyIsLoggedIn, true);
       await _navigateAfterAuth();
     } else {
+      if (!mounted) return;
+      final s = AppStrings.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Connexion Google annulée ou non configurée',
+            s.googleAuthCancelled,
             style: GoogleFonts.nunitoSans(color: Colors.white),
           ),
           backgroundColor: AppColors.error,
@@ -86,11 +89,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       backgroundColor: AppColors.backgroundDeep,
       body: Stack(
         children: [
-          // ── Layer 0 : Illustration ninja en fond ──
+          // ── Background illustration ──
           Positioned.fill(
             child: Image.asset(
               'assets/images/splash/splash_illustration.png',
@@ -100,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          // ── Layer 1 : Dégradé sombre pour lisibilité du form ──
+          // ── Dark gradient overlay ──
           Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -119,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          // ── Layer 2 : Lueur violette en haut ──
+          // ── Purple radial glow ──
           Positioned(
             top: -100,
             left: -50,
@@ -162,9 +166,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: AppSpacing.xl),
 
-                    // Titre
                     Text(
-                      'Bon retour, ninja 🥷',
+                      s.welcomeBack,
                       style: GoogleFonts.rajdhani(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
@@ -174,17 +177,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     )
                         .animate()
                         .fadeIn(duration: 500.ms, delay: 100.ms)
-                        .slideY(
-                            begin: 0.15,
-                            end: 0,
-                            duration: 500.ms,
-                            delay: 100.ms),
+                        .slideY(begin: 0.15, end: 0, duration: 500.ms, delay: 100.ms),
 
                     const SizedBox(height: AppSpacing.sm),
 
-                    // Sous-titre
                     Text(
-                      'Connecte-toi pour continuer ta quête',
+                      s.loginSubtitle,
                       style: GoogleFonts.nunitoSans(
                         fontSize: 15,
                         color: AppColors.textSecondary,
@@ -193,59 +191,47 @@ class _LoginScreenState extends State<LoginScreen> {
                     )
                         .animate()
                         .fadeIn(duration: 500.ms, delay: 200.ms)
-                        .slideY(
-                            begin: 0.15,
-                            end: 0,
-                            duration: 500.ms,
-                            delay: 200.ms),
+                        .slideY(begin: 0.15, end: 0, duration: 500.ms, delay: 200.ms),
 
                     const SizedBox(height: AppSpacing.xl + AppSpacing.sm),
 
-                    // Champ email
+                    // Email field
                     OtadexTextField(
-                      label: 'Email',
+                      label: s.emailLabel,
                       prefixIcon: Icons.mail_outline,
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Email requis';
-                        if (!v.contains('@')) return 'Email invalide';
+                        if (v == null || v.isEmpty) return s.emailRequired;
+                        if (!v.contains('@')) return s.emailInvalid;
                         return null;
                       },
                     )
                         .animate()
                         .fadeIn(duration: 400.ms, delay: 300.ms)
-                        .slideX(
-                            begin: -0.08,
-                            end: 0,
-                            duration: 400.ms,
-                            delay: 300.ms),
+                        .slideX(begin: -0.08, end: 0, duration: 400.ms, delay: 300.ms),
 
                     const SizedBox(height: AppSpacing.md),
 
-                    // Champ mot de passe
+                    // Password field
                     OtadexPasswordField(
-                      label: 'Mot de passe',
+                      label: s.passwordLabel,
                       controller: _passwordController,
                       textInputAction: TextInputAction.done,
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Mot de passe requis';
-                        if (v.length < 6) return 'Minimum 6 caractères';
+                        if (v == null || v.isEmpty) return s.passwordRequired;
+                        if (v.length < 6) return s.passwordMinLength;
                         return null;
                       },
                     )
                         .animate()
                         .fadeIn(duration: 400.ms, delay: 380.ms)
-                        .slideX(
-                            begin: -0.08,
-                            end: 0,
-                            duration: 400.ms,
-                            delay: 380.ms),
+                        .slideX(begin: -0.08, end: 0, duration: 400.ms, delay: 380.ms),
 
                     const SizedBox(height: AppSpacing.sm),
 
-                    // Mot de passe oublié
+                    // Forgot password
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -256,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
-                          'Mot de passe oublié ?',
+                          s.forgotPassword,
                           style: GoogleFonts.nunitoSans(
                             fontSize: 14,
                             color: AppColors.textLink,
@@ -267,36 +253,28 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: AppSpacing.xl),
 
-                    // Bouton connexion
+                    // Login button
                     OtadexButton(
-                      label: 'Se connecter',
+                      label: s.login,
                       onPressed: _isLoading ? null : _login,
                       isLoading: _isLoading,
                     )
                         .animate()
                         .fadeIn(duration: 500.ms, delay: 550.ms)
-                        .slideY(
-                            begin: 0.12,
-                            end: 0,
-                            duration: 500.ms,
-                            delay: 550.ms),
+                        .slideY(begin: 0.12, end: 0, duration: 500.ms, delay: 550.ms),
 
                     const SizedBox(height: AppSpacing.lg),
 
-                    // Séparateur "ou"
+                    // Separator
                     Row(
                       children: [
                         Expanded(
-                          child: Container(
-                            height: 1,
-                            color: AppColors.borderSubtle,
-                          ),
+                          child: Container(height: 1, color: AppColors.borderSubtle),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.md),
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                           child: Text(
-                            'ou',
+                            s.orSeparator,
                             style: GoogleFonts.nunitoSans(
                               fontSize: 14,
                               color: AppColors.textDisabled,
@@ -304,17 +282,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         Expanded(
-                          child: Container(
-                            height: 1,
-                            color: AppColors.borderSubtle,
-                          ),
+                          child: Container(height: 1, color: AppColors.borderSubtle),
                         ),
                       ],
                     ).animate().fadeIn(duration: 400.ms, delay: 650.ms),
 
                     const SizedBox(height: AppSpacing.lg),
 
-                    // Bouton Google
+                    // Google button
                     SizedBox(
                       width: double.infinity,
                       height: AppSpacing.buttonHeight,
@@ -323,16 +298,17 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: OutlinedButton.styleFrom(
                           backgroundColor: AppColors.backgroundCard,
                           side: const BorderSide(
-                              color: AppColors.borderDefault, width: 1.2),
+                            color: AppColors.borderDefault,
+                            width: 1.2,
+                          ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                AppSpacing.radiusLg),
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                           ),
                         ),
                         icon: const Icon(Icons.g_mobiledata,
                             color: Colors.white, size: 24),
                         label: Text(
-                          'Continuer avec Google',
+                          s.continueWithGoogle,
                           style: GoogleFonts.nunitoSans(
                             fontSize: 15,
                             color: Colors.white,
@@ -342,20 +318,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     )
                         .animate()
                         .fadeIn(duration: 400.ms, delay: 730.ms)
-                        .slideY(
-                            begin: 0.1,
-                            end: 0,
-                            duration: 400.ms,
-                            delay: 730.ms),
+                        .slideY(begin: 0.1, end: 0, duration: 400.ms, delay: 730.ms),
 
                     const SizedBox(height: AppSpacing.xxl),
 
-                    // Footer
+                    // Footer — no account yet
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Pas encore de compte ? ',
+                          '${s.noAccountYet} ',
                           style: GoogleFonts.nunitoSans(
                             fontSize: 15,
                             color: AppColors.textSecondary,
@@ -364,7 +336,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         GestureDetector(
                           onTap: () => context.go(AppRouter.register),
                           child: Text(
-                            'Deviens Genin',
+                            s.becomeGenin,
                             style: GoogleFonts.nunitoSans(
                               fontSize: 15,
                               color: AppColors.accent,
@@ -378,10 +350,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: AppSpacing.sm),
 
+                    // Continue as guest
                     TextButton(
                       onPressed: _continueAsGuest,
                       child: Text(
-                        'Continuer sans compte',
+                        s.continueAsGuest,
                         style: GoogleFonts.nunitoSans(
                           fontSize: 14,
                           color: AppColors.textSecondary,

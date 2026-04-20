@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../l10n/app_strings.dart';
 import '../router/app_router.dart';
 import '../theme/otadex_theme.dart';
 
@@ -41,6 +42,7 @@ class _AuthGateModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = OtadexTheme.of(context);
+    final s = AppStrings.of(context);
     return Container(
       padding: EdgeInsets.fromLTRB(
         24,
@@ -69,7 +71,7 @@ class _AuthGateModal extends StatelessWidget {
           const Text('🔐', style: TextStyle(fontSize: 44)),
           const SizedBox(height: 16),
           Text(
-            'Connecte-toi pour continuer',
+            s.authGateTitle,
             style: GoogleFonts.rajdhani(
               fontSize: 22,
               fontWeight: FontWeight.w700,
@@ -78,8 +80,7 @@ class _AuthGateModal extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            message ??
-                'Crée un compte gratuit pour accéder au profil,\nta collection et bien plus.',
+            message ?? s.authGateMessage,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunitoSans(
               fontSize: 13,
@@ -102,7 +103,7 @@ class _AuthGateModal extends StatelessWidget {
                 elevation: 0,
               ),
               child: Text(
-                'Se connecter',
+                s.login,
                 style: GoogleFonts.rajdhani(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -124,7 +125,7 @@ class _AuthGateModal extends StatelessWidget {
                 ),
               ),
               child: Text(
-                "S'inscrire gratuitement",
+                s.signUpFree,
                 style: GoogleFonts.rajdhani(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -136,7 +137,7 @@ class _AuthGateModal extends StatelessWidget {
           TextButton(
             onPressed: onDismiss,
             child: Text(
-              'Continuer sans compte',
+              s.continueAsGuest,
               style: GoogleFonts.nunitoSans(
                 fontSize: 13,
                 color: theme.textSecondary,

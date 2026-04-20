@@ -34,7 +34,7 @@ class SettingsSection extends StatelessWidget {
             const _SettingsDivider(),
             _SettingsRow(
                 icon: '✉️',
-                label: s.email,
+                label: s.emailLabel,
                 value: 'jean@mail.com',
                 hasArrow: true),
           ]),

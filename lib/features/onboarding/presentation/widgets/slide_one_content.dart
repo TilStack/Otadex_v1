@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 
@@ -37,11 +38,12 @@ class _SlideOneContentState extends State<SlideOneContent>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final s = AppStrings.of(context);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // ── Illustration flottante ──
+        // ── Floating illustration ──
         AnimatedBuilder(
           animation: _floatAnimation,
           builder: (context, child) => Transform.translate(
@@ -65,12 +67,11 @@ class _SlideOneContentState extends State<SlideOneContent>
 
         const SizedBox(height: AppSpacing.xl),
 
-        // ── Zone texte ──
+        // ── Text zone ──
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: Column(
             children: [
-              // Titre
               Text.rich(
                 TextSpan(
                   style: GoogleFonts.rajdhani(
@@ -78,18 +79,18 @@ class _SlideOneContentState extends State<SlideOneContent>
                     fontWeight: FontWeight.w700,
                     height: 1.1,
                   ),
-                  children: const [
+                  children: [
                     TextSpan(
-                      text: 'L\'univers ',
-                      style: TextStyle(color: AppColors.textPrimary),
+                      text: '${s.slide1TitleUniverse} ',
+                      style: const TextStyle(color: AppColors.textPrimary),
                     ),
                     TextSpan(
-                      text: 'Animé',
-                      style: TextStyle(color: AppColors.accent),
+                      text: s.slide1TitleAnime,
+                      style: const TextStyle(color: AppColors.accent),
                     ),
                     TextSpan(
-                      text: '\ndans ta poche',
-                      style: TextStyle(color: AppColors.textPrimary),
+                      text: '\n${s.slide1TitlePocket}',
+                      style: const TextStyle(color: AppColors.textPrimary),
                     ),
                   ],
                 ),
@@ -101,9 +102,8 @@ class _SlideOneContentState extends State<SlideOneContent>
 
               const SizedBox(height: AppSpacing.md),
 
-              // Sous-titre
               Text(
-                'Personnages · Séries · Univers\nTout ce que tu aimes, en un seul endroit.',
+                s.slide1Subtitle,
                 style: GoogleFonts.nunitoSans(
                   fontSize: 15,
                   color: AppColors.textSecondary,

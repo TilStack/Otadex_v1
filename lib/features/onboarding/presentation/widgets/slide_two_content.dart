@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/widgets/otadex_button.dart';
@@ -46,11 +47,12 @@ class _SlideTwoContentState extends State<SlideTwoContent>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final s = AppStrings.of(context);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // ── Illustration flottante ──
+        // ── Floating illustration ──
         AnimatedBuilder(
           animation: _floatController,
           builder: (context, child) => Transform.translate(
@@ -66,7 +68,7 @@ class _SlideTwoContentState extends State<SlideTwoContent>
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Lueur violette large derrière l'image
+                // Radial glow behind image
                 Container(
                   width: size.width * 0.90,
                   height: size.height * 0.44,
@@ -82,7 +84,6 @@ class _SlideTwoContentState extends State<SlideTwoContent>
                     ),
                   ),
                 ),
-                // Image poster
                 Image.asset(
                   'assets/images/onboarding/onboarding_2.png',
                   height: size.height * 0.52,
@@ -111,12 +112,11 @@ class _SlideTwoContentState extends State<SlideTwoContent>
 
         const SizedBox(height: AppSpacing.lg),
 
-        // ── Zone texte ──
+        // ── Text zone ──
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
           child: Column(
             children: [
-              // Titre
               Text.rich(
                 TextSpan(
                   style: GoogleFonts.rajdhani(
@@ -124,18 +124,18 @@ class _SlideTwoContentState extends State<SlideTwoContent>
                     fontWeight: FontWeight.w700,
                     height: 1.1,
                   ),
-                  children: const [
+                  children: [
                     TextSpan(
-                      text: 'Explore ',
-                      style: TextStyle(color: AppColors.textPrimary),
+                      text: '${s.slide2TitleExplore} ',
+                      style: const TextStyle(color: AppColors.textPrimary),
                     ),
                     TextSpan(
-                      text: '10 000+',
-                      style: TextStyle(color: AppColors.accent),
+                      text: s.slide2TitleCount,
+                      style: const TextStyle(color: AppColors.accent),
                     ),
                     TextSpan(
-                      text: '\npersonnages',
-                      style: TextStyle(color: AppColors.textPrimary),
+                      text: '\n${s.slide2TitleCharacters}',
+                      style: const TextStyle(color: AppColors.textPrimary),
                     ),
                   ],
                 ),
@@ -143,18 +143,12 @@ class _SlideTwoContentState extends State<SlideTwoContent>
               )
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 450.ms)
-                  .slideY(
-                    begin: 0.15,
-                    end: 0,
-                    duration: 500.ms,
-                    delay: 450.ms,
-                  ),
+                  .slideY(begin: 0.15, end: 0, duration: 500.ms, delay: 450.ms),
 
               const SizedBox(height: AppSpacing.sm),
 
-              // Sous-titre
               Text(
-                'Fiches complètes · Galeries images\nCitations exclusives',
+                s.slide2Subtitle,
                 style: GoogleFonts.nunitoSans(
                   fontSize: 15,
                   color: AppColors.textSecondary,
@@ -165,19 +159,13 @@ class _SlideTwoContentState extends State<SlideTwoContent>
 
               const SizedBox(height: AppSpacing.xl),
 
-              // Bouton Découvrir
               OtadexButton(
-                label: 'Découvrir →',
+                label: s.slide2Button,
                 onPressed: widget.onNext,
               )
                   .animate()
                   .fadeIn(duration: 400.ms, delay: 730.ms)
-                  .slideY(
-                    begin: 0.12,
-                    end: 0,
-                    duration: 400.ms,
-                    delay: 730.ms,
-                  ),
+                  .slideY(begin: 0.12, end: 0, duration: 400.ms, delay: 730.ms),
             ],
           ),
         ),

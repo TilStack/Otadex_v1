@@ -3,7 +3,93 @@ import 'app_locale.dart';
 
 class AppStrings {
   const AppStrings({
-    // Profile tabs
+    // ── Auth gate ──────────────────────────────────────────────────────────
+    required this.authGateTitle,
+    required this.authGateMessage,
+    required this.login,
+    required this.signUpFree,
+    required this.continueAsGuest,
+    // ── Login screen ───────────────────────────────────────────────────────
+    required this.welcomeBack,
+    required this.loginSubtitle,
+    required this.emailLabel,
+    required this.emailAddressLabel,
+    required this.emailRequired,
+    required this.emailInvalid,
+    required this.passwordLabel,
+    required this.confirmPasswordLabel,
+    required this.passwordRequired,
+    required this.passwordMinLength,
+    required this.passwordsMismatch,
+    required this.forgotPassword,
+    required this.orSeparator,
+    required this.continueWithGoogle,
+    required this.noAccountYet,
+    required this.becomeGenin,
+    required this.googleAuthCancelled,
+    // ── Register screen ────────────────────────────────────────────────────
+    required this.createAccount,
+    required this.joinFansSubtitle,
+    required this.pseudoLabel,
+    required this.pseudoRequired,
+    required this.pseudoMinLength,
+    required this.chooseStartingRank,
+    required this.canChangeLater,
+    required this.acceptTermsPrefix,
+    required this.termsWord,
+    required this.acceptTermsConjunction,
+    required this.privacyWord,
+    required this.acceptTermsError,
+    required this.createAccountButton,
+    required this.alreadyHaveAccount,
+    required this.googleLinked,
+    // ── Onboarding ─────────────────────────────────────────────────────────
+    required this.skip,
+    required this.slide1TitleUniverse,
+    required this.slide1TitleAnime,
+    required this.slide1TitlePocket,
+    required this.slide1Subtitle,
+    required this.slide2TitleExplore,
+    required this.slide2TitleCount,
+    required this.slide2TitleCharacters,
+    required this.slide2Subtitle,
+    required this.slide2Button,
+    required this.slide3Title,
+    required this.slide3Subtitle,
+    required this.rankGeninFreeLabel,
+    required this.rankGeninDesc,
+    required this.rankJoninDesc,
+    required this.rankKageDesc,
+    required this.premiumBadgeLabel,
+    required this.startAdventureButton,
+    required this.canChangeRankLater,
+    // ── Subscription modal ─────────────────────────────────────────────────
+    required this.subscriptionRankUpgradeTitle,
+    required this.subscriptionRankUpgradeDesc,
+    required this.subscriptionBillingMonthly,
+    required this.subscriptionBillingAnnual,
+    required this.subscriptionSave10,
+    required this.subscriptionAllDevices,
+    required this.subscriptionObtainPass,
+    required this.subscriptionAlreadyLicense,
+    required this.subscriptionFeaturesTitle,
+    required this.joninFeature1Title,
+    required this.joninFeature1Desc,
+    required this.joninFeature2Title,
+    required this.joninFeature2Desc,
+    required this.joninFeature3Title,
+    required this.joninFeature3Desc,
+    required this.joninFeature4Title,
+    required this.joninFeature4Desc,
+    required this.kageFeature1Title,
+    required this.kageFeature1Desc,
+    required this.kageFeature2Title,
+    required this.kageFeature2Desc,
+    required this.kageFeature3Title,
+    required this.kageFeature3Desc,
+    required this.kageFeature4Title,
+    required this.kageFeature4Desc,
+    // ── Profile tabs ───────────────────────────────────────────────────────
     required this.collection,
     required this.badges,
     required this.activity,
@@ -13,7 +99,7 @@ class AppStrings {
     required this.ptsForKageSupreme,
     required this.noBadgesYet,
     required this.recentActivityHere,
-    // Subscription card
+    // ── Subscription card ──────────────────────────────────────────────────
     required this.settingsAndSubscription,
     required this.geninPlanLabel,
     required this.freeLabel,
@@ -21,10 +107,10 @@ class AppStrings {
     required this.upgradeToJonin,
     required this.manageSubscription,
     required this.active,
-    // Kage banner
+    // ── Kage banner ────────────────────────────────────────────────────────
     required this.kageBannerText,
     required this.seeOffer,
-    // Plan section
+    // ── Plan section ───────────────────────────────────────────────────────
     required this.changePlan,
     required this.monthly,
     required this.annual,
@@ -36,7 +122,7 @@ class AppStrings {
     required this.joninAnnualPrice,
     required this.kageMonthlyPrice,
     required this.kageAnnualPrice,
-    // Plan features
+    // ── Plan features (comparison cards) ──────────────────────────────────
     required this.sheetsNavigation,
     required this.likesComments,
     required this.adsShown,
@@ -49,15 +135,14 @@ class AppStrings {
     required this.aiImageGen,
     required this.noWatermark,
     required this.exclusiveThemes,
-    // Settings sections
+    // ── Settings sections ──────────────────────────────────────────────────
     required this.accountSection,
     required this.preferencesSection,
     required this.contentSection,
     required this.aboutSection,
-    // Settings rows
+    // ── Settings rows ──────────────────────────────────────────────────────
     required this.editProfile,
     required this.changePassword,
-    required this.email,
     required this.theme,
     required this.darkTheme,
     required this.notifications,
@@ -74,10 +159,10 @@ class AppStrings {
     required this.termsOfService,
     required this.privacyPolicy,
     required this.rateApp,
-    // Logout
+    // ── Logout ─────────────────────────────────────────────────────────────
     required this.logout,
     required this.appVersion,
-    // Search
+    // ── Search ─────────────────────────────────────────────────────────────
     required this.searchHint,
     required this.recentSearches,
     required this.clearAll,
@@ -91,7 +176,93 @@ class AppStrings {
     required this.all,
   });
 
-  // Profile tabs
+  // ── Auth gate ──────────────────────────────────────────────────────────────
+  final String authGateTitle;
+  final String authGateMessage;
+  final String login;
+  final String signUpFree;
+  final String continueAsGuest;
+  // ── Login screen ───────────────────────────────────────────────────────────
+  final String welcomeBack;
+  final String loginSubtitle;
+  final String emailLabel;
+  final String emailAddressLabel;
+  final String emailRequired;
+  final String emailInvalid;
+  final String passwordLabel;
+  final String confirmPasswordLabel;
+  final String passwordRequired;
+  final String passwordMinLength;
+  final String passwordsMismatch;
+  final String forgotPassword;
+  final String orSeparator;
+  final String continueWithGoogle;
+  final String noAccountYet;
+  final String becomeGenin;
+  final String googleAuthCancelled;
+  // ── Register screen ────────────────────────────────────────────────────────
+  final String createAccount;
+  final String joinFansSubtitle;
+  final String pseudoLabel;
+  final String pseudoRequired;
+  final String pseudoMinLength;
+  final String chooseStartingRank;
+  final String canChangeLater;
+  final String acceptTermsPrefix;
+  final String termsWord;
+  final String acceptTermsConjunction;
+  final String privacyWord;
+  final String acceptTermsError;
+  final String createAccountButton;
+  final String alreadyHaveAccount;
+  final String googleLinked;
+  // ── Onboarding ─────────────────────────────────────────────────────────────
+  final String skip;
+  final String slide1TitleUniverse;
+  final String slide1TitleAnime;
+  final String slide1TitlePocket;
+  final String slide1Subtitle;
+  final String slide2TitleExplore;
+  final String slide2TitleCount;
+  final String slide2TitleCharacters;
+  final String slide2Subtitle;
+  final String slide2Button;
+  final String slide3Title;
+  final String slide3Subtitle;
+  final String rankGeninFreeLabel;
+  final String rankGeninDesc;
+  final String rankJoninDesc;
+  final String rankKageDesc;
+  final String premiumBadgeLabel;
+  final String startAdventureButton;
+  final String canChangeRankLater;
+  // ── Subscription modal ─────────────────────────────────────────────────────
+  final String subscriptionRankUpgradeTitle;
+  final String subscriptionRankUpgradeDesc;
+  final String subscriptionBillingMonthly;
+  final String subscriptionBillingAnnual;
+  final String subscriptionSave10;
+  final String subscriptionAllDevices;
+  final String subscriptionObtainPass;
+  final String subscriptionAlreadyLicense;
+  final String subscriptionFeaturesTitle;
+  final String joninFeature1Title;
+  final String joninFeature1Desc;
+  final String joninFeature2Title;
+  final String joninFeature2Desc;
+  final String joninFeature3Title;
+  final String joninFeature3Desc;
+  final String joninFeature4Title;
+  final String joninFeature4Desc;
+  final String kageFeature1Title;
+  final String kageFeature1Desc;
+  final String kageFeature2Title;
+  final String kageFeature2Desc;
+  final String kageFeature3Title;
+  final String kageFeature3Desc;
+  final String kageFeature4Title;
+  final String kageFeature4Desc;
+  // ── Profile tabs ───────────────────────────────────────────────────────────
   final String collection;
   final String badges;
   final String activity;
@@ -101,7 +272,7 @@ class AppStrings {
   final String ptsForKageSupreme;
   final String noBadgesYet;
   final String recentActivityHere;
-  // Subscription card
+  // ── Subscription card ──────────────────────────────────────────────────────
   final String settingsAndSubscription;
   final String geninPlanLabel;
   final String freeLabel;
@@ -109,10 +280,10 @@ class AppStrings {
   final String upgradeToJonin;
   final String manageSubscription;
   final String active;
-  // Kage banner
+  // ── Kage banner ────────────────────────────────────────────────────────────
   final String kageBannerText;
   final String seeOffer;
-  // Plan section
+  // ── Plan section ───────────────────────────────────────────────────────────
   final String changePlan;
   final String monthly;
   final String annual;
@@ -124,7 +295,7 @@ class AppStrings {
   final String joninAnnualPrice;
   final String kageMonthlyPrice;
   final String kageAnnualPrice;
-  // Plan features
+  // ── Plan features (comparison cards) ──────────────────────────────────────
   final String sheetsNavigation;
   final String likesComments;
   final String adsShown;
@@ -137,15 +308,14 @@ class AppStrings {
   final String aiImageGen;
   final String noWatermark;
   final String exclusiveThemes;
-  // Settings sections
+  // ── Settings sections ──────────────────────────────────────────────────────
   final String accountSection;
   final String preferencesSection;
   final String contentSection;
   final String aboutSection;
-  // Settings rows
+  // ── Settings rows ──────────────────────────────────────────────────────────
   final String editProfile;
   final String changePassword;
-  final String email;
   final String theme;
   final String darkTheme;
   final String notifications;
@@ -162,10 +332,10 @@ class AppStrings {
   final String termsOfService;
   final String privacyPolicy;
   final String rateApp;
-  // Logout
+  // ── Logout ─────────────────────────────────────────────────────────────────
   final String logout;
   final String appVersion;
-  // Search
+  // ── Search ─────────────────────────────────────────────────────────────────
   final String searchHint;
   final String recentSearches;
   final String clearAll;
@@ -192,6 +362,105 @@ class AppStrings {
   // Kage:  5000 × 0.9 × 12 = 54 000 FCFA/an
 
   static const AppStrings _fr = AppStrings(
+    // Auth gate
+    authGateTitle: 'Connecte-toi pour continuer',
+    authGateMessage:
+        'Crée un compte gratuit pour accéder au profil,\nta collection et bien plus.',
+    login: 'Se connecter',
+    signUpFree: "S'inscrire gratuitement",
+    continueAsGuest: 'Continuer sans compte',
+    // Login screen
+    welcomeBack: 'Bon retour, ninja 🥷',
+    loginSubtitle: 'Connecte-toi pour continuer ta quête',
+    emailLabel: 'Email',
+    emailAddressLabel: 'Adresse e-mail',
+    emailRequired: 'Email requis',
+    emailInvalid: 'Email invalide',
+    passwordLabel: 'Mot de passe',
+    confirmPasswordLabel: 'Confirmer mot de passe',
+    passwordRequired: 'Mot de passe requis',
+    passwordMinLength: 'Minimum 6 caractères',
+    passwordsMismatch: 'Les mots de passe ne correspondent pas',
+    forgotPassword: 'Mot de passe oublié ?',
+    orSeparator: 'ou',
+    continueWithGoogle: 'Continuer avec Google',
+    noAccountYet: 'Pas encore de compte ?',
+    becomeGenin: 'Deviens Genin',
+    googleAuthCancelled: 'Connexion Google annulée ou non configurée',
+    // Register screen
+    createAccount: 'Crée ton compte',
+    joinFansSubtitle: 'Rejoins des milliers de fans otaku',
+    pseudoLabel: 'Pseudo / Nom de ninja',
+    pseudoRequired: 'Pseudo requis',
+    pseudoMinLength: 'Minimum 3 caractères',
+    chooseStartingRank: 'Choisis ton rang de départ',
+    canChangeLater: 'Tu pourras changer plus tard',
+    acceptTermsPrefix: "J'accepte les ",
+    termsWord: 'Conditions',
+    acceptTermsConjunction: ' et la ',
+    privacyWord: 'Confidentialité',
+    acceptTermsError: 'Accepte les conditions pour continuer',
+    createAccountButton: 'Créer mon compte →',
+    alreadyHaveAccount: 'Déjà un compte ?',
+    googleLinked: 'Compte Google lié — choisis ton rang et confirme',
+    // Onboarding
+    skip: 'Passer',
+    slide1TitleUniverse: "L'univers",
+    slide1TitleAnime: 'Animé',
+    slide1TitlePocket: 'dans ta poche',
+    slide1Subtitle:
+        'Personnages · Séries · Univers\nTout ce que tu aimes, en un seul endroit.',
+    slide2TitleExplore: 'Explore',
+    slide2TitleCount: '10 000+',
+    slide2TitleCharacters: 'personnages',
+    slide2Subtitle:
+        'Fiches complètes · Galeries images\nCitations exclusives',
+    slide2Button: 'Découvrir →',
+    slide3Title: 'Quel fan es-tu ?',
+    slide3Subtitle: 'Choisis ta voie, grimpe les rangs',
+    rankGeninFreeLabel: 'GRATUIT',
+    rankGeninDesc: 'Accès gratuit · Découverte',
+    rankJoninDesc: 'Sans pub · Collections avancées',
+    rankKageDesc: 'Accès IA · Exclusif · Statut ultime',
+    premiumBadgeLabel: 'PREMIUM',
+    startAdventureButton: "Commencer l'aventure →",
+    canChangeRankLater: 'Tu pourras changer de rang plus tard',
+    // Subscription modal
+    subscriptionRankUpgradeTitle: 'Passe au rang',
+    subscriptionRankUpgradeDesc:
+        'Débloque les fonctionnalités exclusives\nréservées aux ninja de rang',
+    subscriptionBillingMonthly: 'Mensuel',
+    subscriptionBillingAnnual: 'Annuel',
+    subscriptionSave10: 'Économisez 10%',
+    subscriptionAllDevices: 'Utilisable sur tous tes appareils',
+    subscriptionObtainPass: 'Obtenir le Pass',
+    subscriptionAlreadyLicense: 'Tu as déjà une licence ?',
+    subscriptionFeaturesTitle: 'Fonctionnalités',
+    joninFeature1Title: 'Collection illimitée',
+    joninFeature1Desc:
+        "Collectionne tous les personnages de l'encyclopédie sans aucune limite.",
+    joninFeature2Title: 'Sans publicités',
+    joninFeature2Desc:
+        "Profite de l'expérience OTADEX sans interruption publicitaire.",
+    joninFeature3Title: 'IA chatbot + quiz',
+    joninFeature3Desc:
+        "Pose des questions sur tes personnages préférés et teste tes connaissances avec l'IA.",
+    joninFeature4Title: 'Badge Jonin 🦊',
+    joninFeature4Desc:
+        'Affiche ton rang Jonin sur ton profil et dans les commentaires.',
+    kageFeature1Title: 'Tout le Pass Jonin inclus',
+    kageFeature1Desc:
+        'Toutes les fonctionnalités du rang Jonin sont incluses dans le Pass Kage.',
+    kageFeature2Title: 'Génération images IA ⭐',
+    kageFeature2Desc:
+        "Génère des illustrations uniques de tes personnages préférés grâce à l'IA.",
+    kageFeature3Title: 'Téléchargement sans watermark',
+    kageFeature3Desc:
+        'Télécharge toutes les illustrations en haute qualité sans filigrane OTADEX.',
+    kageFeature4Title: 'Thèmes exclusifs 👑',
+    kageFeature4Desc:
+        'Débloque les thèmes visuels réservés aux ninja de rang Kage.',
+    // Profile tabs
     collection: 'Collection',
     badges: 'Badges',
     activity: 'Activité',
@@ -239,7 +508,6 @@ class AppStrings {
     aboutSection: 'À PROPOS',
     editProfile: 'Modifier le profil',
     changePassword: 'Changer le mot de passe',
-    email: 'Email',
     theme: 'Thème',
     darkTheme: 'Sombre',
     notifications: 'Notifications',
@@ -272,6 +540,105 @@ class AppStrings {
   );
 
   static const AppStrings _en = AppStrings(
+    // Auth gate
+    authGateTitle: 'Log in to continue',
+    authGateMessage:
+        'Create a free account to access your profile,\nyour collection and much more.',
+    login: 'Log in',
+    signUpFree: 'Sign up for free',
+    continueAsGuest: 'Continue without account',
+    // Login screen
+    welcomeBack: 'Welcome back, ninja 🥷',
+    loginSubtitle: 'Log in to continue your quest',
+    emailLabel: 'Email',
+    emailAddressLabel: 'E-mail address',
+    emailRequired: 'Email required',
+    emailInvalid: 'Invalid email',
+    passwordLabel: 'Password',
+    confirmPasswordLabel: 'Confirm password',
+    passwordRequired: 'Password required',
+    passwordMinLength: 'Minimum 6 characters',
+    passwordsMismatch: 'Passwords do not match',
+    forgotPassword: 'Forgot password?',
+    orSeparator: 'or',
+    continueWithGoogle: 'Continue with Google',
+    noAccountYet: 'No account yet?',
+    becomeGenin: 'Become a Genin',
+    googleAuthCancelled: 'Google login cancelled or not configured',
+    // Register screen
+    createAccount: 'Create your account',
+    joinFansSubtitle: 'Join thousands of otaku fans',
+    pseudoLabel: 'Username / Ninja name',
+    pseudoRequired: 'Username required',
+    pseudoMinLength: 'Minimum 3 characters',
+    chooseStartingRank: 'Choose your starting rank',
+    canChangeLater: 'You can change it later',
+    acceptTermsPrefix: 'I accept the ',
+    termsWord: 'Terms',
+    acceptTermsConjunction: ' and ',
+    privacyWord: 'Privacy',
+    acceptTermsError: 'Accept the terms to continue',
+    createAccountButton: 'Create my account →',
+    alreadyHaveAccount: 'Already have an account?',
+    googleLinked: 'Google account linked — choose your rank and confirm',
+    // Onboarding
+    skip: 'Skip',
+    slide1TitleUniverse: 'The anime',
+    slide1TitleAnime: 'universe',
+    slide1TitlePocket: 'in your pocket',
+    slide1Subtitle:
+        'Characters · Series · Universes\nEverything you love, in one place.',
+    slide2TitleExplore: 'Explore',
+    slide2TitleCount: '10,000+',
+    slide2TitleCharacters: 'characters',
+    slide2Subtitle:
+        'Complete profiles · Image galleries\nExclusive quotes',
+    slide2Button: 'Discover →',
+    slide3Title: 'What kind of fan are you?',
+    slide3Subtitle: 'Choose your path, climb the ranks',
+    rankGeninFreeLabel: 'FREE',
+    rankGeninDesc: 'Free access · Discovery',
+    rankJoninDesc: 'No ads · Advanced collections',
+    rankKageDesc: 'AI access · Exclusive · Ultimate status',
+    premiumBadgeLabel: 'PREMIUM',
+    startAdventureButton: 'Start the adventure →',
+    canChangeRankLater: 'You can change your rank later',
+    // Subscription modal
+    subscriptionRankUpgradeTitle: 'Upgrade to rank',
+    subscriptionRankUpgradeDesc:
+        'Unlock exclusive features\nreserved for ninja of rank',
+    subscriptionBillingMonthly: 'Monthly',
+    subscriptionBillingAnnual: 'Annual',
+    subscriptionSave10: 'Save 10%',
+    subscriptionAllDevices: 'Available on all your devices',
+    subscriptionObtainPass: 'Get the Pass',
+    subscriptionAlreadyLicense: 'Already have a license?',
+    subscriptionFeaturesTitle: 'Features',
+    joninFeature1Title: 'Unlimited collection',
+    joninFeature1Desc:
+        'Collect all characters from the encyclopedia without any limit.',
+    joninFeature2Title: 'No ads',
+    joninFeature2Desc:
+        'Enjoy the OTADEX experience without any ad interruptions.',
+    joninFeature3Title: 'AI chatbot + quiz',
+    joninFeature3Desc:
+        'Ask questions about your favourite characters and test your knowledge with AI.',
+    joninFeature4Title: 'Jonin Badge 🦊',
+    joninFeature4Desc:
+        'Display your Jonin rank on your profile and in comments.',
+    kageFeature1Title: 'Full Jonin Pass included',
+    kageFeature1Desc:
+        'All Jonin rank features are included in the Kage Pass.',
+    kageFeature2Title: 'AI image generation ⭐',
+    kageFeature2Desc:
+        'Generate unique illustrations of your favourite characters with AI.',
+    kageFeature3Title: 'Watermark-free download',
+    kageFeature3Desc:
+        'Download all illustrations in high quality without the OTADEX watermark.',
+    kageFeature4Title: 'Exclusive themes 👑',
+    kageFeature4Desc:
+        'Unlock visual themes reserved for Kage rank ninjas.',
+    // Profile tabs
     collection: 'Collection',
     badges: 'Badges',
     activity: 'Activity',
@@ -319,7 +686,6 @@ class AppStrings {
     aboutSection: 'ABOUT',
     editProfile: 'Edit profile',
     changePassword: 'Change password',
-    email: 'Email',
     theme: 'Theme',
     darkTheme: 'Dark',
     notifications: 'Notifications',
@@ -352,6 +718,102 @@ class AppStrings {
   );
 
   static const AppStrings _ja = AppStrings(
+    // Auth gate
+    authGateTitle: 'ログインして続ける',
+    authGateMessage:
+        'プロフィール、コレクションなどにアクセスするために\n無料アカウントを作成してください。',
+    login: 'ログイン',
+    signUpFree: '無料登録',
+    continueAsGuest: 'アカウントなしで続ける',
+    // Login screen
+    welcomeBack: 'おかえり、ninja 🥷',
+    loginSubtitle: 'クエストを続けるためにログインしよう',
+    emailLabel: 'メール',
+    emailAddressLabel: 'メールアドレス',
+    emailRequired: 'メールは必須です',
+    emailInvalid: '無効なメールアドレスです',
+    passwordLabel: 'パスワード',
+    confirmPasswordLabel: 'パスワードの確認',
+    passwordRequired: 'パスワードは必須です',
+    passwordMinLength: '6文字以上必要です',
+    passwordsMismatch: 'パスワードが一致しません',
+    forgotPassword: 'パスワードを忘れた？',
+    orSeparator: 'または',
+    continueWithGoogle: 'Googleで続ける',
+    noAccountYet: 'まだアカウントがない？',
+    becomeGenin: '下忍になる',
+    googleAuthCancelled: 'Googleログインがキャンセルされたか設定されていません',
+    // Register screen
+    createAccount: 'アカウントを作成',
+    joinFansSubtitle: '何千人ものオタクファンと一緒に',
+    pseudoLabel: 'ユーザー名 / 忍者名',
+    pseudoRequired: 'ユーザー名は必須です',
+    pseudoMinLength: '3文字以上必要です',
+    chooseStartingRank: 'スタートランクを選ぼう',
+    canChangeLater: '後で変更できます',
+    acceptTermsPrefix: '私は',
+    termsWord: '利用規約',
+    acceptTermsConjunction: 'と',
+    privacyWord: 'プライバシーポリシー',
+    acceptTermsError: '続けるには規約に同意してください',
+    createAccountButton: 'アカウントを作成 →',
+    alreadyHaveAccount: 'すでにアカウントをお持ちですか？',
+    googleLinked: 'Googleアカウント連携済み — ランクを選んで確認してください',
+    // Onboarding
+    skip: 'スキップ',
+    slide1TitleUniverse: 'アニメの',
+    slide1TitleAnime: '世界',
+    slide1TitlePocket: 'ポケットの中に',
+    slide1Subtitle:
+        'キャラクター · シリーズ · 世界観\nあなたの好きなすべてが、一か所に。',
+    slide2TitleExplore: '探索する',
+    slide2TitleCount: '10,000+',
+    slide2TitleCharacters: 'キャラクター',
+    slide2Subtitle:
+        '完全プロフィール · 画像ギャラリー\n限定名言',
+    slide2Button: '発見する →',
+    slide3Title: 'あなたはどんなファン？',
+    slide3Subtitle: '道を選び、ランクを上げよう',
+    rankGeninFreeLabel: '無料',
+    rankGeninDesc: '無料アクセス · 発見',
+    rankJoninDesc: '広告なし · 高度なコレクション',
+    rankKageDesc: 'AIアクセス · 限定 · 最高ステータス',
+    premiumBadgeLabel: 'プレミアム',
+    startAdventureButton: '冒険を始める →',
+    canChangeRankLater: 'ランクは後で変更できます',
+    // Subscription modal
+    subscriptionRankUpgradeTitle: 'ランクにアップグレード',
+    subscriptionRankUpgradeDesc:
+        'ランクの忍者専用の\n限定機能をアンロックしよう',
+    subscriptionBillingMonthly: '月払い',
+    subscriptionBillingAnnual: '年払い',
+    subscriptionSave10: '10%お得',
+    subscriptionAllDevices: '全デバイスで使用可能',
+    subscriptionObtainPass: 'パスを取得',
+    subscriptionAlreadyLicense: 'すでにライセンスをお持ちですか？',
+    subscriptionFeaturesTitle: '機能',
+    joninFeature1Title: '無制限コレクション',
+    joninFeature1Desc:
+        '百科事典のすべてのキャラクターを制限なく収集できます。',
+    joninFeature2Title: '広告なし',
+    joninFeature2Desc: '広告なしでOTADEX体験をお楽しみください。',
+    joninFeature3Title: 'AIチャット + クイズ',
+    joninFeature3Desc:
+        'お気に入りのキャラクターについて質問し、AIで知識をテストしよう。',
+    joninFeature4Title: 'ジョニンバッジ 🦊',
+    joninFeature4Desc: 'プロフィールとコメントにジョニンランクを表示しよう。',
+    kageFeature1Title: 'ジョニンパスすべて含む',
+    kageFeature1Desc:
+        'ジョニンランクのすべての機能がカゲパスに含まれています。',
+    kageFeature2Title: 'AI画像生成 ⭐',
+    kageFeature2Desc:
+        'AIを使って好きなキャラクターのユニークなイラストを生成しよう。',
+    kageFeature3Title: 'ウォーターマークなしダウンロード',
+    kageFeature3Desc:
+        'OTADEXウォーターマークなしですべてのイラストを高品質でダウンロードできます。',
+    kageFeature4Title: '限定テーマ 👑',
+    kageFeature4Desc: 'カゲランクの忍者専用のビジュアルテーマをアンロックしよう。',
+    // Profile tabs
     collection: 'コレクション',
     badges: 'バッジ',
     activity: 'アクティビティ',
@@ -399,7 +861,6 @@ class AppStrings {
     aboutSection: '情報',
     editProfile: 'プロフィール編集',
     changePassword: 'パスワード変更',
-    email: 'メール',
     theme: 'テーマ',
     darkTheme: 'ダーク',
     notifications: '通知',
@@ -432,6 +893,93 @@ class AppStrings {
   );
 
   static const AppStrings _zh = AppStrings(
+    // Auth gate
+    authGateTitle: '登录以继续',
+    authGateMessage: '创建免费账号以访问你的个人资料、\n收藏和更多内容。',
+    login: '登录',
+    signUpFree: '免费注册',
+    continueAsGuest: '不登录继续',
+    // Login screen
+    welcomeBack: '欢迎回来，ninja 🥷',
+    loginSubtitle: '登录以继续你的旅程',
+    emailLabel: '邮箱',
+    emailAddressLabel: '电子邮箱地址',
+    emailRequired: '邮箱为必填项',
+    emailInvalid: '邮箱格式无效',
+    passwordLabel: '密码',
+    confirmPasswordLabel: '确认密码',
+    passwordRequired: '密码为必填项',
+    passwordMinLength: '最少 6 个字符',
+    passwordsMismatch: '两次密码不一致',
+    forgotPassword: '忘记密码？',
+    orSeparator: '或',
+    continueWithGoogle: '使用 Google 继续',
+    noAccountYet: '还没有账号？',
+    becomeGenin: '成为下忍',
+    googleAuthCancelled: 'Google 登录已取消或未配置',
+    // Register screen
+    createAccount: '创建你的账号',
+    joinFansSubtitle: '加入数千名宅文化爱好者',
+    pseudoLabel: '昵称 / 忍者名',
+    pseudoRequired: '昵称为必填项',
+    pseudoMinLength: '最少 3 个字符',
+    chooseStartingRank: '选择你的起始等级',
+    canChangeLater: '之后可以更改',
+    acceptTermsPrefix: '我接受',
+    termsWord: '条款',
+    acceptTermsConjunction: '和',
+    privacyWord: '隐私政策',
+    acceptTermsError: '请同意条款以继续',
+    createAccountButton: '创建账号 →',
+    alreadyHaveAccount: '已有账号？',
+    googleLinked: 'Google 账号已关联 — 选择等级并确认',
+    // Onboarding
+    skip: '跳过',
+    slide1TitleUniverse: '动漫世界',
+    slide1TitleAnime: '尽在',
+    slide1TitlePocket: '你的口袋',
+    slide1Subtitle: '角色 · 系列 · 宇宙观\n你所热爱的一切，尽在一处。',
+    slide2TitleExplore: '探索',
+    slide2TitleCount: '10,000+',
+    slide2TitleCharacters: '个角色',
+    slide2Subtitle: '完整档案 · 图片画廊\n独家语录',
+    slide2Button: '探索 →',
+    slide3Title: '你是什么样的粉丝？',
+    slide3Subtitle: '选择你的道路，晋升等级',
+    rankGeninFreeLabel: '免费',
+    rankGeninDesc: '免费访问 · 探索',
+    rankJoninDesc: '无广告 · 高级收藏',
+    rankKageDesc: 'AI 访问 · 专属 · 终极地位',
+    premiumBadgeLabel: '高级',
+    startAdventureButton: '开始冒险 →',
+    canChangeRankLater: '之后可以更换等级',
+    // Subscription modal
+    subscriptionRankUpgradeTitle: '升级至',
+    subscriptionRankUpgradeDesc: '解锁专为该等级忍者\n保留的专属功能',
+    subscriptionBillingMonthly: '月付',
+    subscriptionBillingAnnual: '年付',
+    subscriptionSave10: '节省 10%',
+    subscriptionAllDevices: '可在所有设备上使用',
+    subscriptionObtainPass: '获取通行证',
+    subscriptionAlreadyLicense: '已有许可证？',
+    subscriptionFeaturesTitle: '功能',
+    joninFeature1Title: '无限收藏',
+    joninFeature1Desc: '无限制地收藏百科全书中的所有角色。',
+    joninFeature2Title: '无广告',
+    joninFeature2Desc: '无广告打扰地享受 OTADEX 体验。',
+    joninFeature3Title: 'AI 聊天 + 测验',
+    joninFeature3Desc: '向 AI 提问你最喜爱的角色，并测试你的知识。',
+    joninFeature4Title: '上忍徽章 🦊',
+    joninFeature4Desc: '在个人资料和评论中展示你的上忍等级。',
+    kageFeature1Title: '包含完整上忍通行证',
+    kageFeature1Desc: '影通行证包含所有上忍等级功能。',
+    kageFeature2Title: 'AI 图像生成 ⭐',
+    kageFeature2Desc: '利用 AI 生成你最喜爱角色的独特插画。',
+    kageFeature3Title: '无水印下载',
+    kageFeature3Desc: '下载所有高质量插画，无 OTADEX 水印。',
+    kageFeature4Title: '专属主题 👑',
+    kageFeature4Desc: '解锁专为影等级忍者保留的视觉主题。',
+    // Profile tabs
     collection: '收藏',
     badges: '徽章',
     activity: '动态',
@@ -479,7 +1027,6 @@ class AppStrings {
     aboutSection: '关于',
     editProfile: '编辑资料',
     changePassword: '修改密码',
-    email: '邮箱',
     theme: '主题',
     darkTheme: '深色',
     notifications: '通知',
