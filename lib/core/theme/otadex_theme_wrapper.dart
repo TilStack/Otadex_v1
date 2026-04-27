@@ -5,11 +5,13 @@ import 'rank_theme.dart';
 
 class OtadexThemeWrapper extends StatefulWidget {
   final UserRank initialRank;
+  final bool isDark;
   final Widget child;
 
   const OtadexThemeWrapper({
     super.key,
     required this.initialRank,
+    this.isDark = true,
     required this.child,
   });
 
@@ -30,18 +32,28 @@ class OtadexThemeWrapperState extends State<OtadexThemeWrapper>
   void initState() {
     super.initState();
     _currentRank = widget.initialRank;
-    _currentRankTheme = RankTheme.forRank(_currentRank);
+    _currentRankTheme = RankTheme.forRank(_currentRank, isDark: widget.isDark);
     _transitionController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
   }
 
+  @override
+  void didUpdateWidget(OtadexThemeWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isDark != widget.isDark) {
+      setState(() {
+        _currentRankTheme = RankTheme.forRank(_currentRank, isDark: widget.isDark);
+      });
+    }
+  }
+
   void updateRank(UserRank newRank) {
     if (newRank == _currentRank) return;
     setState(() {
       _currentRank = newRank;
-      _currentRankTheme = RankTheme.forRank(newRank);
+      _currentRankTheme = RankTheme.forRank(newRank, isDark: widget.isDark);
     });
     _transitionController.forward(from: 0);
   }

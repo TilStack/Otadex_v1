@@ -138,11 +138,106 @@ class RankTheme extends ThemeExtension<RankTheme> {
     ),
   );
 
-  static RankTheme forRank(UserRank rank) => switch (rank) {
-        UserRank.genin => RankTheme.genin,
-        UserRank.jonin => RankTheme.jonin,
-        UserRank.kage => RankTheme.kage,
+  // ── GENIN LIGHT ───────────────────────────────────────────────────
+  static const RankTheme geninLight = RankTheme(
+    accentColor: Color(0xFFFF6500),
+    accentLight: Color(0xFFFF8533),
+    accentGlow: Color(0x22FF6500),
+    accentShimmer: Color(0x30FF6500),
+    backgroundPrimary: Color(0xFFF5F5FC),
+    backgroundCard: Color(0xFFFFFFFF),
+    backgroundElevated: Color(0xFFEEEEF8),
+    backgroundInput: Color(0xFFFFFFFF),
+    borderDefault: Color(0xFFD0C0F0),
+    borderActive: Color(0xFFFF6500),
+    borderSubtle: Color(0xFFE4E4F2),
+    textPrimary: Color(0xFF1A1A2E),
+    textSecondary: Color(0xFF5A5A8A),
+    textLink: Color(0xFFFF6500),
+    rankBadgeColor: Color(0xFF7EABC9),
+    rankBadgeBg: Color(0xFFDDEEF8),
+    rankLabel: 'Genin',
+    hasShimmerEffect: false,
+    hasGlowEffect: false,
+    backgroundGradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFF5F5FC), Color(0xFFEEEEF8)],
+    ),
+  );
+
+  // ── JONIN LIGHT ───────────────────────────────────────────────────
+  static const RankTheme joninLight = RankTheme(
+    accentColor: Color(0xFF9B59B6),
+    accentLight: Color(0xFFB07CC6),
+    accentGlow: Color(0x229B59B6),
+    accentShimmer: Color(0x309B59B6),
+    backgroundPrimary: Color(0xFFF8F5FF),
+    backgroundCard: Color(0xFFFFFFFF),
+    backgroundElevated: Color(0xFFF0E8FF),
+    backgroundInput: Color(0xFFFFFFFF),
+    borderDefault: Color(0xFFD8C0F0),
+    borderActive: Color(0xFF9B59B6),
+    borderSubtle: Color(0xFFEADFFF),
+    textPrimary: Color(0xFF1A1020),
+    textSecondary: Color(0xFF5050A0),
+    textLink: Color(0xFF9B59B6),
+    rankBadgeColor: Color(0xFF9B59B6),
+    rankBadgeBg: Color(0xFFEEDDFF),
+    rankLabel: 'Jonin',
+    hasShimmerEffect: false,
+    hasGlowEffect: false,
+    backgroundGradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [Color(0xFFF8F5FF), Color(0xFFF0E8FF), Color(0xFFF8F5FF)],
+      stops: [0.0, 0.5, 1.0],
+    ),
+  );
+
+  // ── KAGE LIGHT ────────────────────────────────────────────────────
+  static const RankTheme kageLight = RankTheme(
+    accentColor: Color(0xFFFF6500),
+    accentLight: Color(0xFFFF8C00),
+    accentGlow: Color(0x22FF6500),
+    accentShimmer: Color(0x30FF6500),
+    backgroundPrimary: Color(0xFFFFF8F0),
+    backgroundCard: Color(0xFFFFFFFF),
+    backgroundElevated: Color(0xFFFFF0E0),
+    backgroundInput: Color(0xFFFFFFFF),
+    borderDefault: Color(0xFFF0D0A0),
+    borderActive: Color(0xFFFF6500),
+    borderSubtle: Color(0xFFFFF0D8),
+    textPrimary: Color(0xFF2A1800),
+    textSecondary: Color(0xFF806040),
+    textLink: Color(0xFFFF6500),
+    rankBadgeColor: Color(0xFFFF6500),
+    rankBadgeBg: Color(0xFFFFE8CC),
+    rankLabel: 'Kage',
+    hasShimmerEffect: false,
+    hasGlowEffect: false,
+    backgroundGradient: RadialGradient(
+      center: Alignment(0, -0.6),
+      radius: 1.2,
+      colors: [Color(0xFFFFF0D8), Color(0xFFFFF8F0)],
+      stops: [0.0, 1.0],
+    ),
+  );
+
+  static RankTheme forRank(UserRank rank, {bool isDark = true}) {
+    if (!isDark) {
+      return switch (rank) {
+        UserRank.genin => RankTheme.geninLight,
+        UserRank.jonin => RankTheme.joninLight,
+        UserRank.kage => RankTheme.kageLight,
       };
+    }
+    return switch (rank) {
+      UserRank.genin => RankTheme.genin,
+      UserRank.jonin => RankTheme.jonin,
+      UserRank.kage => RankTheme.kage,
+    };
+  }
 
   @override
   RankTheme copyWith({

@@ -8,6 +8,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/otadex_theme.dart';
 import 'core/theme/otadex_theme_wrapper.dart';
+import 'core/theme/theme_mode_provider.dart';
 
 class OtadexApp extends ConsumerWidget {
   const OtadexApp({super.key});
@@ -15,10 +16,13 @@ class OtadexApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
     return AppLocale(
       strings: AppStrings.forLocale(locale),
       child: OtadexThemeWrapper(
         initialRank: UserRank.genin,
+        isDark: isDark,
         child: Builder(
           builder: (context) {
             final rankTheme = OtadexTheme.of(context);
@@ -27,7 +31,15 @@ class OtadexApp extends ConsumerWidget {
               debugShowCheckedModeBanner: false,
               locale: Locale(locale),
               routerConfig: AppRouter.router,
-              theme: AppTheme.buildDarkTheme().copyWith(
+              themeMode: themeMode,
+              theme: AppTheme.buildLightTheme().copyWith(
+                scaffoldBackgroundColor: rankTheme.backgroundPrimary,
+                colorScheme: AppTheme.buildLightTheme().colorScheme.copyWith(
+                      primary: rankTheme.accentColor,
+                      secondary: rankTheme.accentLight,
+                    ),
+              ),
+              darkTheme: AppTheme.buildDarkTheme().copyWith(
                 scaffoldBackgroundColor: rankTheme.backgroundPrimary,
                 colorScheme: AppTheme.buildDarkTheme().colorScheme.copyWith(
                       primary: rankTheme.accentColor,

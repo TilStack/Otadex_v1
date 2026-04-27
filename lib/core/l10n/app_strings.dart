@@ -145,9 +145,12 @@ class AppStrings {
     required this.changePassword,
     required this.theme,
     required this.darkTheme,
+    required this.lightTheme,
     required this.notifications,
     required this.language,
     required this.languageValue,
+    required this.selectLanguage,
+    required this.apply,
     required this.kageTheme,
     required this.locked,
     required this.hiddenCategories,
@@ -318,9 +321,12 @@ class AppStrings {
   final String changePassword;
   final String theme;
   final String darkTheme;
+  final String lightTheme;
   final String notifications;
   final String language;
   final String languageValue;
+  final String selectLanguage;
+  final String apply;
   final String kageTheme;
   final String locked;
   final String hiddenCategories;
@@ -510,9 +516,12 @@ class AppStrings {
     changePassword: 'Changer le mot de passe',
     theme: 'Thème',
     darkTheme: 'Sombre',
+    lightTheme: 'Clair',
     notifications: 'Notifications',
     language: 'Langue',
     languageValue: 'Français',
+    selectLanguage: 'Choisir la langue',
+    apply: 'Appliquer',
     kageTheme: 'Thème Kage',
     locked: 'Verrouillé 🔒',
     hiddenCategories: 'Catégories masquées',
@@ -688,9 +697,12 @@ class AppStrings {
     changePassword: 'Change password',
     theme: 'Theme',
     darkTheme: 'Dark',
+    lightTheme: 'Light',
     notifications: 'Notifications',
     language: 'Language',
     languageValue: 'English',
+    selectLanguage: 'Select language',
+    apply: 'Apply',
     kageTheme: 'Kage Theme',
     locked: 'Locked 🔒',
     hiddenCategories: 'Hidden categories',
@@ -863,9 +875,12 @@ class AppStrings {
     changePassword: 'パスワード変更',
     theme: 'テーマ',
     darkTheme: 'ダーク',
+    lightTheme: 'ライト',
     notifications: '通知',
     language: '言語',
     languageValue: '日本語',
+    selectLanguage: '言語を選択',
+    apply: '適用',
     kageTheme: 'カゲテーマ',
     locked: 'ロック中 🔒',
     hiddenCategories: '非表示カテゴリ',
@@ -1029,9 +1044,12 @@ class AppStrings {
     changePassword: '修改密码',
     theme: '主题',
     darkTheme: '深色',
+    lightTheme: '浅色',
     notifications: '通知',
     language: '语言',
     languageValue: '中文',
+    selectLanguage: '选择语言',
+    apply: '应用',
     kageTheme: '影主题',
     locked: '已锁定 🔒',
     hiddenCategories: '隐藏分类',

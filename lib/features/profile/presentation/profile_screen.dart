@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/theme/theme_mode_provider.dart';
 import 'widgets/avatar_picker.dart';
 import 'widgets/kage_banner.dart';
 import 'widgets/plan_section.dart';
@@ -90,11 +91,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onNotificationsChanged: (v) =>
                 setState(() => _notificationsEnabled = v),
             currentLanguage: locale,
-            onLanguageToggle: () {
-              const langs = ['fr', 'en', 'ja', 'zh'];
-              final idx = langs.indexOf(locale);
-              ref.read(localeProvider.notifier).state =
-                  langs[(idx + 1) % langs.length];
+            onLanguageSelect: (lang) =>
+                ref.read(localeProvider.notifier).state = lang,
+            isDarkMode: ref.watch(themeModeProvider) == ThemeMode.dark,
+            onThemeToggle: () {
+              final current = ref.read(themeModeProvider);
+              ref.read(themeModeProvider.notifier).state =
+                  current == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
             },
           ),
           const SizedBox(height: 28),
