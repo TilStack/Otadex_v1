@@ -419,8 +419,7 @@ class AppStrings {
     slide2TitleExplore: 'Explore',
     slide2TitleCount: '10 000+',
     slide2TitleCharacters: 'personnages',
-    slide2Subtitle:
-        'Fiches complètes · Galeries images\nCitations exclusives',
+    slide2Subtitle: 'Fiches complètes · Galeries images\nCitations exclusives',
     slide2Button: 'Découvrir →',
     slide3Title: 'Quel fan es-tu ?',
     slide3Subtitle: 'Choisis ta voie, grimpe les rangs',
@@ -534,7 +533,7 @@ class AppStrings {
     privacyPolicy: 'Politique de confidentialité',
     rateApp: "Noter l'app",
     logout: 'Se déconnecter',
-    appVersion: 'OTADEX · v1.0.0',
+    appVersion: 'OTADEX · v1.0.0 par TilStack',
     searchHint: 'Personnage, animé, créateur...',
     recentSearches: 'RECHERCHES RÉCENTES',
     clearAll: 'Effacer tout',
@@ -600,8 +599,7 @@ class AppStrings {
     slide2TitleExplore: 'Explore',
     slide2TitleCount: '10,000+',
     slide2TitleCharacters: 'characters',
-    slide2Subtitle:
-        'Complete profiles · Image galleries\nExclusive quotes',
+    slide2Subtitle: 'Complete profiles · Image galleries\nExclusive quotes',
     slide2Button: 'Discover →',
     slide3Title: 'What kind of fan are you?',
     slide3Subtitle: 'Choose your path, climb the ranks',
@@ -636,8 +634,7 @@ class AppStrings {
     joninFeature4Desc:
         'Display your Jonin rank on your profile and in comments.',
     kageFeature1Title: 'Full Jonin Pass included',
-    kageFeature1Desc:
-        'All Jonin rank features are included in the Kage Pass.',
+    kageFeature1Desc: 'All Jonin rank features are included in the Kage Pass.',
     kageFeature2Title: 'AI image generation ⭐',
     kageFeature2Desc:
         'Generate unique illustrations of your favourite characters with AI.',
@@ -645,8 +642,7 @@ class AppStrings {
     kageFeature3Desc:
         'Download all illustrations in high quality without the OTADEX watermark.',
     kageFeature4Title: 'Exclusive themes 👑',
-    kageFeature4Desc:
-        'Unlock visual themes reserved for Kage rank ninjas.',
+    kageFeature4Desc: 'Unlock visual themes reserved for Kage rank ninjas.',
     // Profile tabs
     collection: 'Collection',
     badges: 'Badges',
@@ -715,7 +711,7 @@ class AppStrings {
     privacyPolicy: 'Privacy policy',
     rateApp: 'Rate the app',
     logout: 'Log out',
-    appVersion: 'OTADEX · v1.0.0',
+    appVersion: 'OTADEX · v1.0.0 By TilStack',
     searchHint: 'Character, anime, creator...',
     recentSearches: 'RECENT SEARCHES',
     clearAll: 'Clear all',
@@ -732,8 +728,7 @@ class AppStrings {
   static const AppStrings _ja = AppStrings(
     // Auth gate
     authGateTitle: 'ログインして続ける',
-    authGateMessage:
-        'プロフィール、コレクションなどにアクセスするために\n無料アカウントを作成してください。',
+    authGateMessage: 'プロフィール、コレクションなどにアクセスするために\n無料アカウントを作成してください。',
     login: 'ログイン',
     signUpFree: '無料登録',
     continueAsGuest: 'アカウントなしで続ける',
@@ -776,13 +771,11 @@ class AppStrings {
     slide1TitleUniverse: 'アニメの',
     slide1TitleAnime: '世界',
     slide1TitlePocket: 'ポケットの中に',
-    slide1Subtitle:
-        'キャラクター · シリーズ · 世界観\nあなたの好きなすべてが、一か所に。',
+    slide1Subtitle: 'キャラクター · シリーズ · 世界観\nあなたの好きなすべてが、一か所に。',
     slide2TitleExplore: '探索する',
     slide2TitleCount: '10,000+',
     slide2TitleCharacters: 'キャラクター',
-    slide2Subtitle:
-        '完全プロフィール · 画像ギャラリー\n限定名言',
+    slide2Subtitle: '完全プロフィール · 画像ギャラリー\n限定名言',
     slide2Button: '発見する →',
     slide3Title: 'あなたはどんなファン？',
     slide3Subtitle: '道を選び、ランクを上げよう',
@@ -795,8 +788,7 @@ class AppStrings {
     canChangeRankLater: 'ランクは後で変更できます',
     // Subscription modal
     subscriptionRankUpgradeTitle: 'ランクにアップグレード',
-    subscriptionRankUpgradeDesc:
-        'ランクの忍者専用の\n限定機能をアンロックしよう',
+    subscriptionRankUpgradeDesc: 'ランクの忍者専用の\n限定機能をアンロックしよう',
     subscriptionBillingMonthly: '月払い',
     subscriptionBillingAnnual: '年払い',
     subscriptionSave10: '10%お得',
@@ -805,24 +797,19 @@ class AppStrings {
     subscriptionAlreadyLicense: 'すでにライセンスをお持ちですか？',
     subscriptionFeaturesTitle: '機能',
     joninFeature1Title: '無制限コレクション',
-    joninFeature1Desc:
-        '百科事典のすべてのキャラクターを制限なく収集できます。',
+    joninFeature1Desc: '百科事典のすべてのキャラクターを制限なく収集できます。',
     joninFeature2Title: '広告なし',
     joninFeature2Desc: '広告なしでOTADEX体験をお楽しみください。',
     joninFeature3Title: 'AIチャット + クイズ',
-    joninFeature3Desc:
-        'お気に入りのキャラクターについて質問し、AIで知識をテストしよう。',
+    joninFeature3Desc: 'お気に入りのキャラクターについて質問し、AIで知識をテストしよう。',
     joninFeature4Title: 'ジョニンバッジ 🦊',
     joninFeature4Desc: 'プロフィールとコメントにジョニンランクを表示しよう。',
     kageFeature1Title: 'ジョニンパスすべて含む',
-    kageFeature1Desc:
-        'ジョニンランクのすべての機能がカゲパスに含まれています。',
+    kageFeature1Desc: 'ジョニンランクのすべての機能がカゲパスに含まれています。',
     kageFeature2Title: 'AI画像生成 ⭐',
-    kageFeature2Desc:
-        'AIを使って好きなキャラクターのユニークなイラストを生成しよう。',
+    kageFeature2Desc: 'AIを使って好きなキャラクターのユニークなイラストを生成しよう。',
     kageFeature3Title: 'ウォーターマークなしダウンロード',
-    kageFeature3Desc:
-        'OTADEXウォーターマークなしですべてのイラストを高品質でダウンロードできます。',
+    kageFeature3Desc: 'OTADEXウォーターマークなしですべてのイラストを高品質でダウンロードできます。',
     kageFeature4Title: '限定テーマ 👑',
     kageFeature4Desc: 'カゲランクの忍者専用のビジュアルテーマをアンロックしよう。',
     // Profile tabs
@@ -893,7 +880,7 @@ class AppStrings {
     privacyPolicy: 'プライバシーポリシー',
     rateApp: 'アプリを評価',
     logout: 'ログアウト',
-    appVersion: 'OTADEX · v1.0.0',
+    appVersion: 'OTADEX · v1.0.0 By TilStack',
     searchHint: 'キャラクター、アニメ、クリエイター...',
     recentSearches: '最近の検索',
     clearAll: 'すべてクリア',
@@ -1062,7 +1049,7 @@ class AppStrings {
     privacyPolicy: '隐私政策',
     rateApp: '评价应用',
     logout: '退出登录',
-    appVersion: 'OTADEX · v1.0.0',
+    appVersion: 'OTADEX · v1.0.0 By TilStack',
     searchHint: '角色、动漫、创作者...',
     recentSearches: '最近搜索',
     clearAll: '清除全部',
