@@ -78,8 +78,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       onLoginTap: () => showAuthGateModal(context),
                     ),
                   ),
-                  const SliverPersistentHeader(
-                    delegate: SearchBarSliverDelegate(),
+                  SliverPersistentHeader(
+                    delegate: SearchBarSliverDelegate(
+                      onTap: () => _onNavTap(1),
+                    ),
                     pinned: true,
                   ),
                   const SliverToBoxAdapter(child: HeroFeaturedSlider()),
