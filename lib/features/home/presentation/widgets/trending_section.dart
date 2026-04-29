@@ -13,9 +13,13 @@ class TrendingSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(
+        SectionHeader(
           title: '🔥 Trending',
           actionLabel: 'Voir tout',
+          onAction: () => context.push('/characters', extra: {
+            'title': '🔥 Trending',
+            'characters': characters,
+          }),
         ),
         SizedBox(
           height: 180,

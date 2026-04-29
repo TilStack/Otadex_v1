@@ -8,6 +8,7 @@ import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/character/presentation/character_detail_screen.dart';
+import '../../features/character/presentation/character_list_screen.dart';
 import '../../core/models/character.dart';
 import '../constants/app_constants.dart';
 
@@ -66,6 +67,17 @@ class AppRouter {
         builder: (context, state) {
           final character = state.extra as Character;
           return CharacterDetailScreen(character: character);
+        },
+      ),
+      GoRoute(
+        path: '/characters',
+        name: 'character-list',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          return CharacterListScreen(
+            title: extra['title'] as String,
+            characters: extra['characters'] as List<Character>,
+          );
         },
       ),
     ],

@@ -13,8 +13,9 @@ import 'widgets/char_ai_card.dart';
 import 'widgets/char_circle_button.dart';
 import 'widgets/char_comment_card.dart';
 import 'widgets/char_pill.dart';
-import 'widgets/char_section_header.dart';
-import 'widgets/char_tab_delegate.dart';
+
+// ─── Tab identifiers ───────────────────────────────────────────────
+enum _Tab { profil, combat, galerie, fans }
 
 class CharacterDetailScreen extends StatefulWidget {
   final Character character;
@@ -24,27 +25,67 @@ class CharacterDetailScreen extends StatefulWidget {
   State<CharacterDetailScreen> createState() => _CharacterDetailScreenState();
 }
 
-class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
-  int _activeTab = 0;
+class _CharacterDetailScreenState extends State<CharacterDetailScreen>
+    with SingleTickerProviderStateMixin {
+  // ── State ────────────────────────────────────────────────────────
+  _Tab _activeTab = _Tab.profil;
   bool _isLiked = false;
   bool _isCollected = false;
   bool _aboutExpanded = false;
   int _userRating = 3;
   bool _isLoggedIn = false;
 
+  // ── Hero animation ───────────────────────────────────────────────
+  late final AnimationController _heroCtrl;
+  late final Animation<double> _heroScale;
+  late final Animation<double> _heroFade;
+
   Character get c => widget.character;
+
+  static const _galleryImages = [
+    'assets/images/characters/satoru_gojo/gojo_01.jpg',
+    'assets/images/characters/satoru_gojo/gojo_02.png',
+    'assets/images/characters/satoru_gojo/gojo_03.png',
+    'assets/images/characters/satoru_gojo/gojo_04_portrait.png',
+    'assets/images/characters/satoru_gojo/gojo_05_portrait.png',
+  ];
+
+  // ── Computed stats ───────────────────────────────────────────────
+  int get _commentCount => (c.likes * 0.30).round();
+  int get _collectionCount => (c.likes * 0.20).round();
+  int get _voteCount => (c.likes * 0.08).round();
+  int get _quizCount => (c.likes * 0.35).round();
+  int get _ratingCount => (c.likes * 0.40).round();
 
   @override
   void initState() {
     super.initState();
+    _heroCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _heroScale = Tween<double>(begin: 1.10, end: 1.0).animate(
+      CurvedAnimation(parent: _heroCtrl, curve: Curves.easeOutCubic),
+    );
+    _heroFade = CurvedAnimation(
+      parent: _heroCtrl,
+      curve: const Interval(0.0, 0.65, curve: Curves.easeOut),
+    );
+    _heroCtrl.forward();
     _loadLoginStatus();
+  }
+
+  @override
+  void dispose() {
+    _heroCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _loadLoginStatus() async {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
-      setState(() =>
-          _isLoggedIn = prefs.getBool(AppConstants.keyIsLoggedIn) ?? false);
+      setState(
+          () => _isLoggedIn = prefs.getBool(AppConstants.keyIsLoggedIn) ?? false);
     }
   }
 
@@ -59,106 +100,115 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
   void _guardJonin() {
     if (!_isLoggedIn) {
       showAuthGateModal(context,
-          message:
-              'Connecte-toi pour accéder aux fonctionnalités premium Jonin+.');
+          message: 'Connecte-toi pour accéder aux fonctionnalités premium Jonin+.');
     } else {
       showSubscriptionModal(context, SubscriptionPlan.jonin);
     }
   }
 
+  String _formatLikes(int n) {
+    if (n >= 1000) return '${(n / 1000).toStringAsFixed(1)}k';
+    return n.toString();
+  }
+
+  // ── Build ────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final theme = OtadexTheme.of(context);
+    final mq = MediaQuery.of(context);
+
     return Scaffold(
-      backgroundColor: theme.backgroundPrimary,
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(child: _buildHero(theme)),
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: CharTabDelegate(
-                  activeTab: _activeTab,
-                  onTap: (i) => setState(() => _activeTab = i),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Container(
-                  color: theme.backgroundCard,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _buildQuickStats(theme),
-                      _buildPowers(theme),
-                      _buildAbout(theme),
-                      _buildQuoteCard(theme),
-                      _buildGallery(),
-                      _buildPopularity(theme),
-                      _buildRatingCard(theme),
-                      _buildSeriesSection(theme),
-                      _buildOtherCharacters(theme),
-                      _buildAISection(theme),
-                      _buildComments(theme),
-                      const SizedBox(height: 120),
-                    ],
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(gradient: theme.backgroundGradient),
+        child: Stack(
+          children: [
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildHero(theme, mq)),
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _TabBarDelegate(
+                    activeTab: _activeTab,
+                    onTap: (t) => setState(() => _activeTab = t),
+                    theme: theme,
                   ),
                 ),
-              ),
-            ],
-          ),
-          _buildFAB(theme),
-        ],
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: mq.padding.bottom + 80),
+                    child: _buildTabContent(theme, mq),
+                  ),
+                ),
+              ],
+            ),
+            _buildFAB(theme),
+          ],
+        ),
       ),
     );
   }
 
-  // ── HERO ──────────────────────────────────────────────────────────────────
+  // ── HERO ─────────────────────────────────────────────────────────
 
-  Widget _buildHero(RankTheme theme) {
+  Widget _buildHero(RankTheme theme, MediaQueryData mq) {
+    final heroH = (mq.size.height * 0.50).clamp(320.0, 520.0);
     return SizedBox(
-      height: 400,
+      height: heroH,
       child: Stack(
         fit: StackFit.expand,
         children: [
+          // Character-specific gradient background
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFF1A0A2E), Color(0xFF2D1B69)],
+                colors: [
+                  Color.lerp(c.cardColor, Colors.black, 0.4) ?? c.cardColor,
+                  Color.lerp(c.cardColor, c.accentColor, 0.5) ??
+                      c.accentColor.withValues(alpha: 0.6),
+                ],
               ),
             ),
           ),
+          // Radial atmosphere glow
           Positioned(
             left: 0,
             right: 0,
-            top: 60,
+            top: heroH * 0.1,
             child: Center(
               child: Container(
-                width: 300,
-                height: 300,
+                width: heroH * 0.65,
+                height: heroH * 0.65,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(150),
-                  gradient: const RadialGradient(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
                     colors: [
-                      Color(0x728B5CF6),
-                      Color(0x403B82F6),
+                      c.accentColor.withValues(alpha: 0.22),
                       Colors.transparent,
                     ],
-                    stops: [0.0, 0.35, 0.65],
                   ),
                 ),
               ),
             ),
           ),
-          _buildHeroVisual(),
+          // Animated character image
+          Positioned(
+            left: 0,
+            right: 0,
+            top: mq.padding.top + 48,
+            bottom: 90,
+            child: _buildAnimatedImage(),
+          ),
+          // Bottom gradient fade into background
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
             child: SizedBox(
-              height: 200,
+              height: heroH * 0.52,
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -166,99 +216,63 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
+                      theme.backgroundPrimary.withValues(alpha: 0.75),
                       theme.backgroundPrimary,
-                      theme.backgroundCard,
                     ],
-                    stops: const [0.0, 0.7, 1.0],
+                    stops: const [0.0, 0.58, 1.0],
                   ),
                 ),
               ),
             ),
           ),
+          // Top bar
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   CharCircleButton(
                     onTap: () => context.pop(),
                     child: const Icon(Icons.arrow_back_ios_new_rounded,
                         color: Colors.white, size: 20),
                   ),
-                  Row(
-                    children: [
-                      CharCircleButton(
-                        onTap: _guardJonin,
-                        child: const Icon(Icons.ios_share_rounded,
-                            color: Colors.white, size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: () =>
-                            _guardAuth(() => setState(() => _isLiked = !_isLiked)),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: _isLiked
-                                    ? AppColors.error
-                                    : AppColors.error.withValues(alpha: 0.85),
-                              ),
-                              child: const Icon(Icons.favorite_rounded,
-                                  color: Colors.white, size: 22),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '38.2k',
-                              style: GoogleFonts.nunitoSans(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                shadows: const [
-                                  Shadow(color: Colors.black54, blurRadius: 4)
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const Spacer(),
+                  // Share button top-right
+                  CharCircleButton(
+                    onTap: _guardJonin,
+                    child: const Icon(Icons.ios_share_rounded,
+                        color: Colors.white, size: 20),
                   ),
                 ],
               ),
             ),
           ),
+          // Bottom identity block
           Positioned(
-            left: 16,
-            right: 16,
-            bottom: 14,
+            left: 20,
+            right: 20,
+            bottom: 16,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Tier + category pills
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
+                  spacing: 6,
+                  runSpacing: 5,
                   children: [
-                    CharPill('PROTAGONISTE', bg: theme.accentColor),
                     CharPill(
-                      'SHŌNEN',
-                      bg: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                      border:
-                          Border.all(color: const Color(0xFF3B82F6)),
-                      color: const Color(0xFF93C5FD),
+                      c.tier.name.toUpperCase(),
+                      bg: c.accentColor.withValues(alpha: 0.22),
+                      border: Border.all(color: c.accentColor),
+                      color: Colors.white,
                     ),
                     CharPill(
-                      'GRADE SPÉCIAL',
-                      bg: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-                      border:
-                          Border.all(color: const Color(0xFF8B5CF6)),
-                      color: const Color(0xFFC4B5FD),
+                      c.category.toUpperCase(),
+                      bg: Colors.white.withValues(alpha: 0.10),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.35)),
+                      color: Colors.white70,
                     ),
                   ],
                 ),
@@ -266,13 +280,13 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
                 Text(
                   c.name.toUpperCase(),
                   style: GoogleFonts.rajdhani(
-                    fontSize: 28,
+                    fontSize: _heroNameSize(mq),
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
-                    letterSpacing: 1,
+                    letterSpacing: 0.8,
                     height: 1,
                     shadows: const [
-                      Shadow(color: Colors.black45, blurRadius: 8)
+                      Shadow(color: Colors.black54, blurRadius: 12)
                     ],
                   ),
                 ),
@@ -280,23 +294,36 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
                 Text(
                   c.animeName,
                   style: GoogleFonts.nunitoSans(
-                      fontSize: 13, color: theme.textSecondary),
+                      fontSize: 13, color: Colors.white60),
                 ),
-                const SizedBox(height: 6),
-                Text.rich(
-                  TextSpan(children: [
-                    const TextSpan(
-                        text:
-                            '❤️ 38 247 likes  ·  🎴 12 804 collections  ·  📺 '),
-                    TextSpan(
-                      text: c.animeName,
-                      style: TextStyle(
-                          color: theme.accentColor,
-                          fontWeight: FontWeight.w600),
+                const SizedBox(height: 14),
+                // Action row
+                Row(
+                  children: [
+                    _actionChip(
+                      icon: _isLiked
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      label: _isLiked
+                          ? _formatLikes(c.likes + 1)
+                          : _formatLikes(c.likes),
+                      isActive: _isLiked,
+                      activeColor: AppColors.error,
+                      onTap: () => _guardAuth(
+                          () => setState(() => _isLiked = !_isLiked)),
                     ),
-                  ]),
-                  style: GoogleFonts.nunitoSans(
-                      fontSize: 12, color: theme.textSecondary),
+                    const SizedBox(width: 8),
+                    _actionChip(
+                      icon: Icons.star_rounded,
+                      label: c.rating.toStringAsFixed(1),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '🎴 $_collectionCount collections',
+                      style: GoogleFonts.nunitoSans(
+                          fontSize: 11, color: Colors.white54),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -306,63 +333,100 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
     );
   }
 
-  Widget _buildHeroVisual() {
-    if (c.imagePath != null) {
-      return Positioned(
-        left: 0,
-        right: 0,
-        top: 44,
-        bottom: 80,
-        child: Image.asset(
-          c.imagePath!,
-          fit: BoxFit.contain,
+  double _heroNameSize(MediaQueryData mq) {
+    if (mq.size.width >= 600) return 38;
+    if (mq.size.width >= 400) return 30;
+    return 26;
+  }
+
+  Widget _buildAnimatedImage() {
+    return AnimatedBuilder(
+      animation: _heroCtrl,
+      builder: (_, child) => FadeTransition(
+        opacity: _heroFade,
+        child: Transform.scale(
+          scale: _heroScale.value,
           alignment: Alignment.bottomCenter,
-          errorBuilder: (_, __, ___) => _buildSilhouette(),
+          child: child,
         ),
-      );
-    }
-    return _buildSilhouette();
+      ),
+      child: c.imagePath != null
+          ? Image.asset(
+              c.imagePath!,
+              fit: BoxFit.contain,
+              alignment: Alignment.bottomCenter,
+              errorBuilder: (_, __, ___) => _buildSilhouette(),
+            )
+          : _buildSilhouette(),
+    );
   }
 
   Widget _buildSilhouette() {
-    return Positioned(
-      left: 0,
-      right: 0,
-      top: 60,
-      bottom: 80,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.15),
-                border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3), width: 2),
-              ),
-              child: Center(
-                child: Text(
-                  c.name.isNotEmpty ? c.name[0].toUpperCase() : '?',
-                  style: GoogleFonts.rajdhani(
-                    fontSize: 42,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.12),
+              border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.25), width: 2),
+            ),
+            child: Center(
+              child: Text(
+                c.name.isNotEmpty ? c.name[0].toUpperCase() : '?',
+                style: GoogleFonts.rajdhani(
+                  fontSize: 42,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Container(
-              width: 60,
-              height: 120,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                color: Colors.white.withValues(alpha: 0.12),
-                border:
-                    Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionChip({
+    required IconData icon,
+    required String label,
+    bool isActive = false,
+    Color activeColor = Colors.white,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? activeColor.withValues(alpha: 0.20)
+              : Colors.white.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isActive
+                ? activeColor.withValues(alpha: 0.55)
+                : Colors.white.withValues(alpha: 0.20),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 15,
+                color: isActive ? activeColor : Colors.white),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: GoogleFonts.nunitoSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
           ],
@@ -371,145 +435,618 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
     );
   }
 
-  // ── QUICK STATS ───────────────────────────────────────────────────────────
+  // ── TAB CONTENT ──────────────────────────────────────────────────
 
-  Widget _buildQuickStats(RankTheme theme) {
+  Widget _buildTabContent(RankTheme theme, MediaQueryData mq) {
+    final isTablet = mq.size.width >= 600;
+    return switch (_activeTab) {
+      _Tab.profil => _buildProfilTab(theme, isTablet),
+      _Tab.combat => _buildCombatTab(theme, isTablet),
+      _Tab.galerie => _buildGalerieTab(theme, isTablet),
+      _Tab.fans => _buildFansTab(theme, isTablet),
+    };
+  }
+
+  // ── PROFIL TAB ────────────────────────────────────────────────────
+
+  Widget _buildProfilTab(RankTheme theme, bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuickStats(theme, isTablet),
+        _buildAbout(theme),
+        _buildQuoteCard(theme),
+        _buildSeriesSection(theme),
+        _buildOtherCharacters(theme),
+      ],
+    );
+  }
+
+  Widget _buildQuickStats(RankTheme theme, bool isTablet) {
     final cells = [
       ('ÂGE', '28 ans', false),
       ('GENRE', 'Masculin ♂', false),
       ('NATIONALITÉ', '🇯🇵 Japonaise', false),
       ('STATUT', 'Actif', true),
     ];
+    final crossAxis = isTablet ? 4 : 2;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 2.6,
-        children: cells.map((cell) {
-          final (label, value, dot) = cell;
-          return Container(
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 10,
-                    color: theme.textSecondary,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionLabel(theme, 'INFORMATIONS'),
+          const SizedBox(height: 10),
+          GridView.count(
+            crossAxisCount: crossAxis,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: isTablet ? 2.2 : 2.8,
+            children: cells.map((cell) {
+              final (label, value, dot) = cell;
+              return Container(
+                decoration: BoxDecoration(
+                  color: theme.backgroundElevated,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 2),
-                Row(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      value,
+                      label,
                       style: GoogleFonts.nunitoSans(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: theme.textPrimary,
+                        fontSize: 10,
+                        color: theme.textSecondary,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    if (dot) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFF10B981),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF10B981)
-                                  .withValues(alpha: 0.6),
-                              blurRadius: 6,
-                            )
-                          ],
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            value,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: theme.textPrimary,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                        if (dot) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            width: 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF10B981),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.55),
+                                  blurRadius: 6,
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
-          );
-        }).toList(),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
 
-  // ── POWERS ────────────────────────────────────────────────────────────────
-
-  Widget _buildPowers(RankTheme theme) {
-    final powers = [
-      (
-        "L'Infini",
-        const Color(0xFF8B5CF6).withValues(alpha: 0.15),
-        const Color(0xFF8B5CF6),
-        const Color(0xFFC4B5FD)
-      ),
-      (
-        'Vide Illimité',
-        const Color(0xFF8B5CF6).withValues(alpha: 0.15),
-        const Color(0xFF8B5CF6),
-        const Color(0xFFC4B5FD)
-      ),
-      (
-        'Technique Inversée',
-        const Color(0xFF10B981).withValues(alpha: 0.15),
-        const Color(0xFF10B981),
-        const Color(0xFF6EE7B7)
-      ),
-      (
-        'Domaine Expansif',
-        const Color(0xFF3B82F6).withValues(alpha: 0.15),
-        const Color(0xFF3B82F6),
-        const Color(0xFF93C5FD)
-      ),
-      (
-        'Infini Pourpre',
-        AppColors.error.withValues(alpha: 0.15),
-        AppColors.error,
-        const Color(0xFFFCA5A5)
-      ),
-    ];
+  Widget _buildAbout(RankTheme theme) {
+    const bio =
+        'Considéré comme le sorcier le plus puissant de son époque, ce maître des arts occultes '
+        'dirige la plus grande école de jujutsu. Il maîtrise une technique héréditaire unique qui '
+        'rend son corps physiquement intouchable. Derrière son attitude désinvolte se cache une '
+        'vision profonde : former une nouvelle génération de guerriers capables de faire face aux '
+        'menaces les plus obscures.';
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '⚡ Pouvoirs & Capacités',
-            style: GoogleFonts.nunitoSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: theme.textPrimary,
+          _sectionLabel(theme, 'BIOGRAPHIE'),
+          const SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: theme.backgroundElevated,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  bio,
+                  maxLines: _aboutExpanded ? null : 4,
+                  overflow: _aboutExpanded ? null : TextOverflow.ellipsis,
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 14,
+                    color: theme.textSecondary,
+                    height: 1.65,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () =>
+                      setState(() => _aboutExpanded = !_aboutExpanded),
+                  child: Text(
+                    _aboutExpanded ? 'Réduire ↑' : 'Lire la suite →',
+                    style: GoogleFonts.nunitoSans(
+                      fontSize: 13,
+                      color: theme.accentColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuoteCard(RankTheme theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionLabel(theme, 'CITATION EMBLÉMATIQUE'),
+          const SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: theme.backgroundElevated,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                  color: theme.accentColor.withValues(alpha: 0.15)),
+            ),
+            padding: const EdgeInsets.all(18),
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -8,
+                  left: 2,
+                  child: Text(
+                    '"',
+                    style: GoogleFonts.nunitoSans(
+                      fontSize: 64,
+                      fontWeight: FontWeight.w800,
+                      color: theme.accentColor.withValues(alpha: 0.16),
+                      height: 1,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 28, top: 2),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Dans ce monde, le talent bat le travail acharné. '
+                        'Et le talent né est battu par le talent éveillé.',
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                          color: theme.textPrimary,
+                          height: 1.6,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              '— ${c.name}, ${c.animeName}',
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.nunitoSans(
+                                  fontSize: 11, color: theme.textSecondary),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(Icons.ios_share_rounded,
+                              color: theme.textSecondary, size: 14),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSeriesSection(RankTheme theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionLabel(theme, 'SÉRIE & CRÉATEUR'),
+          const SizedBox(height: 10),
+          // Series card
+          Container(
+            decoration: BoxDecoration(
+              color: theme.backgroundElevated,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        c.cardColor,
+                        c.accentColor.withValues(alpha: 0.4)
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 18,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(9),
+                        color: Colors.white.withValues(alpha: 0.65),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        c.animeName,
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: theme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Shōnen · 2020 · 24 épisodes · Studio Lumen',
+                        style: GoogleFonts.nunitoSans(
+                            fontSize: 11, color: theme.textSecondary),
+                      ),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 4,
+                        children: ['Action', 'Surnaturel', 'Shōnen']
+                            .map((g) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: theme.backgroundPrimary,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(g,
+                                      style: GoogleFonts.nunitoSans(
+                                          fontSize: 10,
+                                          color: theme.textSecondary)),
+                                ))
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded,
+                    color: theme.textSecondary, size: 18),
+              ],
             ),
           ),
           const SizedBox(height: 10),
+          // Creator card
+          Container(
+            decoration: BoxDecoration(
+              color: theme.backgroundElevated,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFF3B82F6),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'AG',
+                          style: GoogleFonts.rajdhani(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: -5,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF8B5CF6),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Mangaka',
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Akari Goro',
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: theme.textPrimary,
+                        ),
+                      ),
+                      Text(
+                        'Né en 1992 · Studio Lumen · 2 œuvres',
+                        style: GoogleFonts.nunitoSans(
+                            fontSize: 12, color: theme.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: theme.accentColor),
+                  ),
+                  child: Text(
+                    'Biblio →',
+                    style: GoogleFonts.nunitoSans(
+                      fontSize: 11,
+                      color: theme.accentColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOtherCharacters(RankTheme theme) {
+    final others = [
+      ('Yuto Akira', 'Protagoniste', const Color(0xFF3d0505),
+          const Color(0xFF7c1515)),
+      ('Mei Tsuki', 'Protagoniste', const Color(0xFF050520),
+          const Color(0xFF1a1a4a)),
+      ('Nora Kishi', 'Protagoniste', const Color(0xFF201005),
+          const Color(0xFF4a2a10)),
+      ('Ryomen Void', 'Antagoniste', const Color(0xFF1a0000),
+          const Color(0xFF3d0000)),
+      ('Naoki Kento', 'Allié', const Color(0xFF0a1a0a),
+          const Color(0xFF1a3020)),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+            child: _sectionLabel(theme, 'AUTRES PERSONNAGES'),
+          ),
+          SizedBox(
+            height: 168,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: others.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (_, i) {
+                final (name, role, c1, c2) = others[i];
+                final isAntag = role == 'Antagoniste';
+                return Container(
+                  width: 110,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [c1, c2]),
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.07)),
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        top: 22,
+                        bottom: 38,
+                        child: Center(
+                          child: Container(
+                            width: 34,
+                            height: 54,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(17),
+                              color: Colors.white.withValues(alpha: 0.40),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isAntag
+                                ? AppColors.error
+                                : theme.accentColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            role.toUpperCase(),
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 7,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: 55,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: const BorderRadius.vertical(
+                                bottom: Radius.circular(14)),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.85)
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 8,
+                        right: 8,
+                        bottom: 12,
+                        child: Text(
+                          name,
+                          style: GoogleFonts.nunitoSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: 8,
+                        bottom: 4,
+                        child: Text(
+                          c.animeName.substring(
+                              0, c.animeName.length.clamp(0, 8)),
+                          style: GoogleFonts.nunitoSans(
+                            fontSize: 9,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── COMBAT TAB ────────────────────────────────────────────────────
+
+  Widget _buildCombatTab(RankTheme theme, bool isTablet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPowers(theme, isTablet),
+        _buildAttributeRadar(theme),
+        _buildRatingCard(theme),
+      ],
+    );
+  }
+
+  Widget _buildPowers(RankTheme theme, bool isTablet) {
+    final powers = [
+      ("L'Infini", const Color(0xFF8B5CF6), const Color(0xFFC4B5FD)),
+      ('Vide Illimité', const Color(0xFF8B5CF6), const Color(0xFFC4B5FD)),
+      ('Technique Inversée', const Color(0xFF10B981), const Color(0xFF6EE7B7)),
+      ('Domaine Expansif', const Color(0xFF3B82F6), const Color(0xFF93C5FD)),
+      ('Infini Pourpre', AppColors.error, const Color(0xFFFCA5A5)),
+    ];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionLabel(theme, 'POUVOIRS & CAPACITÉS'),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: powers.map((p) {
-              final (name, bg, border, textColor) = p;
+              final (name, border, textColor) = p;
               return Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: bg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: border),
+                  color: border.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: border.withValues(alpha: 0.55)),
                 ),
                 child: Text(
                   name,
@@ -527,46 +1064,203 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
     );
   }
 
-  // ── ABOUT ─────────────────────────────────────────────────────────────────
-
-  Widget _buildAbout(RankTheme theme) {
-    const bio =
-        'Considéré comme le sorcier le plus puissant de son époque, ce maître des arts occultes dirige la plus grande école de jujutsu. '
-        'Il maîtrise une technique héréditaire unique qui rend son corps physiquement intouchable. '
-        'Derrière son attitude désinvolte se cache une vision profonde : former une nouvelle génération de guerriers capables de faire face aux menaces les plus obscures.';
+  Widget _buildAttributeRadar(RankTheme theme) {
+    final attrs = [
+      ('Force', 0.75, const Color(0xFFE53935)),
+      ('Vitesse', 0.90, const Color(0xFF3B82F6)),
+      ('Technique', 1.00, const Color(0xFF8B5CF6)),
+      ('Endurance', 0.70, const Color(0xFF10B981)),
+      ('Intelligence', 0.95, const Color(0xFFF59E0B)),
+    ];
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'À propos',
-            style: GoogleFonts.nunitoSans(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: theme.textPrimary,
+          _sectionLabel(theme, 'ATTRIBUTS'),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: theme.backgroundElevated,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: attrs.map((a) {
+                final (label, val, color) = a;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(label,
+                              style: GoogleFonts.nunitoSans(
+                                  fontSize: 13, color: theme.textSecondary)),
+                          Text(
+                            '${(val * 100).round()}',
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: theme.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: val,
+                          minHeight: 6,
+                          backgroundColor:
+                              theme.backgroundPrimary,
+                          valueColor:
+                              AlwaysStoppedAnimation(color),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            bio,
-            maxLines: _aboutExpanded ? null : 3,
-            overflow: _aboutExpanded ? null : TextOverflow.ellipsis,
-            style: GoogleFonts.nunitoSans(
-              fontSize: 14,
-              color: theme.textSecondary,
-              height: 1.6,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRatingCard(RankTheme theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionLabel(theme, 'NOTATION'),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: theme.backgroundElevated,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            padding: const EdgeInsets.all(18),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Ta note',
+                        style: GoogleFonts.nunitoSans(
+                            fontSize: 13, color: theme.textSecondary),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: List.generate(5, (i) {
+                          return GestureDetector(
+                            onTap: () => _guardAuth(
+                                () => setState(() => _userRating = i + 1)),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: Icon(
+                                i < _userRating
+                                    ? Icons.star_rounded
+                                    : Icons.star_outline_rounded,
+                                color: i < _userRating
+                                    ? AppColors.warning
+                                    : theme.borderSubtle,
+                                size: 30,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '$_userRating / 5 — $_ratingCount notes',
+                        style: GoogleFonts.nunitoSans(
+                            fontSize: 12, color: theme.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                        colors: [Color(0xFFF59E0B), Color(0xFFFF6D1B)]),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.warning.withValues(alpha: 0.35),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        c.rating.toStringAsFixed(1),
+                        style: GoogleFonts.rajdhani(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          height: 1,
+                        ),
+                      ),
+                      Text('/5',
+                          style: GoogleFonts.nunitoSans(
+                              fontSize: 10, color: Colors.white70)),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 6),
-          GestureDetector(
-            onTap: () => setState(() => _aboutExpanded = !_aboutExpanded),
-            child: Text(
-              _aboutExpanded ? 'Réduire ↑' : 'Lire la suite →',
-              style: GoogleFonts.nunitoSans(
-                fontSize: 13,
-                color: theme.accentColor,
-                fontWeight: FontWeight.w600,
+        ],
+      ),
+    );
+  }
+
+  // ── GALERIE TAB ───────────────────────────────────────────────────
+
+  Widget _buildGalerieTab(RankTheme theme, bool isTablet) {
+    final crossAxis = isTablet ? 4 : 3;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionLabel(theme, 'GALERIE — ${_galleryImages.length} PHOTOS'),
+          const SizedBox(height: 12),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxis,
+              mainAxisSpacing: 6,
+              crossAxisSpacing: 6,
+              childAspectRatio: 0.9,
+            ),
+            itemCount: _galleryImages.length,
+            itemBuilder: (_, i) => GestureDetector(
+              onTap: () => _showImageSheet(theme, i),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(
+                  _galleryImages[i],
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: theme.backgroundElevated,
+                    child: Icon(Icons.image_rounded,
+                        color: theme.textSecondary, size: 28),
+                  ),
+                ),
               ),
             ),
           ),
@@ -575,64 +1269,76 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
     );
   }
 
-  // ── QUOTE CARD ────────────────────────────────────────────────────────────
-
-  Widget _buildQuoteCard(RankTheme theme) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.backgroundElevated,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Stack(
+  void _showImageSheet(RankTheme theme, int startIndex) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.black,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.82,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (_, ctrl) => Column(
           children: [
-            Positioned(
-              top: -8,
-              left: 4,
-              child: Text(
-                '"',
-                style: GoogleFonts.nunitoSans(
-                  fontSize: 64,
-                  fontWeight: FontWeight.w800,
-                  color: theme.accentColor.withValues(alpha: 0.2),
-                  height: 1,
-                ),
+            const SizedBox(height: 12),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 28, top: 4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              child: Row(
                 children: [
                   Text(
-                    'Dans ce monde, le talent bat le travail acharné. Et le talent né est battu par le talent éveillé.',
-                    style: GoogleFonts.nunitoSans(
-                      fontSize: 15,
-                      fontStyle: FontStyle.italic,
-                      color: theme.textPrimary,
-                      height: 1.5,
-                      fontWeight: FontWeight.w500,
+                    'Galerie — ${c.name}',
+                    style: GoogleFonts.rajdhani(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          '— ${c.name}, ${c.animeName}',
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.nunitoSans(
-                              fontSize: 11, color: theme.textSecondary),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Icon(Icons.ios_share_rounded,
-                          color: theme.textSecondary, size: 16),
-                    ],
+                  const Spacer(),
+                  Text(
+                    '${_galleryImages.length} photos',
+                    style: GoogleFonts.nunitoSans(
+                        fontSize: 12, color: Colors.white54),
                   ),
                 ],
+              ),
+            ),
+            Expanded(
+              child: GridView.builder(
+                controller: ctrl,
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 4,
+                  crossAxisSpacing: 4,
+                  childAspectRatio: 1.0,
+                ),
+                itemCount: _galleryImages.length,
+                itemBuilder: (_, i) => ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    _galleryImages[i],
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: const Color(0xFF1A1A2E),
+                      child: const Icon(Icons.image_rounded,
+                          color: Colors.white38, size: 24),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -641,184 +1347,59 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
     );
   }
 
-  // ── GALLERY ───────────────────────────────────────────────────────────────
+  // ── FANS TAB ──────────────────────────────────────────────────────
 
-  Widget _buildGallery() {
-    final palettes = [
-      [const Color(0xFF3B82F6), const Color(0xFF1A0A2E)],
-      [const Color(0xFF8B5CF6), const Color(0xFF1E1B4B)],
-      [const Color(0xFFFF6D1B), const Color(0xFF2D0A0A)],
-      [const Color(0xFF10B981), const Color(0xFF064E3B)],
-    ];
-    Widget tile(int seed, double h, {bool more = false}) {
-      final colors = palettes[seed % palettes.length];
-      return Container(
-        height: h,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: colors,
-          ),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-        ),
-        child: more
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.grid_view_rounded,
-                        color: Colors.white, size: 24),
-                    const SizedBox(height: 4),
-                    Text(
-                      '+28',
-                      style: GoogleFonts.nunitoSans(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : Align(
-                alignment: Alignment.bottomRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Text(
-                    'OTADEX',
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 8,
-                      color: Colors.white.withValues(alpha: 0.35),
-                      letterSpacing: 1,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-      );
-    }
-
+  Widget _buildFansTab(RankTheme theme, bool isTablet) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const CharSectionHeader(title: '📸 Galerie', action: 'Voir tout →'),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    tile(0, 150),
-                    const SizedBox(height: 4),
-                    tile(2, 110),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Column(
-                  children: [
-                    tile(1, 110),
-                    const SizedBox(height: 4),
-                    Stack(
-                      children: [
-                        tile(3, 150, more: true),
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.55),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.grid_view_rounded,
-                                    color: Colors.white, size: 24),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '+28',
-                                  style: GoogleFonts.nunitoSans(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+        _buildPopularity(theme),
+        _buildAISection(theme),
+        _buildComments(theme),
       ],
     );
   }
 
-  // ── POPULARITY ────────────────────────────────────────────────────────────
-
   Widget _buildPopularity(RankTheme theme) {
-    return Column(
-      children: [
-        const CharSectionHeader(title: '🏆 Popularité & Fan du Mois'),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Container(
+    final likePct = (c.likes / 100).clamp(0.0, 1.0);
+    final commentPct = (_commentCount / 30.0).clamp(0.0, 1.0);
+    final votePct = (_voteCount / 10.0).clamp(0.0, 1.0);
+    final quizPct = (_quizCount / 35.0).clamp(0.0, 1.0);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionLabel(theme, 'POPULARITÉ'),
+          const SizedBox(height: 12),
+          Container(
             decoration: BoxDecoration(
               color: theme.backgroundElevated,
               borderRadius: BorderRadius.circular(16),
             ),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'SCORE DE POPULARITÉ',
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 11,
-                    color: theme.textSecondary,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _statBar('❤️', 'Likes', '38 247', 0.95, theme.accentColor,
-                    theme),
-                _statBar('💬', 'Commentaires', '4 892', 0.72,
-                    const Color(0xFF3B82F6), theme),
-                _statBar('🗳️', 'Votes Fan du Mois', '1 240', 0.81,
-                    const Color(0xFF8B5CF6), theme),
-                _statBar('🧠', 'Quiz réussis', '3 210', 0.65,
+                _statBar('❤️', 'Likes', _formatLikes(c.likes), likePct,
+                    theme.accentColor, theme),
+                _statBar('💬', 'Commentaires', _commentCount.toString(),
+                    commentPct, const Color(0xFF3B82F6), theme),
+                _statBar('🗳️', 'Votes Fan du Mois', _voteCount.toString(),
+                    votePct, const Color(0xFF8B5CF6), theme),
+                _statBar('🧠', 'Quiz réussis', _quizCount.toString(), quizPct,
                     const Color(0xFF10B981), theme),
-                const SizedBox(height: 14),
-                Text(
-                  'TOP 3 FANS CE MOIS-CI',
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 11,
-                    color: theme.textSecondary,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1,
-                  ),
-                ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 16),
+                _sectionLabel(theme, 'TOP 3 FANS CE MOIS-CI'),
+                const SizedBox(height: 8),
                 _fanRow('🥇', 'Jean-Paul_Otaku', 'JONIN',
-                    const Color(0xFF3B82F6), '4 820 pts', theme),
+                    const Color(0xFF3B82F6), '482 pts', theme),
                 _fanRow('🥈', 'Awa_Fan25', 'GENIN', const Color(0xFF5A5A6A),
-                    '3 102 pts', theme),
-                _fanRow('🥉', 'OtakuPro237', 'JONIN', const Color(0xFF3B82F6),
-                    '2 874 pts', theme),
-                const SizedBox(height: 14),
+                    '310 pts', theme),
+                _fanRow('🥉', 'OtakuPro237', 'JONIN',
+                    const Color(0xFF3B82F6), '287 pts', theme),
+                const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () => _guardAuth(() {}),
                   child: Container(
@@ -828,8 +1409,8 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: theme.accentColor.withValues(alpha: 0.3),
-                          blurRadius: 16,
+                          color: theme.accentColor.withValues(alpha: 0.28),
+                          blurRadius: 14,
                           offset: const Offset(0, 4),
                         )
                       ],
@@ -851,7 +1432,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
                 const SizedBox(height: 8),
                 Center(
                   child: Text(
-                    'Votre vote rapporte 10 pts à votre score Fan',
+                    'Ton vote rapporte 10 pts à ton score Fan',
                     style: GoogleFonts.nunitoSans(
                         fontSize: 11, color: theme.textSecondary),
                   ),
@@ -859,477 +1440,20 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
               ],
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  // ── RATING ────────────────────────────────────────────────────────────────
-
-  Widget _buildRatingCard(RankTheme theme) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.backgroundElevated,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Ta note',
-                    style: GoogleFonts.nunitoSans(
-                        fontSize: 13, color: theme.textSecondary),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: List.generate(5, (i) {
-                      return GestureDetector(
-                        onTap: () => _guardAuth(
-                            () => setState(() => _userRating = i + 1)),
-                        child: Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: Icon(
-                            i < _userRating
-                                ? Icons.star_rounded
-                                : Icons.star_outline_rounded,
-                            color: i < _userRating
-                                ? AppColors.warning
-                                : const Color(0xFF4A4A5A),
-                            size: 28,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '$_userRating / 5 — 2 847 notes',
-                    style: GoogleFonts.nunitoSans(
-                        fontSize: 12, color: theme.textSecondary),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                    colors: [Color(0xFFF59E0B), Color(0xFFFF6D1B)]),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.warning.withValues(alpha: 0.4),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
-                  )
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    c.rating.toStringAsFixed(1),
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      height: 1,
-                    ),
-                  ),
-                  Text(
-                    '/5',
-                    style: GoogleFonts.nunitoSans(
-                        fontSize: 10, color: Colors.white70),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 
-  // ── SERIES & CREATOR ──────────────────────────────────────────────────────
-
-  Widget _buildSeriesSection(RankTheme theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const CharSectionHeader(title: '📖 Série & Créateur'),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-          child: Container(
-            height: 80,
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF1A0A2E), Color(0xFF2D1B69)],
-                    ),
-                  ),
-                  child: Center(
-                    child: Container(
-                      width: 22,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(11),
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        c.animeName,
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: theme.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Shōnen · 2020 · 24 épisodes · Studio Lumen',
-                        style: GoogleFonts.nunitoSans(
-                            fontSize: 11, color: theme.textSecondary),
-                      ),
-                      const SizedBox(height: 4),
-                      Wrap(
-                        spacing: 4,
-                        children: ['Shōnen', 'Action', 'Surnaturel']
-                            .map((g) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: theme.backgroundCard,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    g,
-                                    style: GoogleFonts.nunitoSans(
-                                        fontSize: 10,
-                                        color: theme.textSecondary),
-                                  ),
-                                ))
-                            .toList(),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right_rounded,
-                    color: theme.textSecondary, size: 18),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-          child: Text(
-            "✏️ CRÉATEUR DE L'ŒUVRE",
-            style: GoogleFonts.nunitoSans(
-              fontSize: 12,
-              color: theme.textSecondary,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 1,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFF3B82F6),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'AG',
-                          style: GoogleFonts.rajdhani(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: -6,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Mangaka',
-                            style: GoogleFonts.nunitoSans(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 18),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Akari Goro',
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: theme.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'Né en 1992 · Studio Lumen',
-                        style: GoogleFonts.nunitoSans(
-                            fontSize: 12, color: theme.textSecondary),
-                      ),
-                      Text(
-                        '2 œuvres publiées',
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 12,
-                          color: theme.accentColor,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: theme.accentColor),
-                  ),
-                  child: Text(
-                    'Biblio →',
-                    style: GoogleFonts.nunitoSans(
-                      fontSize: 11,
-                      color: theme.accentColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ── OTHER CHARACTERS ──────────────────────────────────────────────────────
-
-  Widget _buildOtherCharacters(RankTheme theme) {
-    final others = [
-      ('Yuto Akira', 'Protagoniste', const Color(0xFF3d0505),
-          const Color(0xFF7c1515)),
-      ('Mei Tsuki', 'Protagoniste', const Color(0xFF050520),
-          const Color(0xFF1a1a4a)),
-      ('Nora Kishi', 'Protagoniste', const Color(0xFF201005),
-          const Color(0xFF4a2a10)),
-      ('Ryomen Void', 'Antagoniste', const Color(0xFF1a0000),
-          const Color(0xFF3d0000)),
-      ('Naoki Kento', 'Allié', const Color(0xFF0a1a0a),
-          const Color(0xFF1a3020)),
-    ];
-    return Column(
-      children: [
-        const CharSectionHeader(
-            title: 'Autres personnages', action: 'Voir tout →'),
-        SizedBox(
-          height: 180,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: others.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
-            itemBuilder: (_, i) {
-              final (name, role, c1, c2) = others[i];
-              final isAntag = role == 'Antagoniste';
-              return Container(
-                width: 120,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [c1, c2],
-                  ),
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.06)),
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 30,
-                      bottom: 40,
-                      child: Center(
-                        child: Container(
-                          width: 40,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.white.withValues(alpha: 0.5),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 6,
-                      left: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: isAntag ? AppColors.error : theme.accentColor,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          role.toUpperCase(),
-                          style: GoogleFonts.nunitoSans(
-                            fontSize: 8,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: 0.4,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      height: 60,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(
-                              bottom: Radius.circular(12)),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.85)
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 8,
-                      right: 8,
-                      bottom: 14,
-                      child: Text(
-                        name,
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          shadows: const [
-                            Shadow(color: Colors.black54, blurRadius: 4)
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 8,
-                      bottom: 4,
-                      child: Text(
-                        c.animeName
-                            .substring(0, c.animeName.length.clamp(0, 8)),
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 9,
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  // ── AI SECTION ────────────────────────────────────────────────────────────
-
   Widget _buildAISection(RankTheme theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const CharSectionHeader(title: '🤖 Fonctionnalités IA'),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-          child: Text(
-            'Disponible pour les abonnés Jonin et Kage',
-            style: GoogleFonts.nunitoSans(
-              fontSize: 12,
-              color: theme.textSecondary,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: IntrinsicHeight(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionLabel(theme, 'FONCTIONNALITÉS IA — JONIN+'),
+          const SizedBox(height: 12),
+          IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -1337,7 +1461,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
                   child: GestureDetector(
                     onTap: _guardJonin,
                     child: CharAICard(
-                      bg: const Color(0xFF1A1A2E),
+                      bg: const Color(0xFF151520),
                       border: const Color(0xFF3B82F6),
                       icon: '💬',
                       title: 'Parle à ${c.name}',
@@ -1351,11 +1475,11 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
                   child: GestureDetector(
                     onTap: _guardJonin,
                     child: CharAICard(
-                      bg: const Color(0xFF1A0A2E),
+                      bg: const Color(0xFF120A1E),
                       border: const Color(0xFF8B5CF6),
                       icon: '🧠',
                       title: 'Quiz · ${c.name}?',
-                      subtitle: '5 questions · +5pts · Jonin+',
+                      subtitle: '5 questions · +5pts',
                       subtitleColor: const Color(0xFF8B5CF6),
                     ),
                   ),
@@ -1363,168 +1487,171 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
               ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  // ── COMMENTS ──────────────────────────────────────────────────────────────
-
   Widget _buildComments(RankTheme theme) {
-    return Column(
-      children: [
-        const CharSectionHeader(
-            title: '💬 Commentaires (4 892)', action: 'Voir tout →'),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: Container(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _sectionLabel(theme, 'COMMENTAIRES ($_commentCount)'),
+              GestureDetector(
+                onTap: () {},
+                child: Text(
+                  'Voir tout →',
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 13,
+                    color: theme.accentColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Comment input
+          Container(
             decoration: BoxDecoration(
               color: theme.backgroundElevated,
               borderRadius: BorderRadius.circular(12),
             ),
             padding: const EdgeInsets.all(12),
-            child: Column(
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'JP',
-                          style: GoogleFonts.nunitoSans(
-                            fontSize: 12,
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                        colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)]),
+                  ),
+                  child: Center(
+                    child: Text('JP',
+                        style: GoogleFonts.nunitoSans(
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => _guardAuth(() {}),
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: theme.backgroundPrimary,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 12),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Ajouter un commentaire...',
-                                  style: GoogleFonts.nunitoSans(
-                                      fontSize: 14,
-                                      color: theme.textSecondary),
-                                ),
-                              ),
-                              Text(
-                                'Envoyer',
-                                style: GoogleFonts.nunitoSans(
-                                  fontSize: 13,
-                                  color: theme.textSecondary
-                                      .withValues(alpha: 0.5),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                            color: Colors.white)),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Commentaires modérés · ⚑ Signaler un contenu',
-                  style: GoogleFonts.nunitoSans(
-                      fontSize: 11, color: theme.textSecondary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _guardAuth(() {}),
+                    child: Container(
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: theme.backgroundPrimary,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Ajouter un commentaire...',
+                              style: GoogleFonts.nunitoSans(
+                                  fontSize: 13, color: theme.textSecondary),
+                            ),
+                          ),
+                          Icon(Icons.send_rounded,
+                              size: 15,
+                              color: theme.textSecondary
+                                  .withValues(alpha: 0.4)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-        const CharCommentCard(
-          initials: 'JP',
-          name: 'Jean-Paul_Otaku',
-          tier: 'JONIN',
-          tierColor: Color(0xFF3B82F6),
-          time: 'il y a 2h',
-          body: "Ce personnage est clairement le plus stylé de tout l'animé. Son design, ses pouvoirs, son attitude... PARFAIT. 🔥",
-          likes: '247',
-        ),
-        const CharCommentCard(
-          initials: 'AW',
-          name: 'Awa_Fan',
-          tier: 'GENIN',
-          tierColor: Color(0xFF5A5A6A),
-          time: 'il y a 5h',
-          body: 'Même comme ça je reste fan numéro 1 ! 😭',
-          likes: '89',
-        ),
-        const CharCommentCard(
-          initials: 'OP',
-          name: 'OtakuPro237',
-          tier: 'JONIN',
-          tierColor: Color(0xFF3B82F6),
-          time: 'hier',
-          body: 'La scène du Vide Illimité... incomparable.',
-          likes: '156',
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-          child: Container(
-            height: 48,
+          const SizedBox(height: 8),
+          const CharCommentCard(
+            initials: 'JP',
+            name: 'Jean-Paul_Otaku',
+            tier: 'JONIN',
+            tierColor: Color(0xFF3B82F6),
+            time: 'il y a 2h',
+            body:
+                "Ce personnage est clairement le plus stylé de tout l'animé. Son design, ses pouvoirs, son attitude... PARFAIT. 🔥",
+            likes: '24',
+          ),
+          const CharCommentCard(
+            initials: 'AW',
+            name: 'Awa_Fan',
+            tier: 'GENIN',
+            tierColor: Color(0xFF5A5A6A),
+            time: 'il y a 5h',
+            body: 'Même comme ça je reste fan numéro 1 ! 😭',
+            likes: '9',
+          ),
+          const CharCommentCard(
+            initials: 'OP',
+            name: 'OtakuPro237',
+            tier: 'JONIN',
+            tierColor: Color(0xFF3B82F6),
+            time: 'hier',
+            body: 'La scène du Vide Illimité... incomparable.',
+            likes: '15',
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 46,
             decoration: BoxDecoration(
               color: theme.backgroundElevated,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Text(
-                'Voir tous les commentaires (4 892)',
+                'Voir tous les commentaires ($_commentCount)',
                 style: GoogleFonts.nunitoSans(
-                    fontSize: 14, color: theme.textPrimary),
+                    fontSize: 14,
+                    color: theme.accentColor,
+                    fontWeight: FontWeight.w500),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  // ── FAB ───────────────────────────────────────────────────────────────────
+  // ── FAB ───────────────────────────────────────────────────────────
 
   Widget _buildFAB(RankTheme theme) {
     return Positioned(
       right: 20,
-      bottom: 80,
+      bottom: 24,
       child: GestureDetector(
         onTap: () =>
             _guardAuth(() => setState(() => _isCollected = !_isCollected)),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          width: 56,
-          height: 56,
+          width: 48,
+          height: 48,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: theme.accentColor,
+            color:
+                _isCollected ? theme.accentColor : theme.backgroundElevated,
+            border: Border.all(
+              color: theme.accentColor
+                  .withValues(alpha: _isCollected ? 0.0 : 0.6),
+              width: 1.5,
+            ),
             boxShadow: [
               BoxShadow(
                 color: theme.accentColor
-                    .withValues(alpha: _isCollected ? 0.2 : 0.45),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
+                    .withValues(alpha: _isCollected ? 0.35 : 0.12),
+                blurRadius: 14,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -1532,46 +1659,54 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
             _isCollected
                 ? Icons.bookmark_rounded
                 : Icons.bookmark_border_rounded,
-            color: Colors.white,
-            size: 26,
+            color: _isCollected ? Colors.white : theme.accentColor,
+            size: 22,
           ),
         ),
       ),
     );
   }
 
-  // ── HELPERS ───────────────────────────────────────────────────────────────
+  // ── HELPERS ───────────────────────────────────────────────────────
+
+  Widget _sectionLabel(RankTheme theme, String text) {
+    return Text(
+      text,
+      style: GoogleFonts.nunitoSans(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: theme.textSecondary,
+        letterSpacing: 0.8,
+      ),
+    );
+  }
 
   Widget _statBar(String icon, String label, String value, double pct,
       Color color, RankTheme theme) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '$icon  $label',
-                style: GoogleFonts.nunitoSans(
-                    fontSize: 13, color: theme.textSecondary),
-              ),
-              Text(
-                value,
-                style: GoogleFonts.nunitoSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: theme.textPrimary,
-                ),
-              ),
+              Text('$icon  $label',
+                  style: GoogleFonts.nunitoSans(
+                      fontSize: 13, color: theme.textSecondary)),
+              Text(value,
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: theme.textPrimary,
+                  )),
             ],
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 6),
           ClipRRect(
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: pct,
-              minHeight: 6,
+              minHeight: 5,
               backgroundColor: theme.backgroundPrimary,
               valueColor: AlwaysStoppedAnimation(color),
             ),
@@ -1585,55 +1720,142 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen> {
       String pts, RankTheme theme) {
     final initials = name.split('_')[0].substring(0, 2).toUpperCase();
     return SizedBox(
-      height: 44,
+      height: 46,
       child: Row(
         children: [
           SizedBox(
               width: 28,
               child: Text(medal, style: const TextStyle(fontSize: 18))),
           Container(
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
                   colors: [Color(0xFFFF6D1B), Color(0xFF8B5CF6)]),
             ),
             child: Center(
-              child: Text(
-                initials,
-                style: GoogleFonts.nunitoSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
+              child: Text(initials,
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  )),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              name,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.nunitoSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: theme.textPrimary,
-              ),
-            ),
+            child: Text(name,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.nunitoSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: theme.textPrimary,
+                )),
           ),
           CharPill(tier, bg: tierColor, fontSize: 9),
           const SizedBox(width: 8),
-          Text(
-            pts,
-            style: GoogleFonts.nunitoSans(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: theme.accentColor,
-            ),
-          ),
+          Text(pts,
+              style: GoogleFonts.nunitoSans(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: theme.accentColor,
+              )),
         ],
       ),
     );
   }
+}
+
+// ─── Tab bar delegate ─────────────────────────────────────────────────────────
+
+class _TabBarDelegate extends SliverPersistentHeaderDelegate {
+  final _Tab activeTab;
+  final ValueChanged<_Tab> onTap;
+  final RankTheme theme;
+
+  const _TabBarDelegate({
+    required this.activeTab,
+    required this.onTap,
+    required this.theme,
+  });
+
+  static const _tabs = [
+    (_Tab.profil, 'Profil'),
+    (_Tab.combat, 'Combat'),
+    (_Tab.galerie, 'Galerie'),
+    (_Tab.fans, 'Fans'),
+  ];
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: theme.backgroundPrimary,
+      child: Column(
+        children: [
+          Expanded(
+            child: Row(
+              children: _tabs.map((entry) {
+                final (tab, label) = entry;
+                final active = tab == activeTab;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => onTap(tab),
+                    behavior: HitTestBehavior.opaque,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Center(
+                          child: Text(
+                            label,
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 13,
+                              fontWeight: active
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: active
+                                  ? theme.accentColor
+                                  : theme.textSecondary,
+                            ),
+                          ),
+                        ),
+                        if (active)
+                          Positioned(
+                            bottom: 0,
+                            left: 12,
+                            right: 12,
+                            child: Container(
+                              height: 2,
+                              decoration: BoxDecoration(
+                                color: theme.accentColor,
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          Divider(
+              height: 1, thickness: 1, color: theme.backgroundElevated),
+        ],
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => 48;
+
+  @override
+  double get minExtent => 48;
+
+  @override
+  bool shouldRebuild(_TabBarDelegate old) =>
+      old.activeTab != activeTab ||
+      old.onTap != onTap ||
+      old.theme != theme;
 }

@@ -5,8 +5,14 @@ import '../../../../core/theme/otadex_theme.dart';
 class CharSectionHeader extends StatelessWidget {
   final String title;
   final String? action;
+  final VoidCallback? onAction;
 
-  const CharSectionHeader({super.key, required this.title, this.action});
+  const CharSectionHeader({
+    super.key,
+    required this.title,
+    this.action,
+    this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +32,15 @@ class CharSectionHeader extends StatelessWidget {
             ),
           ),
           if (action != null)
-            Text(
-              action!,
-              style: GoogleFonts.nunitoSans(
-                fontSize: 13,
-                color: theme.accentColor,
-                fontWeight: FontWeight.w500,
+            GestureDetector(
+              onTap: onAction,
+              child: Text(
+                action!,
+                style: GoogleFonts.nunitoSans(
+                  fontSize: 13,
+                  color: theme.accentColor,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
         ],

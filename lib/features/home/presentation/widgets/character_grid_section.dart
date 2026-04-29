@@ -25,9 +25,23 @@ class CharacterGridSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: '✨ Nouveautés', actionLabel: 'Voir tout'),
+        SectionHeader(
+          title: '✨ Nouveautés',
+          actionLabel: 'Voir tout',
+          onAction: () => context.push('/characters', extra: {
+            'title': '✨ Nouveautés',
+            'characters': newChars,
+          }),
+        ),
         _buildGrid(newChars, startOffset: 0),
-        const SectionHeader(title: '⭐ Recommandés pour toi', actionLabel: 'Voir tout'),
+        SectionHeader(
+          title: '⭐ Recommandés pour toi',
+          actionLabel: 'Voir tout',
+          onAction: () => context.push('/characters', extra: {
+            'title': '⭐ Recommandés pour toi',
+            'characters': MockData.recommended(),
+          }),
+        ),
         recommendedAsync.when(
           data: (chars) => _buildGrid(chars, startOffset: newChars.length),
           loading: () => const Padding(
