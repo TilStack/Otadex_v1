@@ -53,4 +53,36 @@ class AppColors {
   static const Color shimmerKage = Color(0x40FF6500);
   static const Color glowAccent = Color(0x33FF6500);
   static const Color glowPrimary = Color(0x335C2BE2);
+
+  // === CARD OVERLAYS (cinema scrim) ===
+  static const Color cardShadowLight = Color(0x20000000);
+  static const Color cardShadowMid = Color(0x28000000);
+  static const Color cardShadowBottom = Color(0xCC000000);
+  static const Color cardShadowDeep = Color(0xD8000000);
+
+  // === GLOW VARIANTS ===
+  static const Color accentGlowFaint = Color(0x18FF6500);
+  static const Color accentGlowStrong = Color(0x50FF6500);
+
+  // === STAT & DATA VIZ ===
+  static const Color statBlue = Color(0xFF3B82F6);
+  static const Color statBluePastel = Color(0xFF93C5FD);
+  static const Color statPurple = Color(0xFF8B5CF6);
+  static const Color statPurplePastel = Color(0xFFC4B5FD);
+  static const Color statGreen = Color(0xFF10B981);
+  static const Color statGreenPastel = Color(0xFF6EE7B7);
+  static const Color errorPastel = Color(0xFFFCA5A5);
+
+  // === INTERACTION ===
+  static const Color starYellow = Color(0xFFFFC107);
+  static const Color heartPink = Color(0xFFFF4D6D);
+  static const Color gradientOrange = Color(0xFFFF6D1B);
+
+  // === TEXTE ADDITIONNEL ===
+  static const Color textMuted = Color(0xFF5A5A6A);
+
+  // === BACKGROUNDS ADDITIONNELS ===
+  static const Color backgroundAIBlue = Color(0xFF151520);
+  static const Color backgroundAIPurple = Color(0xFF120A1E);
+  static const Color rankKageBgElevated = Color(0xFF3D1500);
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../../core/models/character.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/otadex_theme.dart';
 
 class CharacterGridCard extends StatefulWidget {
@@ -81,9 +82,9 @@ class _CharacterGridCardState extends State<CharacterGridCard> {
                       end: Alignment.bottomCenter,
                       stops: [0.0, 0.35, 1.0],
                       colors: [
-                        Color(0x28000000),
-                        Color(0x00000000),
-                        Color(0xD8000000),
+                        AppColors.cardShadowMid,
+                        Colors.transparent,
+                        AppColors.cardShadowDeep,
                       ],
                     ),
                   ),
@@ -100,10 +101,10 @@ class _CharacterGridCardState extends State<CharacterGridCard> {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF22C55E).withValues(alpha: 0.2),
+                        color: AppColors.success.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(
-                          color: const Color(0xFF22C55E).withValues(alpha: 0.6),
+                          color: AppColors.success.withValues(alpha: 0.6),
                         ),
                       ),
                       child: Text(
@@ -111,7 +112,7 @@ class _CharacterGridCardState extends State<CharacterGridCard> {
                         style: GoogleFonts.rajdhani(
                           fontSize: 9,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF22C55E),
+                          color: AppColors.success,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -154,7 +155,7 @@ class _CharacterGridCardState extends State<CharacterGridCard> {
                           children: [
                             const Icon(
                               Icons.star_rounded,
-                              color: Color(0xFFFFC107),
+                              color: AppColors.starYellow,
                               size: 10,
                             ),
                             const SizedBox(width: 2),
@@ -163,13 +164,13 @@ class _CharacterGridCardState extends State<CharacterGridCard> {
                               style: GoogleFonts.nunitoSans(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFFFFC107),
+                                color: AppColors.starYellow,
                               ),
                             ),
                             const Spacer(),
                             const Icon(
                               Icons.favorite_rounded,
-                              color: Color(0xFFFF4D6D),
+                              color: AppColors.heartPink,
                               size: 9,
                             ),
                             const SizedBox(width: 2),

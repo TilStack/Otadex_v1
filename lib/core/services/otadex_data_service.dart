@@ -4,6 +4,7 @@ import '../models/character.dart';
 import '../models/anime_entry.dart';
 import '../models/creator_entry.dart';
 import '../models/featured_slide.dart';
+import '../theme/app_colors.dart';
 
 class OtadexDataService {
   OtadexDataService._({
@@ -160,8 +161,8 @@ class OtadexDataService {
       title: 'Solo Leveling',
       subtitle: 'Saison 2 — Arise from the Shadow',
       tag: 'NOUVEAU',
-      primaryColor: Color(0xFF1A0D2E),
-      secondaryColor: Color(0xFF9B59B6),
+      primaryColor: AppColors.backgroundCard,
+      secondaryColor: AppColors.rankJonin,
       category: 'Manhwa',
     ),
     const FeaturedSlide(
@@ -169,8 +170,8 @@ class OtadexDataService {
       title: 'Demon Slayer',
       subtitle: 'Arc Infinity Castle — Épisodes exclusifs',
       tag: 'TENDANCE',
-      primaryColor: Color(0xFF1A0A0A),
-      secondaryColor: Color(0xFFE53935),
+      primaryColor: AppColors.backgroundDeep,
+      secondaryColor: AppColors.error,
       category: 'Shōnen',
     ),
   ];

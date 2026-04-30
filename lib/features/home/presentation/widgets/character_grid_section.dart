@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/data/mock_data.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/models/character.dart';
 import '../../../../../core/providers/otadex_providers.dart';
 import 'character_grid_card.dart';
@@ -70,7 +71,7 @@ class CharacterGridSection extends ConsumerWidget {
         child: Center(
           child: Text(
             'Aucun personnage dans cette catégorie',
-            style: TextStyle(color: Color(0xFFA0A0C0), fontSize: 14),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
           ),
         ),
       );

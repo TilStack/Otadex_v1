@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/otadex_theme.dart';
 
 class CharTabDelegate extends SliverPersistentHeaderDelegate {
@@ -50,7 +51,7 @@ class CharTabDelegate extends SliverPersistentHeaderDelegate {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 4, vertical: 1),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF3B82F6),
+                                color: AppColors.statBlue,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(

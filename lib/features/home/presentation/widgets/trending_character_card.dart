@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../../core/models/character.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/otadex_theme.dart';
 
 class TrendingCharacterCard extends StatefulWidget {
@@ -95,9 +96,9 @@ class _TrendingCharacterCardState extends State<TrendingCharacterCard> {
                       end: Alignment.bottomCenter,
                       stops: [0.0, 0.4, 1.0],
                       colors: [
-                        Color(0x20000000),
-                        Color(0x00000000),
-                        Color(0xCC000000),
+                        AppColors.cardShadowLight,
+                        Colors.transparent,
+                        AppColors.cardShadowBottom,
                       ],
                     ),
                   ),
@@ -165,7 +166,7 @@ class _TrendingCharacterCardState extends State<TrendingCharacterCard> {
                           children: [
                             const Icon(
                               Icons.star_rounded,
-                              color: Color(0xFFFFC107),
+                              color: AppColors.starYellow,
                               size: 12,
                             ),
                             const SizedBox(width: 2),
@@ -174,13 +175,13 @@ class _TrendingCharacterCardState extends State<TrendingCharacterCard> {
                               style: GoogleFonts.nunitoSans(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFFFFC107),
+                                color: AppColors.starYellow,
                               ),
                             ),
                             const Spacer(),
                             const Icon(
                               Icons.favorite_rounded,
-                              color: Color(0xFFFF4D6D),
+                              color: AppColors.heartPink,
                               size: 10,
                             ),
                             const SizedBox(width: 2),

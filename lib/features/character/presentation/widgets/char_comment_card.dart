@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/otadex_theme.dart';
 import 'char_pill.dart';
 
@@ -46,7 +47,7 @@ class CharCommentCard extends StatelessWidget {
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: [Color(0xFFFF6D1B), Color(0xFF8B5CF6)],
+                      colors: [AppColors.gradientOrange, AppColors.statPurple],
                     ),
                   ),
                   child: Center(

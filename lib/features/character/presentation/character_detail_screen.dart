@@ -528,10 +528,10 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                             height: 7,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: const Color(0xFF10B981),
+                              color: AppColors.statGreen,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF10B981)
+                                  color: AppColors.statGreen
                                       .withValues(alpha: 0.55),
                                   blurRadius: 6,
                                 )
@@ -784,7 +784,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                       height: 52,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Color(0xFF3B82F6),
+                        color: AppColors.statBlue,
                       ),
                       child: Center(
                         child: Text(
@@ -806,7 +806,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 5, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6),
+                            color: AppColors.statPurple,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -1022,11 +1022,11 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
 
   Widget _buildPowers(RankTheme theme, bool isTablet) {
     final powers = [
-      ("L'Infini", const Color(0xFF8B5CF6), const Color(0xFFC4B5FD)),
-      ('Vide Illimité', const Color(0xFF8B5CF6), const Color(0xFFC4B5FD)),
-      ('Technique Inversée', const Color(0xFF10B981), const Color(0xFF6EE7B7)),
-      ('Domaine Expansif', const Color(0xFF3B82F6), const Color(0xFF93C5FD)),
-      ('Infini Pourpre', AppColors.error, const Color(0xFFFCA5A5)),
+      ("L'Infini", AppColors.statPurple, AppColors.statPurplePastel),
+      ('Vide Illimité', AppColors.statPurple, AppColors.statPurplePastel),
+      ('Technique Inversée', AppColors.statGreen, AppColors.statGreenPastel),
+      ('Domaine Expansif', AppColors.statBlue, AppColors.statBluePastel),
+      ('Infini Pourpre', AppColors.error, AppColors.errorPastel),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
@@ -1066,11 +1066,11 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
 
   Widget _buildAttributeRadar(RankTheme theme) {
     final attrs = [
-      ('Force', 0.75, const Color(0xFFE53935)),
-      ('Vitesse', 0.90, const Color(0xFF3B82F6)),
-      ('Technique', 1.00, const Color(0xFF8B5CF6)),
-      ('Endurance', 0.70, const Color(0xFF10B981)),
-      ('Intelligence', 0.95, const Color(0xFFF59E0B)),
+      ('Force', 0.75, AppColors.error),
+      ('Vitesse', 0.90, AppColors.statBlue),
+      ('Technique', 1.00, AppColors.statPurple),
+      ('Endurance', 0.70, AppColors.statGreen),
+      ('Intelligence', 0.95, AppColors.warning),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -1192,7 +1192,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
-                        colors: [Color(0xFFF59E0B), Color(0xFFFF6D1B)]),
+                        colors: [AppColors.warning, AppColors.gradientOrange]),
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.warning.withValues(alpha: 0.35),
@@ -1333,7 +1333,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                     _galleryImages[i],
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
-                      color: const Color(0xFF1A1A2E),
+                      color: AppColors.backgroundCard,
                       child: const Icon(Icons.image_rounded,
                           color: Colors.white38, size: 24),
                     ),
@@ -1385,20 +1385,20 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                 _statBar('❤️', 'Likes', _formatLikes(c.likes), likePct,
                     theme.accentColor, theme),
                 _statBar('💬', 'Commentaires', _commentCount.toString(),
-                    commentPct, const Color(0xFF3B82F6), theme),
+                    commentPct, AppColors.statBlue, theme),
                 _statBar('🗳️', 'Votes Fan du Mois', _voteCount.toString(),
-                    votePct, const Color(0xFF8B5CF6), theme),
+                    votePct, AppColors.statPurple, theme),
                 _statBar('🧠', 'Quiz réussis', _quizCount.toString(), quizPct,
-                    const Color(0xFF10B981), theme),
+                    AppColors.statGreen, theme),
                 const SizedBox(height: 16),
                 _sectionLabel(theme, 'TOP 3 FANS CE MOIS-CI'),
                 const SizedBox(height: 8),
                 _fanRow('🥇', 'Jean-Paul_Otaku', 'JONIN',
-                    const Color(0xFF3B82F6), '482 pts', theme),
-                _fanRow('🥈', 'Awa_Fan25', 'GENIN', const Color(0xFF5A5A6A),
+                    AppColors.statBlue, '482 pts', theme),
+                _fanRow('🥈', 'Awa_Fan25', 'GENIN', AppColors.textMuted,
                     '310 pts', theme),
                 _fanRow('🥉', 'OtakuPro237', 'JONIN',
-                    const Color(0xFF3B82F6), '287 pts', theme),
+                    AppColors.statBlue, '287 pts', theme),
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () => _guardAuth(() {}),
@@ -1461,12 +1461,12 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                   child: GestureDetector(
                     onTap: _guardJonin,
                     child: CharAICard(
-                      bg: const Color(0xFF151520),
-                      border: const Color(0xFF3B82F6),
+                      bg: AppColors.backgroundAIBlue,
+                      border: AppColors.statBlue,
                       icon: '💬',
                       title: 'Parle à ${c.name}',
                       subtitle: 'Chatbot IA · Jonin+',
-                      subtitleColor: const Color(0xFF3B82F6),
+                      subtitleColor: AppColors.statBlue,
                     ),
                   ),
                 ),
@@ -1475,12 +1475,12 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                   child: GestureDetector(
                     onTap: _guardJonin,
                     child: CharAICard(
-                      bg: const Color(0xFF120A1E),
-                      border: const Color(0xFF8B5CF6),
+                      bg: AppColors.backgroundAIPurple,
+                      border: AppColors.statPurple,
                       icon: '🧠',
                       title: 'Quiz · ${c.name}?',
                       subtitle: '5 questions · +5pts',
-                      subtitleColor: const Color(0xFF8B5CF6),
+                      subtitleColor: AppColors.statPurple,
                     ),
                   ),
                 ),
@@ -1531,7 +1531,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)]),
+                        colors: [AppColors.statBlue, AppColors.statPurple]),
                   ),
                   child: Center(
                     child: Text('JP',
@@ -1578,7 +1578,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
             initials: 'JP',
             name: 'Jean-Paul_Otaku',
             tier: 'JONIN',
-            tierColor: Color(0xFF3B82F6),
+            tierColor: AppColors.statBlue,
             time: 'il y a 2h',
             body:
                 "Ce personnage est clairement le plus stylé de tout l'animé. Son design, ses pouvoirs, son attitude... PARFAIT. 🔥",
@@ -1588,7 +1588,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
             initials: 'AW',
             name: 'Awa_Fan',
             tier: 'GENIN',
-            tierColor: Color(0xFF5A5A6A),
+            tierColor: AppColors.textMuted,
             time: 'il y a 5h',
             body: 'Même comme ça je reste fan numéro 1 ! 😭',
             likes: '9',
@@ -1597,7 +1597,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
             initials: 'OP',
             name: 'OtakuPro237',
             tier: 'JONIN',
-            tierColor: Color(0xFF3B82F6),
+            tierColor: AppColors.statBlue,
             time: 'hier',
             body: 'La scène du Vide Illimité... incomparable.',
             likes: '15',
@@ -1732,7 +1732,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                  colors: [Color(0xFFFF6D1B), Color(0xFF8B5CF6)]),
+                  colors: [AppColors.gradientOrange, AppColors.statPurple]),
             ),
             child: Center(
               child: Text(initials,

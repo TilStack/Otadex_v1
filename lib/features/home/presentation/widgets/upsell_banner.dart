@@ -19,7 +19,7 @@ class UpsellBanner extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             AppColors.rankKageBg,
-            Color(0xFF3D1500),
+            AppColors.rankKageBgElevated,
           ],
         ),
         borderRadius: BorderRadius.circular(16),

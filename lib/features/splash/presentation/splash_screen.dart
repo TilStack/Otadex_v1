@@ -113,7 +113,7 @@ class _SplashScreenState extends State<SplashScreen>
                 gradient: RadialGradient(
                   center: Alignment.center,
                   radius: 0.55,
-                  colors: [Color(0x18FF6500), Colors.transparent],
+                  colors: [AppColors.accentGlowFaint, Colors.transparent],
                 ),
               ),
             ),
@@ -140,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen>
                     decoration: const BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0x50FF6500),
+                          color: AppColors.accentGlowStrong,
                           blurRadius: 50,
                           spreadRadius: 4,
                         ),
