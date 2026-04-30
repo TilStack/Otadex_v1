@@ -118,19 +118,19 @@ class UserProfile {
   }
 
   static UserProfile mock() => UserProfile(
-        id: 'usr_demo_001',
-        pseudo: 'Jean-Paul_Otaku',
-        displayName: 'Jean-Paul',
-        email: 'jeanpaul@otadex.app',
+        id: 'usr_new_001',
+        pseudo: 'NouveauGenin',
+        displayName: 'NouveauGenin',
+        email: 'nouveau@otadex.app',
         rank: 'genin',
         subscriptionPlan: 'free',
-        collectCount: 67,
-        fanScore: 3847,
-        rankCount: 12,
-        progressPct: 0.78,
-        currentPts: 3847,
+        collectCount: 0,
+        fanScore: 0,
+        rankCount: 0,
+        progressPct: 0.0,
+        currentPts: 0,
         maxPts: 5000,
-        bio: 'Fan de Shonen depuis 2010 🏴',
-        createdAt: DateTime(2024, 1, 15),
+        bio: '',
+        createdAt: DateTime(2026, 4, 30),
       );
 }

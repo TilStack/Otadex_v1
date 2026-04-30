@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/otadex_theme.dart';
@@ -10,6 +11,8 @@ class SettingsSection extends StatelessWidget {
   final ValueChanged<String> onLanguageSelect;
   final bool isDarkMode;
   final VoidCallback onThemeToggle;
+  final VoidCallback onEditProfile;
+  final VoidCallback onChangePassword;
 
   const SettingsSection({
     super.key,
@@ -19,6 +22,8 @@ class SettingsSection extends StatelessWidget {
     required this.onLanguageSelect,
     required this.isDarkMode,
     required this.onThemeToggle,
+    required this.onEditProfile,
+    required this.onChangePassword,
   });
 
   @override
@@ -32,9 +37,17 @@ class SettingsSection extends StatelessWidget {
           _SectionLabel(label: s.accountSection),
           const SizedBox(height: 8),
           _SettingsCard(children: [
-            _SettingsRow(icon: '👤', label: s.editProfile, hasArrow: true),
+            _SettingsRow(
+                icon: '👤',
+                label: s.editProfile,
+                hasArrow: true,
+                onTap: onEditProfile),
             const _SettingsDivider(),
-            _SettingsRow(icon: '🔒', label: s.changePassword, hasArrow: true),
+            _SettingsRow(
+                icon: '🔒',
+                label: s.changePassword,
+                hasArrow: true,
+                onTap: onChangePassword),
             const _SettingsDivider(),
             _SettingsRow(
                 icon: '✉️',
@@ -86,12 +99,6 @@ class SettingsSection extends StatelessWidget {
                 hasArrow: true),
             const _SettingsDivider(),
             _SettingsRow(icon: '📊', label: s.myHistory, hasArrow: true),
-            const _SettingsDivider(),
-            _SettingsRow(
-                icon: '🧹',
-                label: s.clearCache,
-                value: s.cacheSize,
-                hasArrow: true),
           ]),
           const SizedBox(height: 24),
           _SectionLabel(label: s.aboutSection),
@@ -104,9 +111,16 @@ class SettingsSection extends StatelessWidget {
                 hasArrow: false),
             const _SettingsDivider(),
             _SettingsRow(
-                icon: '📄', label: s.termsOfService, hasArrow: true),
+                icon: '📄',
+                label: s.termsOfService,
+                hasArrow: true,
+                onTap: () => context.push('/terms')),
             const _SettingsDivider(),
-            _SettingsRow(icon: '🔐', label: s.privacyPolicy, hasArrow: true),
+            _SettingsRow(
+                icon: '🔐',
+                label: s.privacyPolicy,
+                hasArrow: true,
+                onTap: () => context.push('/privacy')),
             const _SettingsDivider(),
             _SettingsRow(icon: '⭐', label: s.rateApp, hasArrow: true),
           ]),

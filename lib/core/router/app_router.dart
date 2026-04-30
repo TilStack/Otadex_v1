@@ -9,6 +9,8 @@ import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/character/presentation/character_detail_screen.dart';
 import '../../features/character/presentation/character_list_screen.dart';
+import '../../features/legal/presentation/privacy_policy_screen.dart';
+import '../../features/legal/presentation/terms_screen.dart';
 import '../../core/models/character.dart';
 import '../constants/app_constants.dart';
 
@@ -79,6 +81,16 @@ class AppRouter {
             characters: extra['characters'] as List<Character>,
           );
         },
+      ),
+      GoRoute(
+        path: '/terms',
+        name: 'terms',
+        builder: (context, state) => const TermsScreen(),
+      ),
+      GoRoute(
+        path: '/privacy',
+        name: 'privacy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
       ),
     ],
   );

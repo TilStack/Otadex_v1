@@ -178,6 +178,11 @@ class AppStrings {
     required this.creators,
     required this.all,
     required this.placeholdertext1,
+    required this.saveChanges,
+    required this.currentPassword,
+    required this.bioLabel,
+    required this.profileUpdated,
+    required this.passwordChanged,
   });
 
   // ── Auth gate ──────────────────────────────────────────────────────────────
@@ -355,6 +360,11 @@ class AppStrings {
   final String creators;
   final String all;
   final String placeholdertext1;
+  final String saveChanges;
+  final String currentPassword;
+  final String bioLabel;
+  final String profileUpdated;
+  final String passwordChanged;
 
   static AppStrings of(BuildContext context) => AppLocale.of(context);
 
@@ -548,7 +558,12 @@ class AppStrings {
       animes: 'Animés',
       creators: 'Créateurs',
       all: 'Tous',
-      placeholdertext1: 'Search a character, an anime...');
+      placeholdertext1: 'Search a character, an anime...',
+      saveChanges: 'Enregistrer',
+      currentPassword: 'Mot de passe actuel',
+      bioLabel: 'Bio',
+      profileUpdated: 'Profil mis à jour !',
+      passwordChanged: 'Mot de passe modifié !');
 
   static const AppStrings _en = AppStrings(
     // Auth gate
@@ -727,6 +742,11 @@ class AppStrings {
     creators: 'Creators',
     all: 'All',
     placeholdertext1: 'Search a character, an anime...',
+    saveChanges: 'Save',
+    currentPassword: 'Current password',
+    bioLabel: 'Bio',
+    profileUpdated: 'Profile updated!',
+    passwordChanged: 'Password changed!',
   );
 
   static const AppStrings _ja = AppStrings(
@@ -897,6 +917,11 @@ class AppStrings {
     creators: 'クリエイター',
     all: 'すべて',
     placeholdertext1: 'キャラクター、アニメ、クリエイター...',
+    saveChanges: '保存',
+    currentPassword: '現在のパスワード',
+    bioLabel: '自己紹介',
+    profileUpdated: 'プロフィールを更新しました！',
+    passwordChanged: 'パスワードを変更しました！',
   );
 
   static const AppStrings _zh = AppStrings(
@@ -1068,5 +1093,10 @@ class AppStrings {
     all: '全部',
 
     placeholdertext1: '角色、动漫、创作者...',
+    saveChanges: '保存',
+    currentPassword: '当前密码',
+    bioLabel: '简介',
+    profileUpdated: '个人资料已更新！',
+    passwordChanged: '密码已更改！',
   );
 }

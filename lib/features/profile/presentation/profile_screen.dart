@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/locale_provider.dart';
+import '../../../core/providers/user_profile_provider.dart';
 import '../../../core/theme/theme_mode_provider.dart';
 import 'widgets/avatar_picker.dart';
+import 'widgets/change_password_sheet.dart';
+import 'widgets/edit_profile_sheet.dart';
 import 'widgets/kage_banner.dart';
 import 'widgets/plan_section.dart';
 import 'widgets/profile_hero.dart';
@@ -26,37 +29,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _showKageBanner = true;
   String _billingCycle = 'mensuel';
 
-  static const _username = 'Jean-Paul_Otaku';
-  static const _bio = 'Fan de Shonen depuis 2010 🏴';
-  static const _collectCount = 67;
-  static const _fanScore = 3847;
-  static const _rankCount = 12;
-  static const _progressPct = 0.78;
-  static const _currentPts = 3847;
-  static const _maxPts = 5000;
+  static const _collectionItems = <(String, Color, Color, bool)>[];
 
-  static const _collectionItems = [
-    ('Ronin Kage', Color(0xFF1565C0), Color(0xFF0D47A1), true),
-    ('Sora Ken', Color(0xFF7B1FA2), Color(0xFF4A148C), false),
-    ('Akira Void', Color(0xFF00695C), Color(0xFF004D40), false),
-    ('Kira Sun', Color(0xFFE65100), Color(0xFFBF360C), false),
-    ('Mika Rose', Color(0xFFAD1457), Color(0xFF880E4F), false),
-    ('Zeno', Color(0xFF00838F), Color(0xFF006064), false),
-  ];
+  void _showEditProfile() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const EditProfileSheet(),
+    );
+  }
+
+  void _showChangePassword() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const ChangePasswordSheet(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final locale = ref.watch(localeProvider);
+    final profile = ref.watch(userProfileProvider);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const ProfileHero(username: _username, bio: _bio),
+          ProfileHero(username: profile.pseudo, bio: profile.bio),
           const SizedBox(height: 20),
-          const ProfileStatRow(
-            collectCount: _collectCount,
-            fanScore: _fanScore,
-            rankCount: _rankCount,
+          ProfileStatRow(
+            collectCount: profile.collectCount,
+            fanScore: profile.fanScore,
+            rankCount: profile.rankCount,
           ),
           const SizedBox(height: 20),
           ProfileTabBar(
@@ -65,10 +71,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           ProfileTabContent(
             selectedTab: _selectedTab,
-            progressPct: _progressPct,
-            currentPts: _currentPts,
-            maxPts: _maxPts,
-            collectCount: _collectCount,
+            progressPct: profile.progressPct,
+            currentPts: profile.currentPts,
+            maxPts: profile.maxPts,
+            collectCount: profile.collectCount,
             collectionItems: _collectionItems,
           ),
           const SizedBox(height: 28),
@@ -99,6 +105,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ref.read(themeModeProvider.notifier).state =
                   current == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
             },
+            onEditProfile: _showEditProfile,
+            onChangePassword: _showChangePassword,
           ),
           const SizedBox(height: 28),
           const ProfileLogoutFooter(),
