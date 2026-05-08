@@ -8,6 +8,7 @@ import '../../../core/models/character.dart';
 import '../../../core/models/creator_entry.dart';
 import '../../../core/providers/otadex_providers.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/otadex_image.dart';
 import '../../../core/theme/otadex_theme.dart';
 import '../../../core/theme/rank_theme.dart';
 import '../../character/presentation/widgets/char_pill.dart';
@@ -567,11 +568,9 @@ class _CharactersRow extends StatelessWidget {
                   children: [
                     // Image or fallback
                     character.imagePath != null
-                        ? Image.asset(
-                            character.imagePath!,
+                        ? OtadexImage(
+                            imagePath: character.imagePath!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                _buildFallback(character),
                           )
                         : _buildFallback(character),
 

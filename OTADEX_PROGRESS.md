@@ -185,6 +185,14 @@
 |---|---|---|
 | `lib/features/creator/presentation/creator_screen.dart` | ✅ Fait | Header initiales, bio expand, stats, bibliographie grid 2col, personnages scroll H |
 
+### Core — Assets & Images
+
+| Fichier | Statut | Notes |
+|---|---|---|
+| `lib/core/constants/app_assets.dart` | ✅ Fait | Helper centralisé — 15 personnages JJK, listes const |
+| `lib/core/widgets/otadex_image.dart` | ✅ Fait | Widget universel local + réseau (CachedNetworkImage + shimmer) |
+| `assets/images/jujutsu_kaisen/` | ✅ Fait | 15 dossiers snake_case, ~120 images .jpeg numérotées |
+
 ### Features — Manquants (prochaines tâches)
 
 | Fichier | Statut | Notes |
@@ -200,6 +208,18 @@
 | `lib/features/legal/presentation/terms_screen.dart` | ✅ Fait | CGU |
 
 ---
+
+## Données mockées — Personnages avec images locales
+
+| Personnage | Anime | Images | Flags |
+|---|---|---|---|
+| Gojo Satoru (c3) | Jujutsu Kaisen | 8 images JJK locales | isTrending |
+| Yuji Itadori | Jujutsu Kaisen | 8 images JJK locales | isTrending |
+| Ryomen Sukuna | Jujutsu Kaisen | 8 images JJK locales | isTrending |
+| Megumi Fushiguro | Jujutsu Kaisen | 8 images JJK locales | isRecommended |
+| Maki Zenin | Jujutsu Kaisen | 8 images JJK locales | isRecommended |
+
+> Prêt à ajouter d'autres animés dans `assets/images/` (Solo Leveling, Demon Slayer, etc.)
 
 ## Bugs connus
 
@@ -236,6 +256,8 @@ Option B — PlansScreen (abonnement)
 | Mai 2026 | Initialisation projet — Task 01 : Splash, Onboarding, Auth (mock) |
 | Mai 2026 | Task 02 : HomeScreen réactif (isLoggedInProvider), ProfileScreen complet, avatar picker avec Jonin gate, permissions Android image_picker |
 | 5 mai 2026 | Task 03 : Fix bug auth persistance (main.dart override isLoggedInProvider), AnimeDetailScreen complet, CreatorScreen complet, router mis à jour (/anime/:id, /creator/:id) |
+| 8 mai 2026 | Task 04 : CollectionScreen branché (Tab 2 BottomNav), UserProfile.collectedCharacterIds + addToCollection/removeFromCollection, placeholder FR corrigé, compteur collection cohérent |
+| 8 mai 2026 | Task 05 : Assets images JJK locales (15 personnages, ~120 images), app_assets.dart, OtadexImage widget (local+réseau), mock_data.dart → 5 personnages JJK avec images réelles, Character.images ajouté |
 
 ---
 *À mettre à jour par Claude Code à la fin de chaque session.*

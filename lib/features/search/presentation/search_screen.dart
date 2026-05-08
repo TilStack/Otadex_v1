@@ -9,6 +9,7 @@ import '../../../core/providers/otadex_providers.dart';
 import '../../../core/services/otadex_data_service.dart';
 import '../../../core/theme/otadex_theme.dart';
 import '../../../core/theme/rank_theme.dart';
+import '../../../core/widgets/otadex_image.dart';
 
 class RechercheScreen extends ConsumerStatefulWidget {
   const RechercheScreen({super.key});
@@ -1131,11 +1132,10 @@ class _RechercheScreenState extends ConsumerState<RechercheScreen>
               borderRadius: BorderRadius.circular(8),
             ),
             child: c.imagePath != null
-                ? ClipRRect(
+                ? OtadexImage(
+                    imagePath: c.imagePath!,
+                    fit: BoxFit.cover,
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(c.imagePath!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const SizedBox()),
                   )
                 : null,
           ),

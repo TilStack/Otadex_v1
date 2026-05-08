@@ -14,6 +14,7 @@ import 'widgets/home_app_bar.dart';
 import 'widgets/search_bar_widget.dart';
 import 'widgets/trending_section.dart';
 import 'widgets/upsell_banner.dart';
+import '../../collection/presentation/collection_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../search/presentation/search_screen.dart';
 
@@ -109,8 +110,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               // Tab 1 — Recherche
               const RechercheScreen(),
-              // Tab 2 — Collection (placeholder)
-              const Center(child: SizedBox.shrink()),
+              // Tab 2 — Collection
+              const CollectionScreen(),
               // Tab 3 — Profil
               const ProfileScreen(),
             ],

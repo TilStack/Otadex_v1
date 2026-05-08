@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/otadex_theme.dart';
 import '../../../core/theme/rank_theme.dart';
 import '../../../core/widgets/auth_gate_modal.dart';
+import '../../../core/widgets/otadex_image.dart';
 import '../../../core/widgets/subscription_modal.dart';
 import 'widgets/char_ai_card.dart';
 import 'widgets/char_circle_button.dart';
@@ -351,11 +352,9 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
         ),
       ),
       child: c.imagePath != null
-          ? Image.asset(
-              c.imagePath!,
+          ? OtadexImage(
+              imagePath: c.imagePath!,
               fit: BoxFit.contain,
-              alignment: Alignment.bottomCenter,
-              errorBuilder: (_, __, ___) => _buildSilhouette(),
             )
           : _buildSilhouette(),
     );

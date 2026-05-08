@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/character.dart';
+import 'otadex_image.dart';
 
 /// Displays a character image asset when available, falling back to a
 /// gradient avatar showing the character's initials when the asset is
@@ -37,12 +38,11 @@ class CharacterAvatar extends StatelessWidget {
     final path = character.imagePath;
     if (path == null) return _placeholder();
 
-    return Image.asset(
-      path,
+    return OtadexImage(
+      imagePath: path,
       width: width,
       height: height,
       fit: fit,
-      errorBuilder: (_, __, ___) => _placeholder(),
     );
   }
 

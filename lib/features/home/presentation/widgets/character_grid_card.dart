@@ -4,6 +4,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../../core/models/character.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/otadex_theme.dart';
+import '../../../../../core/widgets/otadex_image.dart';
 
 class CharacterGridCard extends StatefulWidget {
   final Character character;
@@ -66,10 +67,9 @@ class _CharacterGridCardState extends State<CharacterGridCard> {
               children: [
                 // Full-bleed image or fallback gradient
                 if (character.imagePath != null)
-                  Image.asset(
-                    character.imagePath!,
+                  OtadexImage(
+                    imagePath: character.imagePath!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildFallbackBg(character),
                   )
                 else
                   _buildFallbackBg(character),

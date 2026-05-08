@@ -12,6 +12,7 @@ class Character {
   final double rating;
   final int likes;
   final String? imagePath;
+  final List<String> images;
   final String category;
   final bool isTrending;
   final bool isNew;
@@ -42,6 +43,7 @@ class Character {
     required this.rating,
     required this.likes,
     this.imagePath,
+    this.images = const [],
     required this.category,
     this.isTrending = false,
     this.isNew = false,
@@ -73,6 +75,7 @@ class Character {
       rating: (json['rating'] as num).toDouble(),
       likes: (json['likes'] as num).toInt(),
       imagePath: json['imagePath'] as String?,
+      images: (json['images'] as List<dynamic>?)?.cast<String>() ?? const [],
       category: json['category'] as String,
       isTrending: json['isTrending'] as bool? ?? false,
       isNew: json['isNew'] as bool? ?? false,

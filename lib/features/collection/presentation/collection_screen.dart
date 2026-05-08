@@ -6,6 +6,7 @@ import '../../../core/data/mock_data.dart';
 import '../../../core/models/character.dart';
 import '../../../core/providers/user_profile_provider.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/otadex_image.dart';
 
 class CollectionScreen extends ConsumerWidget {
   const CollectionScreen({super.key});
@@ -221,11 +222,9 @@ class _CharCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             if (character.imagePath != null)
-              Image.asset(
-                character.imagePath!,
+              OtadexImage(
+                imagePath: character.imagePath!,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) =>
-                    _GradientFallback(character: character),
               )
             else
               _GradientFallback(character: character),
