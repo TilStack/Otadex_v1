@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shimmer/shimmer.dart';
+import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -100,7 +101,7 @@ class _SplashScreenState extends State<SplashScreen>
           // ── Layer 0 : splash_illustration.png en fond (FadeIn 0→0.3) ──
           Positioned.fill(
             child: Image.asset(
-              'assets/images/splash/splash_illustration.png',
+              AppAssets.splashBackground,
               fit: BoxFit.cover,
               opacity: const AlwaysStoppedAnimation(0.30),
             ).animate().fadeIn(duration: 1000.ms),
@@ -147,7 +148,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ],
                     ),
                     child: Image.asset(
-                      'assets/images/logo/otadex_logo.png',
+                      AppAssets.logoFull,
                       width: 220,
                       fit: BoxFit.contain,
                     ),

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -90,7 +91,7 @@ class _SlideThreeContentState extends State<SlideThreeContent>
                     );
                   },
                   child: Image.asset(
-                    'assets/images/onboarding/onboarding_2_1.png',
+                    AppAssets.onboarding2Alt,
                     width: 260,
                     height: 260,
                     fit: BoxFit.contain,

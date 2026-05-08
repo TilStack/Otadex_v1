@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/constants/app_assets.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -53,7 +54,7 @@ class _SlideOneContentState extends State<SlideOneContent>
           child: SizedBox(
             height: size.height * 0.38,
             child: Image.asset(
-              'assets/images/onboarding/onboarding_1.png',
+              AppAssets.onboarding1,
               fit: BoxFit.contain,
             ),
           ),

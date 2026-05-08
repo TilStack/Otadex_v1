@@ -191,9 +191,14 @@
 
 | Fichier | Statut | Notes |
 |---|---|---|
-| `lib/core/constants/app_assets.dart` | ✅ Fait | Helper centralisé — 15 personnages JJK, listes const |
+| `lib/core/constants/app_assets.dart` | ✅ Fait | Assets locaux uniquement : logo, splash, onboarding, defaultAvatar |
 | `lib/core/widgets/otadex_image.dart` | ✅ Fait | Widget universel local + réseau (CachedNetworkImage + shimmer) |
-| `assets/images/jujutsu_kaisen/` | ✅ Fait | 15 dossiers snake_case, ~120 images .jpeg numérotées |
+| `assets/images/logo/` | ✅ Fait | otadex_logo.png, otadex_icon.png |
+| `assets/images/splash/` | ✅ Fait | splash_illustration.png, rank_bg_kage.png |
+| `assets/images/onboarding/` | ✅ Fait | onboarding_1.png, onboarding_2.png, onboarding_2_1.png, onboarding_3.png |
+| `assets/images/characters/satoru_gojo/` | ✅ Fait | 5 images placeholder (gojo_01–05) — defaultAvatar local |
+| `assets/images/jujutsu_kaisen/` | 🗑️ Supprimé | Task 07 — images animés/persos viennent du réseau |
+| `assets/images/Animé pictures/` | 🗑️ Supprimé | Task 07 — source originale supprimée du bundle Flutter |
 
 ### Features — Manquants (prochaines tâches)
 
@@ -211,17 +216,16 @@
 
 ---
 
-## Données mockées — Personnages avec images locales
+## Données mockées — Stratégie images
 
-| Personnage | Anime | Images | Flags |
-|---|---|---|---|
-| Gojo Satoru (c3) | Jujutsu Kaisen | 8 images JJK locales | isTrending |
-| Yuji Itadori | Jujutsu Kaisen | 8 images JJK locales | isTrending |
-| Ryomen Sukuna | Jujutsu Kaisen | 8 images JJK locales | isTrending |
-| Megumi Fushiguro | Jujutsu Kaisen | 8 images JJK locales | isRecommended |
-| Maki Zenin | Jujutsu Kaisen | 8 images JJK locales | isRecommended |
+| Source | Usage |
+|---|---|
+| AniList CDN (réseau) | Toutes les images personnages/animés — via `OtadexImage(imagePath: url)` |
+| `assets/images/characters/satoru_gojo/` | Placeholder local générique (5 fichiers, ~500 KB) |
+| Logo / splash / onboarding | Assets locaux permanents — référencés via `AppAssets.*` |
 
-> Prêt à ajouter d'autres animés dans `assets/images/` (Solo Leveling, Demon Slayer, etc.)
+> APK < 20 MB — seuls logo, splash et onboarding sont bundlés localement.
+> Images animés/persos → réseau uniquement (AniList CDN + Firebase Storage futur).
 
 ## Bugs connus
 
@@ -261,6 +265,7 @@ Option B — PlansScreen (abonnement)
 | 8 mai 2026 | Task 04 : CollectionScreen branché (Tab 2 BottomNav), UserProfile.collectedCharacterIds + addToCollection/removeFromCollection, placeholder FR corrigé, compteur collection cohérent |
 | 8 mai 2026 | Task 05 : Assets images JJK locales (15 personnages, ~120 images), app_assets.dart, OtadexImage widget (local+réseau), mock_data.dart → 5 personnages JJK avec images réelles, Character.images ajouté |
 | 8 mai 2026 | Task 06 : AniList GraphQL live — http:^1.2.0 ajouté, AniListService (search/trending/detail), anilist_providers.dart (trending, featuredSlides, searchResults, characterDetail), HomeScreen héro + tendances branchés AniList, SearchScreen debounce 400ms + résultats live, fallback mock si réseau indisponible |
+| 8 mai 2026 | Task 07 : Nettoyage assets — pubspec.yaml allégé (logo/splash/onboarding/characters uniquement), app_assets.dart reécrit avec vrais fichiers locaux, assets/images/jujutsu_kaisen/ supprimé (~120 images), assets/images/Animé pictures/ supprimé, mock_data.dart migré vers imagePath réseau (images: [] pour JJK), splash+onboarding utilisent AppAssets.* |
 
 ---
 *À mettre à jour par Claude Code à la fin de chaque session.*
