@@ -147,7 +147,7 @@
 | `lib/features/character/presentation/widgets/char_pill.dart` | ✅ Fait | Pill tag (pouvoir, genre) |
 | `lib/features/character/presentation/widgets/char_section_header.dart` | ✅ Fait | Header section fiche |
 | `lib/features/character/presentation/widgets/char_tab_delegate.dart` | ✅ Fait | Delegate onglets fiche |
-| `features/character/presentation/gallery_screen.dart` | ❌ À faire | Galerie plein écran |
+| `lib/features/character/presentation/gallery_screen.dart` | ✅ Fait | Galerie plein écran — PageView + InteractiveViewer 4×, watermark Genin/Jonin, miniatures bas, hint swipe, download gate Kage |
 
 ### Features — Search
 
@@ -204,8 +204,8 @@
 
 | Fichier | Statut | Notes |
 |---|---|---|
-| `lib/features/character/presentation/gallery_screen.dart` | ❌ À faire | Galerie plein écran |
-| `lib/features/subscription/presentation/plans_screen.dart` | ❌ À faire | Page plans + CinetPay |
+| `lib/features/character/presentation/gallery_screen.dart` | ✅ Fait | Galerie plein écran — PageView + InteractiveViewer 4×, watermark Genin/Jonin, miniatures bas, hint swipe, download gate Kage |
+| `lib/features/subscription/presentation/plans_screen.dart` | ❌ À faire | Page plans + CinetPay (route /subscription stub présente dans app_router) |
 
 ### Features — Legal
 
@@ -239,19 +239,12 @@
 
 ## Prochaine tâche recommandée
 
-**Task 09 — GalleryScreen ou PlansScreen**
+**Task 10 — PlansScreen**
 
-Option A — GalleryScreen (galerie plein écran)
-- `lib/features/character/presentation/gallery_screen.dart`
-- Receives `List<String> images` + `initialIndex` via `state.extra`
-- PageView horizontal plein écran, pinch-to-zoom, barre image X/N
-- Route : `/gallery/:charId`
-
-Option B — PlansScreen (abonnement)
 - `lib/features/subscription/presentation/plans_screen.dart`
 - Cards Genin / Jonin / Kage avec features comparatives
 - Toggle mensuel / annuel, bouton CTA orange
-- Route : `/subscription`
+- Route : `/subscription` (stub déjà présent dans app_router.dart)
 
 ---
 
@@ -267,6 +260,7 @@ Option B — PlansScreen (abonnement)
 | 8 mai 2026 | Task 06 : AniList GraphQL live — http:^1.2.0 ajouté, AniListService (search/trending/detail), anilist_providers.dart (trending, featuredSlides, searchResults, characterDetail), HomeScreen héro + tendances branchés AniList, SearchScreen debounce 400ms + résultats live, fallback mock si réseau indisponible |
 | 8 mai 2026 | Task 07 : Nettoyage assets — pubspec.yaml allégé (logo/splash/onboarding/characters uniquement), app_assets.dart reécrit avec vrais fichiers locaux, assets/images/jujutsu_kaisen/ supprimé (~120 images), assets/images/Animé pictures/ supprimé, mock_data.dart migré vers imagePath réseau (images: [] pour JJK), splash+onboarding utilisent AppAssets.* |
 | 8 mai 2026 | Task 08 : Images mock → URLs AniList CDN — 8 personnages mis à jour (Gojo, Yuji, Sukuna, Megumi, Maki, Sung Jin-Woo, Tanjiro, Levi), plus d'imagePath vide ou placeholder local incorrect. searchAnimes() ajouté à AniListService. dart analyze → 0 erreur. |
+| 9 mai 2026 | Task 09 : GalleryScreen — galerie plein écran (gallery_screen.dart), route /gallery/:charId, route stub /subscription ajoutées à app_router.dart, character_detail_screen.dart migré vers OtadexImage + navigation galerie. dart analyze → 0 erreur. |
 
 ---
 *À mettre à jour par Claude Code à la fin de chaque session.*

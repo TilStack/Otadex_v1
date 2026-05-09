@@ -43,13 +43,19 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
 
   Character get c => widget.character;
 
-  static const _galleryImages = [
+  static const _kFallbackImages = [
     'assets/images/characters/satoru_gojo/gojo_01.jpg',
     'assets/images/characters/satoru_gojo/gojo_02.png',
     'assets/images/characters/satoru_gojo/gojo_03.png',
     'assets/images/characters/satoru_gojo/gojo_04_portrait.png',
     'assets/images/characters/satoru_gojo/gojo_05_portrait.png',
   ];
+
+  List<String> get _effectiveImages {
+    if (c.images.isNotEmpty) return c.images;
+    if (c.imagePath != null) return [c.imagePath!];
+    return _kFallbackImages;
+  }
 
   // ── Computed stats ───────────────────────────────────────────────
   int get _commentCount => (c.likes * 0.30).round();
@@ -1230,12 +1236,13 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
 
   Widget _buildGalerieTab(RankTheme theme, bool isTablet) {
     final crossAxis = isTablet ? 4 : 3;
+    final images = _effectiveImages;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel(theme, 'GALERIE — ${_galleryImages.length} PHOTOS'),
+          _sectionLabel(theme, 'GALERIE — ${images.length} PHOTOS'),
           const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
@@ -1246,102 +1253,22 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
               crossAxisSpacing: 6,
               childAspectRatio: 0.9,
             ),
-            itemCount: _galleryImages.length,
+            itemCount: images.length,
             itemBuilder: (_, i) => GestureDetector(
-              onTap: () => _showImageSheet(theme, i),
+              onTap: () => context.push(
+                '/gallery/${c.id}',
+                extra: {'images': images, 'initialIndex': i},
+              ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
-                  _galleryImages[i],
+                child: OtadexImage(
+                  imagePath: images[i],
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: theme.backgroundElevated,
-                    child: Icon(Icons.image_rounded,
-                        color: theme.textSecondary, size: 28),
-                  ),
                 ),
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showImageSheet(RankTheme theme, int startIndex) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.black,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.82,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        expand: false,
-        builder: (_, ctrl) => Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              child: Row(
-                children: [
-                  Text(
-                    'Galerie — ${c.name}',
-                    style: GoogleFonts.rajdhani(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${_galleryImages.length} photos',
-                    style: GoogleFonts.nunitoSans(
-                        fontSize: 12, color: Colors.white54),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: GridView.builder(
-                controller: ctrl,
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 4,
-                  crossAxisSpacing: 4,
-                  childAspectRatio: 1.0,
-                ),
-                itemCount: _galleryImages.length,
-                itemBuilder: (_, i) => ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    _galleryImages[i],
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: AppColors.backgroundCard,
-                      child: const Icon(Icons.image_rounded,
-                          color: Colors.white38, size: 24),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

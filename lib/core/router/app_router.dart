@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/splash/presentation/splash_screen.dart';
@@ -12,6 +13,7 @@ import '../../features/character/presentation/character_list_screen.dart';
 import '../../features/anime/presentation/anime_detail_screen.dart';
 import '../../features/creator/presentation/creator_screen.dart';
 import '../../features/collection/presentation/collection_screen.dart';
+import '../../features/character/presentation/gallery_screen.dart';
 import '../../features/legal/presentation/privacy_policy_screen.dart';
 import '../../features/legal/presentation/terms_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
@@ -111,6 +113,34 @@ class AppRouter {
         path: '/search-standalone',
         name: 'search-standalone',
         builder: (context, state) => const RechercheScreen(),
+      ),
+      GoRoute(
+        path: '/gallery/:charId',
+        name: 'gallery',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          final images = (extra['images'] as List).cast<String>();
+          final initialIndex = extra['initialIndex'] as int;
+          return GalleryScreen(images: images, initialIndex: initialIndex);
+        },
+      ),
+      GoRoute(
+        path: '/subscription',
+        name: 'subscription',
+        builder: (context, state) => Scaffold(
+          backgroundColor: const Color(0xFF0D0D14),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            title: const Text('Passer Kage'),
+          ),
+          body: const Center(
+            child: Text(
+              'Bientôt disponible',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+        ),
       ),
       GoRoute(
         path: '/terms',
