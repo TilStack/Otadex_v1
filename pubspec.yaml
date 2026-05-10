@@ -1,10 +1,10 @@
 name: otadex
 description: The Ultimate Anime Character Encyclopedia
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -44,6 +44,7 @@ dependencies:
 
   # Utils
   gap: ^3.0.1
+  url_launcher: ^6.2.0
 
   # Media
   image_picker: ^1.1.0

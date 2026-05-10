@@ -220,7 +220,7 @@
 | ---------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `lib/features/character/presentation/gallery_screen.dart`  | ✅ Fait    | Galerie plein écran — PageView + InteractiveViewer 4×, watermark Genin/Jonin, miniatures bas, hint swipe, download gate Kage |
 | `lib/features/subscription/presentation/plans_screen.dart` | ❌ À faire | Page plans + CinetPay (route /subscription stub présente dans app_router)                                                    |
-| `docs/index.html`                                          | ✅ Fait    | Landing page légale GitHub Pages                                                                                             |
+| `docs/index.html`                                          | ✅ Fait    | Landing page complète — hero mockup, features, plans Genin/Jonin/Kage, section légale, footer, scroll reveal, nav mobile   |
 | `docs/privacy-policy.html`                                 | ✅ Fait    | Politique de confidentialité FR/EN — toggle langue, conforme Play Store                                                      |
 | `docs/terms.html`                                          | ✅ Fait    | Conditions d'utilisation FR/EN — tableau plans, toggle langue                                                                |
 | `docs/account-deletion.html`                               | ✅ Fait    | Suppression de compte FR/EN — étapes in-app + email CTA, avertissement données                                               |
