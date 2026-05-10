@@ -47,8 +47,8 @@ A renseigner dans Play Console avec l'adresse officielle OTADEX.
 
 ## Site web
 
-`https://tilstack.github.io/Otadex_v1/`
+`https://otadex.tilstack.me/`
 
 ## Politique de confidentialite
 
-`https://tilstack.github.io/Otadex_v1/privacy-policy.html`
+`https://otadex.tilstack.me/privacy-policy.html`

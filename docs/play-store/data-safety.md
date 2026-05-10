@@ -55,7 +55,7 @@ Ce document prepare les reponses Play Console. Il doit etre verifie avant soumis
 
 Page publique:
 
-`https://tilstack.github.io/Otadex_v1/account-deletion.html`
+`https://otadex.tilstack.me/account-deletion.html`
 
 Avant publication, prevoir un flux in-app ou une procedure claire par email pour demander la suppression du compte et des donnees associees.
 

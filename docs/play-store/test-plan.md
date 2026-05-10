@@ -93,9 +93,9 @@ Resultat attendu:
 
 Verifier que ces URLs sont publiques:
 
-- `https://tilstack.github.io/Otadex_v1/privacy-policy.html`
-- `https://tilstack.github.io/Otadex_v1/terms.html`
-- `https://tilstack.github.io/Otadex_v1/account-deletion.html`
+- `https://otadex.tilstack.me/privacy-policy.html`
+- `https://otadex.tilstack.me/terms.html`
+- `https://otadex.tilstack.me/account-deletion.html`
 
 ## Tests navigation MVP
 

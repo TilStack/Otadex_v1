@@ -7,9 +7,9 @@
 - Version: `1.0.0+1`
 - Firebase project: `tilqui`
 - Public legal pages target:
-  - Privacy policy: `https://tilstack.github.io/Otadex_v1/privacy-policy.html`
-  - Terms: `https://tilstack.github.io/Otadex_v1/terms.html`
-  - Account deletion: `https://tilstack.github.io/Otadex_v1/account-deletion.html`
+  - Privacy policy: `https://otadex.tilstack.me/privacy-policy.html`
+  - Terms: `https://otadex.tilstack.me/terms.html`
+  - Account deletion: `https://otadex.tilstack.me/account-deletion.html`
 
 ## Actions manuelles avant soumission
 
