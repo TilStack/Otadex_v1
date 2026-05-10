@@ -9,13 +9,19 @@ import '../../../../../core/widgets/rank_badge.dart';
 class HomeAppBar extends StatelessWidget {
   final UserRank rank;
   final bool isLoggedIn;
+  final String? pseudo;
   final VoidCallback? onLoginTap;
+  final VoidCallback? onNotificationTap;
+  final VoidCallback? onProfileTap;
 
   const HomeAppBar({
     super.key,
     required this.rank,
     this.isLoggedIn = false,
+    this.pseudo,
     this.onLoginTap,
+    this.onNotificationTap,
+    this.onProfileTap,
   });
 
   @override
@@ -84,36 +90,62 @@ class HomeAppBar extends StatelessWidget {
                 const Spacer(),
                 if (isLoggedIn) ...[
                   // Notification button
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: theme.backgroundCard,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: theme.borderSubtle),
-                    ),
-                    child: Icon(
-                      Icons.notifications_outlined,
-                      color: theme.textSecondary,
-                      size: 20,
+                  InkWell(
+                    onTap: onNotificationTap,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: theme.backgroundCard,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: theme.borderSubtle),
+                      ),
+                      child: Icon(
+                        Icons.notifications_outlined,
+                        color: theme.textSecondary,
+                        size: 20,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Avatar
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: theme.accentColor.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: theme.accentColor.withValues(alpha: 0.4),
+                  // Profile shortcut
+                  InkWell(
+                    onTap: onProfileTap,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 108),
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: theme.accentColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: theme.accentColor.withValues(alpha: 0.4),
+                        ),
                       ),
-                    ),
-                    child: Icon(
-                      Icons.person_outline_rounded,
-                      color: theme.accentColor,
-                      size: 20,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.person_outline_rounded,
+                            color: theme.accentColor,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              _shortPseudo(pseudo),
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.nunitoSans(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: theme.accentColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ] else
@@ -149,5 +181,11 @@ class HomeAppBar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _shortPseudo(String? value) {
+    final clean = value?.trim();
+    if (clean == null || clean.isEmpty) return 'Profil';
+    return clean.length <= 9 ? clean : '${clean.substring(0, 9)}...';
   }
 }

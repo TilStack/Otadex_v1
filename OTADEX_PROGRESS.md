@@ -55,6 +55,7 @@
 | `lib/core/widgets/character_avatar.dart` | ✅ Fait | Avatar personnage réutilisable |
 | `lib/core/widgets/otadex_button.dart` | ✅ Fait | Bouton stylisé branded |
 | `lib/core/widgets/otadex_text_field.dart` | ✅ Fait | Champ texte stylisé |
+| `lib/core/widgets/auth_required_screen.dart` | ✅ Fait | Guard UI pour routes personnalisées nécessitant connexion |
 | `lib/core/widgets/rank_badge.dart` | ✅ Fait | Badge Genin/Jonin/Kage |
 | `lib/core/widgets/subscription_billing_card.dart` | ✅ Fait | Card cycle de facturation |
 | `lib/core/widgets/subscription_feature_item.dart` | ✅ Fait | Item liste fonctionnalités plan |
@@ -133,9 +134,10 @@
 
 | Fichier | Statut | Notes |
 |---|---|---|
-| `lib/features/home/presentation/home_screen.dart` | ✅ Fait | ConsumerStatefulWidget, watch isLoggedInProvider |
+| `lib/features/home/presentation/home_screen.dart` | ✅ Fait | ConsumerStatefulWidget, watch isLoggedInProvider + userProfileProvider |
 | `lib/features/home/presentation/widgets/bottom_nav_bar.dart` | ✅ Fait | Nav bar 4 onglets |
-| `lib/features/home/presentation/widgets/home_app_bar.dart` | ✅ Fait | AppBar avec badge rang |
+| `lib/features/home/presentation/widgets/home_app_bar.dart` | ✅ Fait | AppBar avec badge rang, pseudo court, boutons notification/profil |
+| `lib/features/home/presentation/notifications_screen.dart` | ✅ Fait | Page notifications avec état vide |
 | `lib/features/home/presentation/widgets/hero_featured_slider.dart` | ✅ Fait | Carousel hero animé |
 | `lib/features/home/presentation/widgets/trending_section.dart` | ✅ Fait | Section tendances |
 | `lib/features/home/presentation/widgets/trending_character_card.dart` | ✅ Fait | Card tendance |
@@ -171,7 +173,7 @@
 | Fichier | Statut | Notes |
 |---|---|---|
 | `lib/features/profile/presentation/profile_screen.dart` | ✅ Fait | Écran profil complet |
-| `lib/features/profile/presentation/widgets/profile_hero.dart` | ✅ Fait | Hero avatar + rang + pseudo + bio |
+| `lib/features/profile/presentation/widgets/profile_hero.dart` | ✅ Fait | Hero avatar + rang + pseudo Firebase + bio/statut |
 | `lib/features/profile/presentation/widgets/edit_profile_sheet.dart` | ✅ Fait | Sheet édition + image picker + Jonin gate |
 | `lib/features/profile/presentation/widgets/avatar_picker.dart` | ✅ Fait | Widget picker avatar |
 | `lib/features/profile/presentation/widgets/profile_stat_row.dart` | ✅ Fait | Ligne stats (collectés, score, rang) |
@@ -184,7 +186,7 @@
 | `lib/features/profile/presentation/widgets/billing_toggle.dart` | ✅ Fait | Toggle mensuel/annuel |
 | `lib/features/profile/presentation/widgets/settings_section.dart` | ✅ Fait | Section paramètres |
 | `lib/features/profile/presentation/widgets/change_password_sheet.dart` | ✅ Fait | Sheet changement mot de passe |
-| `lib/features/profile/presentation/widgets/profile_logout_footer.dart` | ✅ Fait | Footer déconnexion |
+| `lib/features/profile/presentation/widgets/profile_logout_footer.dart` | ✅ Fait | Footer déconnexion Firebase + retour login |
 
 ### Features — Anime
 
@@ -221,6 +223,7 @@
 | `docs/privacy-policy.html` | ✅ Fait | Politique de confidentialité FR/EN — toggle langue, conforme Play Store |
 | `docs/terms.html` | ✅ Fait | Conditions d'utilisation FR/EN — tableau plans, toggle langue |
 | `docs/account-deletion.html` | ✅ Fait | Suppression de compte FR/EN — étapes in-app + email CTA, avertissement données |
+| `docs/play-store/` | ✅ Fait | Préparation Play Store : listing FR, Data Safety, test plan, captures |
 
 ### Features — Legal
 
@@ -248,6 +251,11 @@
 |---|---|---|
 | Auth persistance | ✅ Corrigé | `main.dart` lit `keyIsLoggedIn` avant `runApp()` et override `isLoggedInProvider` via `ProviderScope.overrides` |
 | Auth Firebase réelle | ✅ Corrigé | Email/password + Google branchés via FirebaseAuthService, profil Firestore créé à l'inscription |
+| Déconnexion reste sur Home | ✅ Corrigé | Le footer profil appelle Firebase signOut, passe isLoggedInProvider à false et redirige vers `/login` |
+| Profil affiche NouveauGenin | ✅ Corrigé | Le pseudo Firebase/SharedPreferences est restauré dans userProfileProvider après login/register |
+| Notification Home inactive | ✅ Corrigé | Bouton notification ouvre `/notifications` avec état vide si aucune notification |
+| Pseudo absent dans Home | ✅ Corrigé | HomeAppBar affiche un pseudo court près du bouton profil |
+| Routes personnalisées accessibles sans compte | ✅ Corrigé | `/collection` et `/notifications` passent par AuthRequiredScreen; Home/Search restent publics |
 | Avatar non persistant | 🟡 Moyenne | L'avatar sélectionné via image_picker est un chemin temp/cache → perdu au redémarrage. Firebase Storage repoussé car payant/à utiliser plus tard |
 | Storage Firebase | 🟡 Moyenne | Non initialisé volontairement pour l'instant |
 | `flutter pub get` | ✅ Corrigé | Relancé après ajout de `firebase_auth` + `cloud_firestore`; `flutter analyze` + `dart analyze` → 0 issue |
@@ -264,6 +272,7 @@
 - Préparer Data Safety : données collectées, finalités, partage avec tiers
 - Vérifier Firebase Auth providers activés dans Firebase Console : Email/Password + Google
 - Tester login/register/logout sur Android réel ou émulateur
+- Déployer `firestore.rules` avant release
 - Préparer captures d'écran Play Store
 
 **Task 14 — PlansScreen**
@@ -306,6 +315,9 @@ URLs Play Console :
 | 9 mai 2026 | Décision conformité Google Play : ajouter avant Firebase Auth des pages légales web publiques pour Politique de confidentialité, Conditions d'utilisation et Suppression de compte. Objectif : disposer d'URLs publiques compatibles Play Console, en plus des écrans légaux intégrés dans l'app. |
 | 10 mai 2026 | Task 11 : Pages légales web — docs/index.html, docs/privacy-policy.html, docs/terms.html, docs/account-deletion.html. Dark OTADEX theme, toggle FR/EN, conforme Play Store. GitHub Pages prêt (activation manuelle requise). |
 | 10 mai 2026 | Task 12 : Firebase Auth réelle — dépendances `firebase_auth` + `cloud_firestore`, `firebase_auth_service.dart`, login/register email + Google branchés, logout profil branché, profil utilisateur créé dans Firestore à l'inscription, rang initial restauré depuis SharedPreferences. flutter analyze + dart analyze → 0 issue. |
+| 10 mai 2026 | Task 13 : Play Store preparation lancée — docs/play-store ajoutés (listing FR, Data Safety, test plan, screenshots), firestore.rules remplacé localement par des règles hors mode test. Actions manuelles restantes : GitHub Pages, providers Firebase, déploiement rules, tests Android, captures. |
+| 10 mai 2026 | Retours test auth/home — déconnexion redirige vers login, pseudo utilisateur restauré dans profil et HomeAppBar, page notifications avec état vide ajoutée, route `/notifications` créée, FirebaseAuthService persiste uid/email/pseudo/rang localement après login/register. flutter analyze + dart analyze → 0 issue. |
+| 10 mai 2026 | Vérification accès invité/connecté — Home et Search restent accessibles publiquement, Collection et Notifications sont protégées en accès direct par AuthRequiredScreen, la réhydratation du profil local ne se fait que si l'utilisateur est connecté. |
 
 ---
 *À mettre à jour par Claude Code à la fin de chaque session.*

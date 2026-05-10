@@ -24,7 +24,7 @@ class ProfileLogoutFooter extends ConsumerWidget {
             onPressed: () async {
               await FirebaseAuthService().signOut();
               ref.read(isLoggedInProvider.notifier).state = false;
-              if (context.mounted) context.go(AppRouter.splash);
+              if (context.mounted) context.go(AppRouter.login);
             },
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: theme.borderSubtle),

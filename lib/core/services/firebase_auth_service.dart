@@ -34,6 +34,12 @@ class FirebaseAuthService {
         pseudo: pseudo,
         email: email,
       );
+      await _persistUserSession(
+        uid: cred.user!.uid,
+        pseudo: pseudo,
+        email: email,
+        rank: AppConstants.rankGenin,
+      );
     } on FirebaseAuthException catch (e) {
       throw _mapError(e.code);
     }
@@ -44,9 +50,22 @@ class FirebaseAuthService {
     required String password,
   }) async {
     try {
-      await _auth.signInWithEmailAndPassword(
+      final cred = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
+      );
+      final user = cred.user;
+      if (user == null) return;
+      final profile = await _getUserProfile(user.uid);
+      final pseudo = profile?['pseudo'] as String? ??
+          user.displayName ??
+          email.split('@').first;
+      final rank = profile?['abonnement'] as String? ?? AppConstants.rankGenin;
+      await _persistUserSession(
+        uid: user.uid,
+        pseudo: pseudo,
+        email: user.email ?? email,
+        rank: rank,
       );
     } on FirebaseAuthException catch (e) {
       throw _mapError(e.code);
@@ -72,6 +91,16 @@ class FirebaseAuthService {
         email: firebaseUser.email ?? user.email,
         merge: true,
       );
+      final profile = await _getUserProfile(firebaseUser.uid);
+      await _persistUserSession(
+        uid: firebaseUser.uid,
+        pseudo: (profile?['pseudo'] as String?) ??
+            firebaseUser.displayName ??
+            user.displayName ??
+            'Otaku',
+        email: firebaseUser.email ?? user.email,
+        rank: (profile?['abonnement'] as String?) ?? AppConstants.rankGenin,
+      );
     } on FirebaseAuthException catch (e) {
       throw _mapError(e.code);
     } catch (e) {
@@ -86,6 +115,10 @@ class FirebaseAuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppConstants.keyIsLoggedIn, false);
     await prefs.setBool('isLoggedIn', false);
+    await prefs.remove(AppConstants.keyUserId);
+    await prefs.remove(AppConstants.keyUserEmail);
+    await prefs.remove(AppConstants.keyUserPseudo);
+    await prefs.remove(AppConstants.keyUserDisplayName);
     await prefs.remove(AppConstants.keyUserRank);
   }
 
@@ -111,6 +144,27 @@ class FirebaseAuthService {
       },
       merge ? SetOptions(merge: true) : null,
     );
+  }
+
+  Future<Map<String, dynamic>?> _getUserProfile(String uid) async {
+    final doc = await _firestore.collection('users').doc(uid).get();
+    return doc.data();
+  }
+
+  Future<void> _persistUserSession({
+    required String uid,
+    required String pseudo,
+    required String email,
+    required String rank,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(AppConstants.keyIsLoggedIn, true);
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setString(AppConstants.keyUserId, uid);
+    await prefs.setString(AppConstants.keyUserEmail, email);
+    await prefs.setString(AppConstants.keyUserPseudo, pseudo);
+    await prefs.setString(AppConstants.keyUserDisplayName, pseudo);
+    await prefs.setString(AppConstants.keyUserRank, rank);
   }
 
   String _mapError(String code) {

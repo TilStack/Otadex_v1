@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/providers/user_profile_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/services/firebase_auth_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -50,6 +51,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool(AppConstants.keyIsLoggedIn, true);
         await prefs.setBool('isLoggedIn', true);
+        ref.read(userProfileProvider.notifier).updateIdentity(
+              id: prefs.getString(AppConstants.keyUserId),
+              pseudo: prefs.getString(AppConstants.keyUserPseudo),
+              email: prefs.getString(AppConstants.keyUserEmail),
+              rank: prefs.getString(AppConstants.keyUserRank),
+            );
         ref.read(isLoggedInProvider.notifier).state = true;
         if (!mounted) return;
         setState(() => _isLoading = false);
@@ -81,6 +88,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(AppConstants.keyIsLoggedIn, true);
       await prefs.setBool('isLoggedIn', true);
+      ref.read(userProfileProvider.notifier).updateIdentity(
+            id: prefs.getString(AppConstants.keyUserId),
+            pseudo: prefs.getString(AppConstants.keyUserPseudo),
+            email: prefs.getString(AppConstants.keyUserEmail),
+            rank: prefs.getString(AppConstants.keyUserRank),
+          );
       ref.read(isLoggedInProvider.notifier).state = true;
       setState(() => _isLoading = false);
       if (!mounted) return;

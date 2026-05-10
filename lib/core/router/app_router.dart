@@ -8,6 +8,7 @@ import '../../features/onboarding/presentation/interests_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/home/presentation/notifications_screen.dart';
 import '../../features/character/presentation/character_detail_screen.dart';
 import '../../features/character/presentation/character_list_screen.dart';
 import '../../features/anime/presentation/anime_detail_screen.dart';
@@ -19,6 +20,7 @@ import '../../features/legal/presentation/terms_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../core/models/character.dart';
 import '../constants/app_constants.dart';
+import '../widgets/auth_required_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -70,6 +72,14 @@ class AppRouter {
         builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const AuthRequiredScreen(
+          message: 'Connecte-toi pour consulter tes notifications OTADEX.',
+          child: NotificationsScreen(),
+        ),
+      ),
+      GoRoute(
         path: '/character/:id',
         name: 'character',
         builder: (context, state) {
@@ -107,7 +117,10 @@ class AppRouter {
       GoRoute(
         path: '/collection',
         name: 'collection',
-        builder: (context, state) => const CollectionScreen(),
+        builder: (context, state) => const AuthRequiredScreen(
+          message: 'Connecte-toi pour retrouver ta collection personnelle.',
+          child: CollectionScreen(),
+        ),
       ),
       GoRoute(
         path: '/search-standalone',

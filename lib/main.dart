@@ -24,6 +24,9 @@ void main() async {
       false;
   final rankStr =
       prefs.getString(AppConstants.keyUserRank) ?? AppConstants.rankGenin;
+  final userId = prefs.getString(AppConstants.keyUserId);
+  final pseudo = prefs.getString(AppConstants.keyUserPseudo);
+  final email = prefs.getString(AppConstants.keyUserEmail);
   final userRank = UserRank.values.firstWhere(
     (r) => r.name == rankStr,
     orElse: () => UserRank.genin,
@@ -55,7 +58,12 @@ void main() async {
       overrides: [
         isLoggedInProvider.overrideWith((ref) => isLoggedIn),
         userProfileProvider.overrideWith(
-          (ref) => UserProfileNotifier(initialRank: userRank),
+          (ref) => UserProfileNotifier(
+            initialRank: userRank,
+            id: userId,
+            pseudo: pseudo,
+            email: email,
+          ),
         ),
       ],
       child: const OtadexApp(),

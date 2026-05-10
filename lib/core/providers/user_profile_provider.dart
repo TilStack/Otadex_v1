@@ -3,8 +3,36 @@ import '../models/user_profile.dart';
 import '../models/user_rank.dart';
 
 class UserProfileNotifier extends StateNotifier<UserProfile> {
-  UserProfileNotifier({UserRank initialRank = UserRank.genin})
-      : super(UserProfile.mock().copyWith(rank: initialRank.name));
+  UserProfileNotifier({
+    UserRank initialRank = UserRank.genin,
+    String? id,
+    String? pseudo,
+    String? email,
+  }) : super(
+          UserProfile.mock().copyWith(
+            id: id,
+            pseudo: pseudo,
+            displayName: pseudo,
+            email: email,
+            rank: initialRank.name,
+          ),
+        );
+
+  void updateIdentity({
+    String? id,
+    String? pseudo,
+    String? email,
+    String? rank,
+  }) {
+    state = state.copyWith(
+      id: id ?? state.id,
+      pseudo: pseudo ?? state.pseudo,
+      displayName: pseudo ?? state.displayName,
+      email: email ?? state.email,
+      rank: rank ?? state.rank,
+      updatedAt: DateTime.now(),
+    );
+  }
 
   void updateProfile({String? pseudo, String? bio}) {
     state = state.copyWith(

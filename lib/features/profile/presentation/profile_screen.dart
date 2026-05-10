@@ -30,7 +30,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _showKageBanner = true;
   String _billingCycle = 'mensuel';
 
-
   void _showEditProfile() {
     showModalBottomSheet(
       context: context,
@@ -62,7 +61,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ProfileHero(username: profile.pseudo, bio: profile.bio, avatarPath: profile.avatarUrl),
+          ProfileHero(
+            username: profile.pseudo,
+            bio: profile.bio.isEmpty ? 'Nouveau Genin' : profile.bio,
+            avatarPath: profile.avatarUrl,
+          ),
           const SizedBox(height: 20),
           ProfileStatRow(
             collectCount: collectedIds.length,

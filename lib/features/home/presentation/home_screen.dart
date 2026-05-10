@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/models/user_rank.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/providers/user_profile_provider.dart';
 import '../../../core/theme/otadex_theme.dart';
 import '../../../core/widgets/auth_gate_modal.dart';
 import 'widgets/bottom_nav_bar.dart';
@@ -37,9 +39,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _syncAuthState() async {
     final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool(AppConstants.keyIsLoggedIn) ?? false;
     if (mounted) {
-      ref.read(isLoggedInProvider.notifier).state =
-          prefs.getBool(AppConstants.keyIsLoggedIn) ?? false;
+      ref.read(isLoggedInProvider.notifier).state = isLoggedIn;
+      if (isLoggedIn) {
+        ref.read(userProfileProvider.notifier).updateIdentity(
+              id: prefs.getString(AppConstants.keyUserId),
+              pseudo: prefs.getString(AppConstants.keyUserPseudo),
+              email: prefs.getString(AppConstants.keyUserEmail),
+              rank: prefs.getString(AppConstants.keyUserRank),
+            );
+      }
     }
   }
 
@@ -60,6 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final theme = OtadexTheme.of(context);
     final rank = OtadexTheme.rankOf(context);
     final isLoggedIn = ref.watch(isLoggedInProvider);
+    final profile = ref.watch(userProfileProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -78,7 +89,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: HomeAppBar(
                       rank: rank,
                       isLoggedIn: isLoggedIn,
+                      pseudo: profile.pseudo,
                       onLoginTap: () => showAuthGateModal(context),
+                      onNotificationTap: () {
+                        if (isLoggedIn) {
+                          context.push('/notifications');
+                        } else {
+                          showAuthGateModal(context);
+                        }
+                      },
+                      onProfileTap: () => setState(() => _navIndex = 3),
                     ),
                   ),
                   SliverPersistentHeader(
