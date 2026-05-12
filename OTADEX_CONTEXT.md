@@ -1,7 +1,9 @@
 # OTADEX — Contexte Projet Complet
+
 > Fichier de référence pour Claude Code — à lire en début de chaque session
 
 ## 1. Vision & Objectif
+
 - Nom : OTADEX — "The Ultimate Anime Character Encyclopedia"
 - Concept : encyclopédie mobile interactive de personnages d'animés/webtoons/manhwas
 - Inspiré du Pokédex (collection) + Pinterest (esthétique visuelle)
@@ -10,6 +12,7 @@
 - Développé en solo avec assistance Claude Code
 
 ## 2. Stack Technique
+
 - Frontend : Flutter 3.x (Dart) — iOS + Android
 - State management : Riverpod (flutter_riverpod)
 - Navigation : go_router
@@ -82,6 +85,7 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 | textDisabled | `Color(0xFF4A4A5A)` | Texte désactivé |
 
 **Typographie — DM Sans :**
+
 - 800 ExtraBold → titres héros (30–40px)
 - 700 Bold → headers de section (17px)
 - 600 SemiBold → noms cards, tabs actifs (15–16px)
@@ -90,6 +94,7 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 - 10–12px → badges, labels nav
 
 **Spacing & Radius :**
+
 - Padding horizontal écran : 16px
 - Gap cards : 12px | Gap sections : 28–32px
 - Radius : 50% avatars | 24px sheets | 14px boutons | 12px cards | 18px chips
@@ -99,6 +104,7 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 ## 5. Modèle Freemium
 
 **Genin (gratuit) :**
+
 - Consultation fiches ✅
 - Recherche ✅
 - Likes & commentaires ✅
@@ -107,6 +113,7 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 - IA désactivée ❌
 
 **Jonin (2 000 FCFA/mois) :**
+
 - Tout Genin +
 - Collection illimitée ✅
 - Sans publicités ✅
@@ -115,26 +122,69 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 - Recommandations IA ✅
 
 **Kage Pass (5 000 FCFA/mois) :**
+
 - Tout Jonin +
 - Génération image citation IA ✅
 - Téléchargement sans watermark ✅
 - Thèmes exclusifs ✅
 - Priorité Fan du Mois ✅
 
+## 5.1 Tâches par abonnement
+
+### Genin (gratuit) — objectif Play Store
+
+1. Créer et publier la version gratuite sur le Play Store.
+2. Authentification Firebase réelle (email + Google) avec persistance de session.
+3. Écran d'accueil listant les personnages.
+4. Recherche fonctionnelle de personnages.
+5. Fiche personnage complète avec :
+   - description,
+   - galeries d'images en ligne,
+   - likes,
+   - commentaires,
+   - ajout aux favoris,
+   - ajout à la collection.
+6. Galerie plein écran avec images réseau et placeholder shimmer (`cached_network_image`).
+7. Collection limitée à 10 personnages pour Genin.
+8. Profile et paramètres fonctionnels.
+9. Stockage des données utilisateur et collection dans Firestore.
+10. Pages légales / conditions / confidentialité disponibles et liées.
+11. App taille cible < 60 MB : toutes les images animés doivent être réseau, pas locales.
+
+### Jonin — roadmap phase 2
+
+1. Débloquer collection illimitée.
+2. Supprimer les publicités.
+3. Ajouter IA chatbot personnage.
+4. Ajouter quiz IA.
+5. Ajouter recommandations personnalisées.
+6. Implémenter page d'abonnement (PlansScreen) et paiement mobile.
+7. Mettre en place gestion des souscriptions.
+8. Ajouter thèmes premium et contenus exclusifs.
+
+### Kage — roadmap phase 3
+
+1. Génération d'image IA sans watermark.
+2. Téléchargement d'images HD.
+3. Thèmes exclusifs avancés.
+4. Badge / priorité fan.
+5. Fonctions premium de personnalisation et d'accès anticipé.
+6. Gestion complète de l'abonnement Kage dans l'app.
+
 ## 6. Écrans MVP (Play Store)
 
-| # | Écran | Chemin |
-|---|---|---|
-| 1 | Home | `features/home/presentation/screens/home_screen.dart` |
-| 2 | Fiche Personnage | `features/character/presentation/screens/character_detail_screen.dart` |
-| 3 | Galerie Plein Écran | `features/character/presentation/screens/gallery_screen.dart` |
-| 4 | Recherche | `features/search/presentation/screens/search_screen.dart` |
-| 5 | Inscription | `features/auth/presentation/screens/signup_screen.dart` |
-| 6 | Connexion | `features/auth/presentation/screens/login_screen.dart` |
-| 7 | Profil + Paramètres | `features/profile/presentation/screens/profile_screen.dart` |
-| 8 | Fiche Animé | `features/anime/presentation/screens/anime_detail_screen.dart` |
-| 9 | Fiche Créateur | `features/creator/presentation/screens/creator_screen.dart` |
-| 10 | Plans & Abonnement | `features/subscription/presentation/screens/plans_screen.dart` |
+| #   | Écran               | Chemin                                                                 |
+| --- | ------------------- | ---------------------------------------------------------------------- |
+| 1   | Home                | `features/home/presentation/screens/home_screen.dart`                  |
+| 2   | Fiche Personnage    | `features/character/presentation/screens/character_detail_screen.dart` |
+| 3   | Galerie Plein Écran | `features/character/presentation/screens/gallery_screen.dart`          |
+| 4   | Recherche           | `features/search/presentation/screens/search_screen.dart`              |
+| 5   | Inscription         | `features/auth/presentation/screens/signup_screen.dart`                |
+| 6   | Connexion           | `features/auth/presentation/screens/login_screen.dart`                 |
+| 7   | Profil + Paramètres | `features/profile/presentation/screens/profile_screen.dart`            |
+| 8   | Fiche Animé         | `features/anime/presentation/screens/anime_detail_screen.dart`         |
+| 9   | Fiche Créateur      | `features/creator/presentation/screens/creator_screen.dart`            |
+| 10  | Plans & Abonnement  | `features/subscription/presentation/screens/plans_screen.dart`         |
 
 ## 7. Navigation Map (go_router)
 
@@ -154,16 +204,16 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 
 ## 8. Collections Firestore
 
-| Collection | Champs clés |
-|---|---|
-| `users` | uid, pseudo, email, abonnement, score_fan, badges[], created_at |
-| `characters` | id, nom, anime_id, description, pouvoirs[], citations[], images[], likes_count |
-| `animes` | id, titre, synopsis, genres[], createur_id, personnages_ids[] |
-| `creators` | id, nom, bio, nationalite, oeuvres_ids[] |
-| `votes` | user_id, character_id, mois, created_at |
-| `comments` | user_id, character_id, texte, likes, signalements, created_at |
-| `badges` | id, nom, description, condition, image_url |
-| `subscriptions` | user_id, plan, start_date, end_date, auto_renew |
+| Collection      | Champs clés                                                                    |
+| --------------- | ------------------------------------------------------------------------------ |
+| `users`         | uid, pseudo, email, abonnement, score_fan, badges[], created_at                |
+| `characters`    | id, nom, anime_id, description, pouvoirs[], citations[], images[], likes_count |
+| `animes`        | id, titre, synopsis, genres[], createur_id, personnages_ids[]                  |
+| `creators`      | id, nom, bio, nationalite, oeuvres_ids[]                                       |
+| `votes`         | user_id, character_id, mois, created_at                                        |
+| `comments`      | user_id, character_id, texte, likes, signalements, created_at                  |
+| `badges`        | id, nom, description, condition, image_url                                     |
+| `subscriptions` | user_id, plan, start_date, end_date, auto_renew                                |
 
 ## 9. Règles de développement
 
@@ -197,6 +247,7 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 ## 11. État d'implémentation — Mai 2026
 
 ### ✅ Terminé (Task 01)
+
 - Splash screen animé
 - Onboarding (3 slides)
 - Auth screens (Login + Signup) — mock local + SharedPreferences
@@ -205,6 +256,7 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 - LoginScreen → écrit `isLoggedInProvider` après login réussi
 
 ### ✅ Terminé (Task 02 — partiel)
+
 - ProfileScreen complet avec hero, stats, tabs, avatar picker, settings
 - `UserProfileNotifier` avec `updateProfile()` et `updateAvatar()`
 - `EditProfileSheet` avec sélection d'image (image_picker ^1.1.0)
@@ -213,6 +265,7 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 - Permissions Android : `READ_MEDIA_IMAGES` + `READ_EXTERNAL_STORAGE`
 
 ### 🔜 À faire
+
 - Connexion Firebase Auth réelle (remplacer mock SharedPreferences)
 - HomeScreen : données mockées → vraies données Firestore
 - CharacterDetailScreen
@@ -223,12 +276,12 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 
 ## 12. Providers Riverpod existants
 
-| Provider | Fichier | Type | Rôle |
-|---|---|---|---|
-| `isLoggedInProvider` | `core/providers/auth_provider.dart` | `StateProvider<bool>` | État de connexion global |
+| Provider              | Fichier                                     | Type                                                      | Rôle                       |
+| --------------------- | ------------------------------------------- | --------------------------------------------------------- | -------------------------- |
+| `isLoggedInProvider`  | `core/providers/auth_provider.dart`         | `StateProvider<bool>`                                     | État de connexion global   |
 | `userProfileProvider` | `core/providers/user_profile_provider.dart` | `StateNotifierProvider<UserProfileNotifier, UserProfile>` | Profil utilisateur courant |
-| `localeProvider` | `core/l10n/locale_provider.dart` | `StateProvider<String>` | Langue de l'app |
-| `themeModeProvider` | `core/theme/theme_mode_provider.dart` | `StateProvider<ThemeMode>` | Thème clair/sombre |
+| `localeProvider`      | `core/l10n/locale_provider.dart`            | `StateProvider<String>`                                   | Langue de l'app            |
+| `themeModeProvider`   | `core/theme/theme_mode_provider.dart`       | `StateProvider<ThemeMode>`                                | Thème clair/sombre         |
 
 ## 13. Ordre d'implémentation recommandé
 
@@ -244,5 +297,6 @@ Chaque feature suit : `data/` | `domain/` | `presentation/screens/` | `presentat
 10. PlansScreen + CinetPay intégration
 
 ---
-*Dernière mise à jour : mai 2026*
-*Généré pour Claude Code — OTADEX MVP Phase 1*
+
+_Dernière mise à jour : mai 2026_
+_Généré pour Claude Code — OTADEX MVP Phase 1_

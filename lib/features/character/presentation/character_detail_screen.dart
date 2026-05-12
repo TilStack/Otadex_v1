@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/models/character.dart';
+import '../../../core/providers/auth_provider.dart';
+import '../../../core/providers/user_profile_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/otadex_theme.dart';
 import '../../../core/theme/rank_theme.dart';
@@ -18,23 +19,22 @@ import 'widgets/char_pill.dart';
 // ─── Tab identifiers ───────────────────────────────────────────────
 enum _Tab { profil, combat, galerie, fans }
 
-class CharacterDetailScreen extends StatefulWidget {
+class CharacterDetailScreen extends ConsumerStatefulWidget {
   final Character character;
   const CharacterDetailScreen({super.key, required this.character});
 
   @override
-  State<CharacterDetailScreen> createState() => _CharacterDetailScreenState();
+  ConsumerState<CharacterDetailScreen> createState() =>
+      _CharacterDetailScreenState();
 }
 
-class _CharacterDetailScreenState extends State<CharacterDetailScreen>
+class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     with SingleTickerProviderStateMixin {
   // ── State ────────────────────────────────────────────────────────
   _Tab _activeTab = _Tab.profil;
   bool _isLiked = false;
-  bool _isCollected = false;
   bool _aboutExpanded = false;
   int _userRating = 3;
-  bool _isLoggedIn = false;
 
   // ── Hero animation ───────────────────────────────────────────────
   late final AnimationController _heroCtrl;
@@ -79,7 +79,6 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
       curve: const Interval(0.0, 0.65, curve: Curves.easeOut),
     );
     _heroCtrl.forward();
-    _loadLoginStatus();
   }
 
   @override
@@ -88,16 +87,9 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
     super.dispose();
   }
 
-  Future<void> _loadLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (mounted) {
-      setState(
-          () => _isLoggedIn = prefs.getBool(AppConstants.keyIsLoggedIn) ?? false);
-    }
-  }
-
   void _guardAuth(VoidCallback action) {
-    if (_isLoggedIn) {
+    final isLoggedIn = ref.read(isLoggedInProvider);
+    if (isLoggedIn) {
       action();
     } else {
       showAuthGateModal(context);
@@ -105,9 +97,11 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
   }
 
   void _guardJonin() {
-    if (!_isLoggedIn) {
+    final isLoggedIn = ref.read(isLoggedInProvider);
+    if (!isLoggedIn) {
       showAuthGateModal(context,
-          message: 'Connecte-toi pour accéder aux fonctionnalités premium Jonin+.');
+          message:
+              'Connecte-toi pour accéder aux fonctionnalités premium Jonin+.');
     } else {
       showSubscriptionModal(context, SubscriptionPlan.jonin);
     }
@@ -124,6 +118,8 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
   Widget build(BuildContext context) {
     final theme = OtadexTheme.of(context);
     final mq = MediaQuery.of(context);
+    final profile = ref.watch(userProfileProvider);
+    final isCollected = profile.collectedCharacterIds.contains(c.id);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -150,7 +146,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                 ),
               ],
             ),
-            _buildFAB(theme),
+            _buildFAB(theme, isCollected),
           ],
         ),
       ),
@@ -422,9 +418,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                size: 15,
-                color: isActive ? activeColor : Colors.white),
+            Icon(icon, size: 15, color: isActive ? activeColor : Colors.white),
             const SizedBox(width: 6),
             Text(
               label,
@@ -591,8 +585,7 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                 ),
                 const SizedBox(height: 10),
                 GestureDetector(
-                  onTap: () =>
-                      setState(() => _aboutExpanded = !_aboutExpanded),
+                  onTap: () => setState(() => _aboutExpanded = !_aboutExpanded),
                   child: Text(
                     _aboutExpanded ? 'Réduire ↑' : 'Lire la suite →',
                     style: GoogleFonts.nunitoSans(
@@ -622,8 +615,8 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
             decoration: BoxDecoration(
               color: theme.backgroundElevated,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                  color: theme.accentColor.withValues(alpha: 0.15)),
+              border:
+                  Border.all(color: theme.accentColor.withValues(alpha: 0.15)),
             ),
             padding: const EdgeInsets.all(18),
             child: Stack(
@@ -874,16 +867,36 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
 
   Widget _buildOtherCharacters(RankTheme theme) {
     final others = [
-      ('Yuto Akira', 'Protagoniste', const Color(0xFF3d0505),
-          const Color(0xFF7c1515)),
-      ('Mei Tsuki', 'Protagoniste', const Color(0xFF050520),
-          const Color(0xFF1a1a4a)),
-      ('Nora Kishi', 'Protagoniste', const Color(0xFF201005),
-          const Color(0xFF4a2a10)),
-      ('Ryomen Void', 'Antagoniste', const Color(0xFF1a0000),
-          const Color(0xFF3d0000)),
-      ('Naoki Kento', 'Allié', const Color(0xFF0a1a0a),
-          const Color(0xFF1a3020)),
+      (
+        'Yuto Akira',
+        'Protagoniste',
+        const Color(0xFF3d0505),
+        const Color(0xFF7c1515)
+      ),
+      (
+        'Mei Tsuki',
+        'Protagoniste',
+        const Color(0xFF050520),
+        const Color(0xFF1a1a4a)
+      ),
+      (
+        'Nora Kishi',
+        'Protagoniste',
+        const Color(0xFF201005),
+        const Color(0xFF4a2a10)
+      ),
+      (
+        'Ryomen Void',
+        'Antagoniste',
+        const Color(0xFF1a0000),
+        const Color(0xFF3d0000)
+      ),
+      (
+        'Naoki Kento',
+        'Allié',
+        const Color(0xFF0a1a0a),
+        const Color(0xFF1a3020)
+      ),
     ];
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
@@ -912,8 +925,8 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [c1, c2]),
-                    border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.07)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.07)),
                   ),
                   child: Stack(
                     children: [
@@ -940,9 +953,8 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 5, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isAntag
-                                ? AppColors.error
-                                : theme.accentColor,
+                            color:
+                                isAntag ? AppColors.error : theme.accentColor,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -993,8 +1005,8 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                         left: 8,
                         bottom: 4,
                         child: Text(
-                          c.animeName.substring(
-                              0, c.animeName.length.clamp(0, 8)),
+                          c.animeName
+                              .substring(0, c.animeName.length.clamp(0, 8)),
                           style: GoogleFonts.nunitoSans(
                             fontSize: 9,
                             color: Colors.white.withValues(alpha: 0.5),
@@ -1119,10 +1131,8 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                         child: LinearProgressIndicator(
                           value: val,
                           minHeight: 6,
-                          backgroundColor:
-                              theme.backgroundPrimary,
-                          valueColor:
-                              AlwaysStoppedAnimation(color),
+                          backgroundColor: theme.backgroundPrimary,
+                          valueColor: AlwaysStoppedAnimation(color),
                         ),
                       ),
                     ],
@@ -1319,12 +1329,12 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                 const SizedBox(height: 16),
                 _sectionLabel(theme, 'TOP 3 FANS CE MOIS-CI'),
                 const SizedBox(height: 8),
-                _fanRow('🥇', 'Jean-Paul_Otaku', 'JONIN',
-                    AppColors.statBlue, '482 pts', theme),
+                _fanRow('🥇', 'Jean-Paul_Otaku', 'JONIN', AppColors.statBlue,
+                    '482 pts', theme),
                 _fanRow('🥈', 'Awa_Fan25', 'GENIN', AppColors.textMuted,
                     '310 pts', theme),
-                _fanRow('🥉', 'OtakuPro237', 'JONIN',
-                    AppColors.statBlue, '287 pts', theme),
+                _fanRow('🥉', 'OtakuPro237', 'JONIN', AppColors.statBlue,
+                    '287 pts', theme),
                 const SizedBox(height: 16),
                 GestureDetector(
                   onTap: () => _guardAuth(() {}),
@@ -1489,8 +1499,8 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
                           ),
                           Icon(Icons.send_rounded,
                               size: 15,
-                              color: theme.textSecondary
-                                  .withValues(alpha: 0.4)),
+                              color:
+                                  theme.textSecondary.withValues(alpha: 0.4)),
                         ],
                       ),
                     ),
@@ -1552,40 +1562,49 @@ class _CharacterDetailScreenState extends State<CharacterDetailScreen>
 
   // ── FAB ───────────────────────────────────────────────────────────
 
-  Widget _buildFAB(RankTheme theme) {
+  Widget _buildFAB(RankTheme theme, bool isCollected) {
     return Positioned(
       right: 20,
       bottom: 24,
       child: GestureDetector(
-        onTap: () =>
-            _guardAuth(() => setState(() => _isCollected = !_isCollected)),
+        onTap: () => _guardAuth(() {
+          final notifier = ref.read(userProfileProvider.notifier);
+          try {
+            if (isCollected) {
+              notifier.removeFromCollection(c.id);
+            } else {
+              notifier.addToCollection(c.id);
+            }
+          } catch (_) {
+            showSubscriptionModal(context, SubscriptionPlan.jonin);
+          }
+        }),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           width: 48,
           height: 48,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color:
-                _isCollected ? theme.accentColor : theme.backgroundElevated,
+            color: isCollected ? theme.accentColor : theme.backgroundElevated,
             border: Border.all(
-              color: theme.accentColor
-                  .withValues(alpha: _isCollected ? 0.0 : 0.6),
+              color:
+                  theme.accentColor.withValues(alpha: isCollected ? 0.0 : 0.6),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
                 color: theme.accentColor
-                    .withValues(alpha: _isCollected ? 0.35 : 0.12),
+                    .withValues(alpha: isCollected ? 0.35 : 0.12),
                 blurRadius: 14,
                 offset: const Offset(0, 3),
               ),
             ],
           ),
           child: Icon(
-            _isCollected
+            isCollected
                 ? Icons.bookmark_rounded
                 : Icons.bookmark_border_rounded,
-            color: _isCollected ? Colors.white : theme.accentColor,
+            color: isCollected ? Colors.white : theme.accentColor,
             size: 22,
           ),
         ),
@@ -1737,9 +1756,8 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
                             label,
                             style: GoogleFonts.nunitoSans(
                               fontSize: 13,
-                              fontWeight: active
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
+                              fontWeight:
+                                  active ? FontWeight.w700 : FontWeight.w500,
                               color: active
                                   ? theme.accentColor
                                   : theme.textSecondary,
@@ -1766,8 +1784,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
               }).toList(),
             ),
           ),
-          Divider(
-              height: 1, thickness: 1, color: theme.backgroundElevated),
+          Divider(height: 1, thickness: 1, color: theme.backgroundElevated),
         ],
       ),
     );
@@ -1781,7 +1798,5 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(_TabBarDelegate old) =>
-      old.activeTab != activeTab ||
-      old.onTap != onTap ||
-      old.theme != theme;
+      old.activeTab != activeTab || old.onTap != onTap || old.theme != theme;
 }

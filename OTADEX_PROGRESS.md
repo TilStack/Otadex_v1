@@ -217,15 +217,15 @@
 
 ### Features — Manquants (prochaines tâches)
 
-| Fichier                                                    | Statut     | Notes                                                                                                                        |
-| ---------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `lib/features/character/presentation/gallery_screen.dart`  | ✅ Fait    | Galerie plein écran — PageView + InteractiveViewer 4×, watermark Genin/Jonin, miniatures bas, hint swipe, download gate Kage |
-| `lib/features/subscription/presentation/plans_screen.dart` | ❌ À faire | Page plans + CinetPay (route /subscription stub présente dans app_router)                                                    |
-| `docs/index.html`                                          | ✅ Fait    | Landing page complète — hero mockup, features, plans Genin/Jonin/Kage, section légale, footer, scroll reveal, nav mobile     |
-| `docs/privacy-policy.html`                                 | ✅ Fait    | Politique de confidentialité FR/EN — toggle langue, conforme Play Store                                                      |
-| `docs/terms.html`                                          | ✅ Fait    | Conditions d'utilisation FR/EN — tableau plans, toggle langue                                                                |
-| `docs/account-deletion.html`                               | ✅ Fait    | Suppression de compte FR/EN — étapes in-app + email CTA, avertissement données                                               |
-| `docs/play-store/`                                         | ✅ Fait    | Préparation Play Store : listing FR, Data Safety, test plan, captures                                                        |
+| Fichier                                                    | Statut  | Notes                                                                                                                        |
+| ---------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `lib/features/character/presentation/gallery_screen.dart`  | ✅ Fait | Galerie plein écran — PageView + InteractiveViewer 4×, watermark Genin/Jonin, miniatures bas, hint swipe, download gate Kage |
+| `lib/features/subscription/presentation/plans_screen.dart` | ✅ Fait | Page plans créée et route `/subscription` pointant vers `PlansScreen`                                                        |
+| `docs/index.html`                                          | ✅ Fait | Landing page complète — hero mockup, features, plans Genin/Jonin/Kage, section légale, footer, scroll reveal, nav mobile     |
+| `docs/privacy-policy.html`                                 | ✅ Fait | Politique de confidentialité FR/EN — toggle langue, conforme Play Store                                                      |
+| `docs/terms.html`                                          | ✅ Fait | Conditions d'utilisation FR/EN — tableau plans, toggle langue                                                                |
+| `docs/account-deletion.html`                               | ✅ Fait | Suppression de compte FR/EN — étapes in-app + email CTA, avertissement données                                               |
+| `docs/play-store/`                                         | ✅ Fait | Préparation Play Store : listing FR, Data Safety, test plan, captures                                                        |
 
 ### Features — Legal
 
@@ -249,19 +249,65 @@
 
 ## Bugs connus
 
-| Bug                                           | Priorité   | Description                                                                                                                                      |
-| --------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Auth persistance                              | ✅ Corrigé | `main.dart` lit `keyIsLoggedIn` avant `runApp()` et override `isLoggedInProvider` via `ProviderScope.overrides`                                  |
-| Splash initial route                          | ✅ Corrigé | `getInitialRoute()` respecte maintenant l'état `isLoggedIn` et redirige vers `/login` si l'utilisateur n'est pas connecté après l'onboarding.    |
-| Auth Firebase réelle                          | ✅ Corrigé | Email/password + Google branchés via FirebaseAuthService, profil Firestore créé à l'inscription                                                  |
-| Déconnexion reste sur Home                    | ✅ Corrigé | Le footer profil appelle Firebase signOut, passe isLoggedInProvider à false et redirige vers `/login`                                            |
-| Profil affiche NouveauGenin                   | ✅ Corrigé | Le pseudo Firebase/SharedPreferences est restauré dans userProfileProvider après login/register                                                  |
-| Notification Home inactive                    | ✅ Corrigé | Bouton notification ouvre `/notifications` avec état vide si aucune notification                                                                 |
-| Pseudo absent dans Home                       | ✅ Corrigé | HomeAppBar affiche un pseudo court près du bouton profil                                                                                         |
-| Routes personnalisées accessibles sans compte | ✅ Corrigé | `/collection` et `/notifications` passent par AuthRequiredScreen; Home/Search restent publics                                                    |
-| Avatar non persistant                         | 🟡 Moyenne | L'avatar sélectionné via image_picker est un chemin temp/cache → perdu au redémarrage. Firebase Storage repoussé car payant/à utiliser plus tard |
-| Storage Firebase                              | 🟡 Moyenne | Non initialisé volontairement pour l'instant                                                                                                     |
-| `flutter pub get`                             | ✅ Corrigé | Relancé après ajout de `firebase_auth` + `cloud_firestore`; `flutter analyze` + `dart analyze` → 0 issue                                         |
+| Bug                               | Priorité   | Description                                                                                                                                    |
+| --------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Auth persistance                  | ✅ Corrigé | `main.dart` lit `keyIsLoggedIn` avant `runApp()` et override `isLoggedInProvider` via `ProviderScope.overrides`                                |
+| Splash initial route              | ✅ Corrigé | `getInitialRoute()` respecte maintenant l'état `isLoggedIn` et redirige vers `/login` si l'utilisateur n'est pas connecté après l'onboarding.  |
+| Auth Firebase réelle              | ✅ Corrigé | Email/password + Google branchés via FirebaseAuthService, profil Firestore créé à l'inscription                                                |
+| Déconnexion reste sur Home        | ✅ Corrigé | Le footer profil appelle Firebase signOut, passe isLoggedInProvider à false et redirige vers `/login`                                          |
+| Profil affiche NouveauGenin       | ✅ Corrigé | Le pseudo Firebase/SharedPreferences est restauré dans userProfileProvider après login/register                                                |
+| Notification Home inactive        | ✅ Corrigé | Bouton notification ouvre `/notifications` avec état vide si aucune notification                                                               |
+| Pseudo absent dans Home           | ✅ Corrigé | HomeAppBar affiche un pseudo court près du bouton profil                                                                                       |
+| Collection personnage persistante | ✅ Corrigé | `CharacterDetailScreen` utilise maintenant `userProfileProvider` pour stocker la collection, plus d'état local `_isCollected` non synchronisé. |
+| Bookmark grille visible           | ✅ Corrigé | `character_grid_card.dart` affiche désormais une icône bookmark active/inactive et synchronise l'état avec `userProfileProvider`.              |
+
+## Tâches par abonnement
+
+### Genin (gratuit) — Play Store early release
+
+- Publier la version gratuite sur le Play Store.
+- Auth Firebase email + Google avec persistance de session.
+- Home feed de personnages.
+- Recherche de personnages fonctionnelle.
+- Fiche personnage complète avec description, galerie d'images en ligne, likes, commentaires, favoris et collection.
+- Galerie plein écran avec images réseau + `cached_network_image` + shimmer.
+- Collection limitée à 10 personnages.
+- Profil et paramètres fonctionnels.
+- Données Firestore : `users`, `characters`, `comments`, `likes`, `favorites`, `collections`.
+- Pages légales et confidentialité disponibles.
+- Images animés non locales pour garder l'APK < 60 MB.
+
+### Jonin — phase 2
+
+- Collection illimitée.
+- Suppression des publicités.
+- IA chatbot personnage.
+- Quiz IA.
+- Recommandations personnalisées.
+- Page d'abonnement / PlansScreen.
+- Intégration paiement mobile (CinetPay / FedaPay).
+- Gestion des souscriptions.
+- Thèmes premium.
+
+### Kage — phase 3
+
+- Génération d'image IA sans watermark.
+- Téléchargement d'images HD.
+- Thèmes exclusifs avancés.
+- Badge priorité Fan.
+- Gestion complète Kage dans l'app.
+- Expérience premium haut de gamme.
+
+## Notes de priorisation
+
+- La version gratuite doit déjà pouvoir être publiée : consultation, recherche, détail, galerie, collection/favoris, likes/comments.
+- Les images doivent provenir du réseau (Firebase / CDN AniList) et non localement.
+- Jonin et Kage viennent après le MVP gratuit.
+
+- Routes personnalisées accessibles sans compte : ✅ Corrigé — `/collection` et `/notifications` passent par `AuthRequiredScreen`; Home/Search restent publics.
+- Avatar non persistant : 🟡 Moyenne — L'avatar sélectionné via `image_picker` est un chemin temp/cache et peut être perdu au redémarrage ; Firebase Storage repoussée.
+- Storage Firebase : 🟡 Moyenne — Non initialisé volontairement pour l'instant.
+- `flutter pub get` : ✅ Corrigé — relancé après ajout de `firebase_auth` + `cloud_firestore`; `flutter analyze` + `dart analyze` → 0 issue.
 
 ---
 
@@ -284,6 +330,13 @@
 - Cards Genin / Jonin / Kage avec features comparatives
 - Toggle mensuel / annuel, bouton CTA orange
 - Route : `/subscription` (stub déjà présent dans app_router.dart)
+
+**Task 15 — Collection persistante et affichage**
+
+- Synchroniser la collection persistante dans `CharacterDetailScreen` avec `CollectionScreen` et `CharacterGridCard`.
+- Enregistrer les IDs de collection dans `SharedPreferences` ou Firestore.
+- Ajouter un badge / état bookmark dans les listes, résultats de recherche et fiches.
+- Vérifier la limite Genin de 10 personnages et rediriger vers Jonin quand elle est atteinte.
 
 ---
 

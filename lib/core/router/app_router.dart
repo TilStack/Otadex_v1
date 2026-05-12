@@ -17,7 +17,7 @@ import '../../features/character/presentation/gallery_screen.dart';
 import '../../features/legal/presentation/privacy_policy_screen.dart';
 import '../../features/legal/presentation/terms_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
-import '../../features/subscription/presentation/subscription_screen.dart';
+import '../../features/subscription/presentation/plans_screen.dart';
 import '../../core/models/character.dart';
 import '../constants/app_constants.dart';
 import '../widgets/auth_required_screen.dart';
@@ -140,7 +140,7 @@ class AppRouter {
       GoRoute(
         path: '/subscription',
         name: 'subscription',
-        builder: (context, state) => const SubscriptionScreen(),
+        builder: (context, state) => const PlansScreen(),
       ),
       GoRoute(
         path: '/terms',

@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../../../core/models/character.dart';
+import '../../../../../core/providers/auth_provider.dart';
+import '../../../../../core/providers/user_profile_provider.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/otadex_theme.dart';
+import '../../../../../core/widgets/auth_gate_modal.dart';
 import '../../../../../core/widgets/otadex_image.dart';
+import '../../../../../core/widgets/subscription_modal.dart';
 
-class CharacterGridCard extends StatefulWidget {
+class CharacterGridCard extends ConsumerStatefulWidget {
   final Character character;
   final VoidCallback? onTap;
 
   const CharacterGridCard({super.key, required this.character, this.onTap});
 
   @override
-  State<CharacterGridCard> createState() => _CharacterGridCardState();
+  ConsumerState<CharacterGridCard> createState() => _CharacterGridCardState();
 }
 
-class _CharacterGridCardState extends State<CharacterGridCard> {
+class _CharacterGridCardState extends ConsumerState<CharacterGridCard> {
   double _scale = 1.0;
 
   void _onTapDown(TapDownDetails _) => setState(() => _scale = 0.93);
@@ -212,6 +217,58 @@ class _CharacterGridCardState extends State<CharacterGridCard> {
                       ),
                     ),
                   ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: GestureDetector(
+                    onTap: () {
+                      final isLoggedIn = ref.read(isLoggedInProvider);
+                      if (!isLoggedIn) {
+                        showAuthGateModal(context);
+                        return;
+                      }
+                      final notifier = ref.read(userProfileProvider.notifier);
+                      final isCollected = ref
+                          .read(userProfileProvider)
+                          .collectedCharacterIds
+                          .contains(character.id);
+                      try {
+                        if (isCollected) {
+                          notifier.removeFromCollection(character.id);
+                        } else {
+                          notifier.addToCollection(character.id);
+                        }
+                      } catch (_) {
+                        showSubscriptionModal(context, SubscriptionPlan.jonin);
+                      }
+                    },
+                    child: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: theme.backgroundPrimary.withValues(alpha: 0.75),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Icon(
+                          ref
+                                  .watch(userProfileProvider)
+                                  .collectedCharacterIds
+                                  .contains(character.id)
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_border_rounded,
+                          color: ref
+                                  .watch(userProfileProvider)
+                                  .collectedCharacterIds
+                                  .contains(character.id)
+                              ? AppColors.rankJonin
+                              : theme.textSecondary,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
