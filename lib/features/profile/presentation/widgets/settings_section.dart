@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/theme/otadex_theme.dart';
 
@@ -13,6 +14,7 @@ class SettingsSection extends StatelessWidget {
   final VoidCallback onThemeToggle;
   final VoidCallback onEditProfile;
   final VoidCallback onChangePassword;
+  final String email;
 
   const SettingsSection({
     super.key,
@@ -24,7 +26,140 @@ class SettingsSection extends StatelessWidget {
     required this.onThemeToggle,
     required this.onEditProfile,
     required this.onChangePassword,
+    required this.email,
   });
+
+  String _languageLabel(String currentLanguage) {
+    return switch (currentLanguage) {
+      'en' => 'English',
+      'ja' => '日本語',
+      'zh' => '中文',
+      _ => 'Français',
+    };
+  }
+
+  Future<void> _copyEmail(BuildContext context, String email) async {
+    final messenger = ScaffoldMessenger.of(context);
+    await Clipboard.setData(ClipboardData(text: email));
+    messenger.showSnackBar(
+      const SnackBar(content: Text('Email copié dans le presse-papiers')),
+    );
+  }
+
+  Future<void> _showFeatureSheet(
+    BuildContext context,
+    String title,
+    String description,
+  ) async {
+    final theme = OtadexTheme.of(context);
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: BoxDecoration(
+          color: theme.backgroundCard,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: theme.borderSubtle)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: theme.borderDefault,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: GoogleFonts.rajdhani(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: theme.textPrimary,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              description,
+              style: GoogleFonts.nunitoSans(
+                fontSize: 14,
+                color: theme.textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.accentColor,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: Text('Fermer',
+                    style: GoogleFonts.nunitoSans(fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openTerms() async {
+    final url = Uri.parse('https://otadex.tilstack.me/terms.html');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    final url = Uri.parse('https://otadex.tilstack.me/privacy-policy.html');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _openKageTheme(BuildContext context, AppStrings s) async {
+    await _showFeatureSheet(
+      context,
+      s.kageTheme,
+      'Le thème Kage sera bientôt disponible pour les membres Premium. Restez à l’affût des prochaines mises à jour.',
+    );
+  }
+
+  Future<void> _openHiddenCategories(BuildContext context, AppStrings s) async {
+    await _showFeatureSheet(
+      context,
+      s.hiddenCategories,
+      'Gérez bientôt vos catégories masquées directement depuis cette section.',
+    );
+  }
+
+  Future<void> _openMyHistory(BuildContext context, AppStrings s) async {
+    await _showFeatureSheet(
+      context,
+      s.myHistory,
+      'Votre historique de progression sera bientôt visible ici.',
+    );
+  }
+
+  Future<void> _openRateApp(BuildContext context, AppStrings s) async {
+    final url = Uri.parse('https://otadex.tilstack.me');
+    await launchUrl(url, mode: LaunchMode.externalApplication);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,8 +187,9 @@ class SettingsSection extends StatelessWidget {
             _SettingsRow(
                 icon: '✉️',
                 label: s.emailLabel,
-                value: 'jean@mail.com',
-                hasArrow: true),
+                value: email,
+                hasArrow: true,
+                onTap: () => _copyEmail(context, email)),
           ]),
           const SizedBox(height: 24),
           _SectionLabel(label: s.preferencesSection),
@@ -77,7 +213,7 @@ class SettingsSection extends StatelessWidget {
             _SettingsRow(
               icon: '🌐',
               label: s.language,
-              value: s.languageValue,
+              value: _languageLabel(currentLanguage),
               hasArrow: true,
               onTap: () => _showLanguageSheet(context, s),
             ),
@@ -86,19 +222,27 @@ class SettingsSection extends StatelessWidget {
                 icon: '🎨',
                 label: s.kageTheme,
                 value: s.locked,
-                hasArrow: true),
+                hasArrow: true,
+                onTap: () => _openKageTheme(context, s)),
           ]),
           const SizedBox(height: 24),
           _SectionLabel(label: s.contentSection),
           const SizedBox(height: 8),
           _SettingsCard(children: [
             _SettingsRow(
-                icon: '📋',
-                label: s.hiddenCategories,
-                value: s.hiddenCount,
-                hasArrow: true),
+              icon: '📋',
+              label: s.hiddenCategories,
+              value: s.hiddenCount,
+              hasArrow: true,
+              onTap: () => _openHiddenCategories(context, s),
+            ),
             const _SettingsDivider(),
-            _SettingsRow(icon: '📊', label: s.myHistory, hasArrow: true),
+            _SettingsRow(
+              icon: '📊',
+              label: s.myHistory,
+              hasArrow: true,
+              onTap: () => _openMyHistory(context, s),
+            ),
           ]),
           const SizedBox(height: 24),
           _SectionLabel(label: s.aboutSection),
@@ -114,15 +258,19 @@ class SettingsSection extends StatelessWidget {
                 icon: '📄',
                 label: s.termsOfService,
                 hasArrow: true,
-                onTap: () => context.push('/terms')),
+                onTap: _openTerms),
             const _SettingsDivider(),
             _SettingsRow(
                 icon: '🔐',
                 label: s.privacyPolicy,
                 hasArrow: true,
-                onTap: () => context.push('/privacy')),
+                onTap: _openPrivacyPolicy),
             const _SettingsDivider(),
-            _SettingsRow(icon: '⭐', label: s.rateApp, hasArrow: true),
+            _SettingsRow(
+                icon: '⭐',
+                label: s.rateApp,
+                hasArrow: true,
+                onTap: () => _openRateApp(context, s)),
           ]),
         ],
       ),
@@ -212,7 +360,8 @@ class _LanguageSheetState extends State<_LanguageSheet> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? theme.accentColor.withValues(alpha: 0.12)
@@ -232,9 +381,8 @@ class _LanguageSheetState extends State<_LanguageSheet> {
                         name,
                         style: GoogleFonts.nunitoSans(
                           fontSize: 15,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
                           color: isSelected
                               ? theme.accentColor
                               : theme.textPrimary,
@@ -263,8 +411,8 @@ class _LanguageSheetState extends State<_LanguageSheet> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: Text(s.cancel,
-                      style: GoogleFonts.nunitoSans(
-                          fontWeight: FontWeight.w600)),
+                      style:
+                          GoogleFonts.nunitoSans(fontWeight: FontWeight.w600)),
                 ),
               ),
               const SizedBox(width: 12),
@@ -283,8 +431,8 @@ class _LanguageSheetState extends State<_LanguageSheet> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: Text(s.apply,
-                      style: GoogleFonts.nunitoSans(
-                          fontWeight: FontWeight.w700)),
+                      style:
+                          GoogleFonts.nunitoSans(fontWeight: FontWeight.w700)),
                 ),
               ),
             ],
@@ -362,8 +510,8 @@ class _SettingsRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style:
-                    GoogleFonts.nunitoSans(fontSize: 14, color: theme.textPrimary),
+                style: GoogleFonts.nunitoSans(
+                    fontSize: 14, color: theme.textPrimary),
               ),
             ),
             if (value != null) ...[
@@ -409,8 +557,8 @@ class _ToggleRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style:
-                  GoogleFonts.nunitoSans(fontSize: 14, color: theme.textPrimary),
+              style: GoogleFonts.nunitoSans(
+                  fontSize: 14, color: theme.textPrimary),
             ),
           ),
           Switch(

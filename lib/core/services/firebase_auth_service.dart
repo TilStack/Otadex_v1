@@ -123,7 +123,76 @@ class FirebaseAuthService {
   }
 
   Future<void> sendPasswordReset(String email) async {
-    await _auth.sendPasswordResetEmail(email: email);
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+    } on FirebaseAuthException catch (e) {
+      throw _mapError(e.code);
+    }
+  }
+
+  Future<void> confirmPasswordReset({
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      await _auth.confirmPasswordReset(code: code, newPassword: newPassword);
+    } on FirebaseAuthException catch (e) {
+      throw _mapError(e.code);
+    }
+  }
+
+  Future<void> reauthenticateAndUpdatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw 'Utilisateur non connecté.';
+    }
+    final email = user.email;
+    if (email == null || email.isEmpty) {
+      throw 'Impossible de récupérer ton email pour cette action.';
+    }
+    try {
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      throw _mapError(e.code);
+    }
+  }
+
+  Future<void> updateUserProfile({
+    String? pseudo,
+    String? bio,
+    String? avatarUrl,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw 'Utilisateur non connecté.';
+    }
+
+    final updates = <String, Object?>{};
+    if (pseudo != null && pseudo.isNotEmpty) {
+      updates['pseudo'] = pseudo;
+      updates['display_name'] = pseudo;
+      await user.updateDisplayName(pseudo);
+    }
+    if (bio != null) {
+      updates['bio'] = bio;
+    }
+    if (avatarUrl != null) {
+      updates['avatar_url'] = avatarUrl;
+    }
+    if (updates.isNotEmpty) {
+      await _firestore.collection('users').doc(user.uid).set(
+            updates,
+            SetOptions(merge: true),
+          );
+    }
   }
 
   Future<void> _createUserDocument({
@@ -176,11 +245,20 @@ class FirebaseAuthService {
       case 'weak-password':
         return 'Mot de passe trop faible (8 car. min).';
       case 'user-not-found':
+        return 'Aucun compte trouvé pour cet email.';
       case 'wrong-password':
+        return 'Mot de passe actuel incorrect.';
       case 'invalid-credential':
         return 'Email ou mot de passe incorrect.';
+      case 'invalid-action-code':
+      case 'expired-action-code':
+        return 'Code de réinitialisation invalide ou expiré.';
       case 'too-many-requests':
         return 'Trop de tentatives. Réessaie plus tard.';
+      case 'requires-recent-login':
+        return 'Reconnecte-toi puis réessaie cette action.';
+      case 'user-disabled':
+        return 'Ce compte a été désactivé.';
       default:
         return 'Une erreur est survenue. Réessaie.';
     }

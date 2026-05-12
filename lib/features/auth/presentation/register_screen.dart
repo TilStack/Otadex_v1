@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/gestures.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/app_strings.dart';
 import '../../../core/providers/auth_provider.dart';
@@ -41,6 +43,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _openTerms() async {
+    final url = Uri.parse('https://otadex.tilstack.me/terms.html');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _openPrivacyPolicy() async {
+    final url = Uri.parse('https://otadex.tilstack.me/privacy-policy.html');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
   }
 
   Future<void> _registerWithGoogle() async {
@@ -405,6 +421,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     decoration: TextDecoration.underline,
                                     decorationColor: AppColors.accent,
                                   ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = _openTerms,
                                 ),
                                 TextSpan(text: s.acceptTermsConjunction),
                                 TextSpan(
@@ -414,6 +432,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                     decoration: TextDecoration.underline,
                                     decorationColor: AppColors.accent,
                                   ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = _openPrivacyPolicy,
                                 ),
                               ],
                             ),

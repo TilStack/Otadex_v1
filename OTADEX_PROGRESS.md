@@ -81,36 +81,37 @@
 
 ### Core — Router / Services / Models
 
-| Fichier                                         | Statut  | Notes                                                                                   |
-| ----------------------------------------------- | ------- | --------------------------------------------------------------------------------------- |
-| `lib/core/router/app_router.dart`               | ✅ Fait | GoRouter complet                                                                        |
-| `lib/core/services/anilist_service.dart`        | ✅ Fait | Service AniList GraphQL (searchCharacters, searchAnimes, trending chars/animes, detail) |
-| `lib/core/services/otadex_data_service.dart`    | ✅ Fait | Service données mockées (fallback local)                                                |
-| `lib/core/services/google_sign_in_service.dart` | ✅ Fait | Google OAuth wrapper                                                                    |
-| `lib/core/services/firebase_auth_service.dart`  | ✅ Fait | Firebase Auth email + Google, signOut, reset password, création profil Firestore        |
-| `lib/firebase_options.dart`                     | ✅ Fait | Généré par FlutterFire pour le projet Firebase `tilqui`                                 |
-| `android/app/google-services.json`              | ✅ Fait | Config Android Firebase pour `com.otadex.otadex`                                        |
-| `firebase.json`                                 | ✅ Fait | Config Firebase CLI créée                                                               |
-| `.firebaserc`                                   | ✅ Fait | Projet Firebase associé à `tilqui`                                                      |
-| `firestore.rules`                               | ✅ Fait | Rules Firestore téléchargées depuis la console                                          |
-| `firestore.indexes.json`                        | ✅ Fait | Index Firestore initialisés                                                             |
-| `functions/`                                    | ✅ Fait | Cloud Functions initialisées en TypeScript + ESLint                                     |
-| `lib/core/models/character.dart`                | ✅ Fait | Modèle personnage                                                                       |
-| `lib/core/models/anime_entry.dart`              | ✅ Fait | Modèle animé                                                                            |
-| `lib/core/models/creator_entry.dart`            | ✅ Fait | Modèle créateur                                                                         |
-| `lib/core/models/user_profile.dart`             | ✅ Fait | Modèle profil utilisateur                                                               |
-| `lib/core/models/user_rank.dart`                | ✅ Fait | Enum UserRank (genin/jonin/kage)                                                        |
-| `lib/core/models/featured_slide.dart`           | ✅ Fait | Modèle slide hero carousel                                                              |
-| `lib/core/data/mock_data.dart`                  | ✅ Fait | Données mockées — tous imagePath → URLs AniList CDN                                     |
-| `lib/core/constants/app_constants.dart`         | ✅ Fait | Clés, plans, constantes                                                                 |
+| Fichier                                         | Statut  | Notes                                                                                                           |
+| ----------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------- |
+| `lib/core/router/app_router.dart`               | ✅ Fait | GoRouter complet                                                                                                |
+| `lib/core/services/anilist_service.dart`        | ✅ Fait | Service AniList GraphQL (searchCharacters, searchAnimes, trending chars/animes, detail)                         |
+| `lib/core/services/otadex_data_service.dart`    | ✅ Fait | Service données mockées (fallback local)                                                                        |
+| `lib/core/services/google_sign_in_service.dart` | ✅ Fait | Google OAuth wrapper                                                                                            |
+| `lib/core/services/firebase_auth_service.dart`  | ✅ Fait | Firebase Auth email + Google, signOut, reset password, updatePassword, updateProfile, création profil Firestore |
+| `lib/firebase_options.dart`                     | ✅ Fait | Généré par FlutterFire pour le projet Firebase `tilqui`                                                         |
+| `android/app/google-services.json`              | ✅ Fait | Config Android Firebase pour `com.otadex.otadex`                                                                |
+| `firebase.json`                                 | ✅ Fait | Config Firebase CLI créée                                                                                       |
+| `.firebaserc`                                   | ✅ Fait | Projet Firebase associé à `tilqui`                                                                              |
+| `firestore.rules`                               | ✅ Fait | Rules Firestore téléchargées depuis la console                                                                  |
+| `firestore.indexes.json`                        | ✅ Fait | Index Firestore initialisés                                                                                     |
+| `functions/`                                    | ✅ Fait | Cloud Functions initialisées en TypeScript + ESLint                                                             |
+| `lib/core/models/character.dart`                | ✅ Fait | Modèle personnage                                                                                               |
+| `lib/core/models/anime_entry.dart`              | ✅ Fait | Modèle animé                                                                                                    |
+| `lib/core/models/creator_entry.dart`            | ✅ Fait | Modèle créateur                                                                                                 |
+| `lib/core/models/user_profile.dart`             | ✅ Fait | Modèle profil utilisateur                                                                                       |
+| `lib/core/models/user_rank.dart`                | ✅ Fait | Enum UserRank (genin/jonin/kage)                                                                                |
+| `lib/core/models/featured_slide.dart`           | ✅ Fait | Modèle slide hero carousel                                                                                      |
+| `lib/core/data/mock_data.dart`                  | ✅ Fait | Données mockées — tous imagePath → URLs AniList CDN                                                             |
+| `lib/core/constants/app_constants.dart`         | ✅ Fait | Clés, plans, constantes                                                                                         |
 
 ### Features — Auth
 
-| Fichier                                                     | Statut  | Notes                                                                              |
-| ----------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------- |
-| `lib/features/auth/presentation/login_screen.dart`          | ✅ Fait | FirebaseAuthService email + Google, écrit isLoggedInProvider, affiche erreurs auth |
-| `lib/features/auth/presentation/register_screen.dart`       | ✅ Fait | FirebaseAuthService email + Google, création profil Firestore                      |
-| `lib/features/auth/presentation/widgets/rank_selector.dart` | ✅ Fait | Widget sélection rang à l'inscription                                              |
+| Fichier                                                            | Statut  | Notes                                                                              |
+| ------------------------------------------------------------------ | ------- | ---------------------------------------------------------------------------------- |
+| `lib/features/auth/presentation/login_screen.dart`                 | ✅ Fait | FirebaseAuthService email + Google, écrit isLoggedInProvider, affiche erreurs auth |
+| `lib/features/auth/presentation/register_screen.dart`              | ✅ Fait | FirebaseAuthService email + Google, création profil Firestore                      |
+| `lib/features/auth/presentation/widgets/password_reset_sheet.dart` | ✅ Fait | Forgot password : email + code de réinitialisation dans l'application              |
+| `lib/features/auth/presentation/widgets/rank_selector.dart`        | ✅ Fait | Widget sélection rang à l'inscription                                              |
 
 ### Features — Onboarding
 
@@ -171,23 +172,23 @@
 
 ### Features — Profile
 
-| Fichier                                                                | Statut  | Notes                                             |
-| ---------------------------------------------------------------------- | ------- | ------------------------------------------------- |
-| `lib/features/profile/presentation/profile_screen.dart`                | ✅ Fait | Écran profil complet                              |
-| `lib/features/profile/presentation/widgets/profile_hero.dart`          | ✅ Fait | Hero avatar + rang + pseudo Firebase + bio/statut |
-| `lib/features/profile/presentation/widgets/edit_profile_sheet.dart`    | ✅ Fait | Sheet édition + image picker + Jonin gate         |
-| `lib/features/profile/presentation/widgets/avatar_picker.dart`         | ✅ Fait | Widget picker avatar                              |
-| `lib/features/profile/presentation/widgets/profile_stat_row.dart`      | ✅ Fait | Ligne stats (collectés, score, rang)              |
-| `lib/features/profile/presentation/widgets/profile_tab_bar.dart`       | ✅ Fait | Barre d'onglets profil                            |
-| `lib/features/profile/presentation/widgets/profile_tab_content.dart`   | ✅ Fait | Contenu onglets profil                            |
-| `lib/features/profile/presentation/widgets/plan_section.dart`          | ✅ Fait | Section plans                                     |
-| `lib/features/profile/presentation/widgets/plan_card.dart`             | ✅ Fait | Card plan individuel                              |
-| `lib/features/profile/presentation/widgets/subscription_card.dart`     | ✅ Fait | Card abonnement actuel                            |
-| `lib/features/profile/presentation/widgets/kage_banner.dart`           | ✅ Fait | Bannière promo Kage                               |
-| `lib/features/profile/presentation/widgets/billing_toggle.dart`        | ✅ Fait | Toggle mensuel/annuel                             |
-| `lib/features/profile/presentation/widgets/settings_section.dart`      | ✅ Fait | Section paramètres                                |
-| `lib/features/profile/presentation/widgets/change_password_sheet.dart` | ✅ Fait | Sheet changement mot de passe                     |
-| `lib/features/profile/presentation/widgets/profile_logout_footer.dart` | ✅ Fait | Footer déconnexion Firebase + retour login        |
+| Fichier                                                                | Statut  | Notes                                                                     |
+| ---------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------- |
+| `lib/features/profile/presentation/profile_screen.dart`                | ✅ Fait | Écran profil complet                                                      |
+| `lib/features/profile/presentation/widgets/profile_hero.dart`          | ✅ Fait | Hero avatar + rang + pseudo Firebase + bio/statut                         |
+| `lib/features/profile/presentation/widgets/edit_profile_sheet.dart`    | ✅ Fait | Sheet édition + image picker + Jonin gate + persistance Firestore / prefs |
+| `lib/features/profile/presentation/widgets/avatar_picker.dart`         | ✅ Fait | Widget picker avatar                                                      |
+| `lib/features/profile/presentation/widgets/profile_stat_row.dart`      | ✅ Fait | Ligne stats (collectés, score, rang)                                      |
+| `lib/features/profile/presentation/widgets/profile_tab_bar.dart`       | ✅ Fait | Barre d'onglets profil                                                    |
+| `lib/features/profile/presentation/widgets/profile_tab_content.dart`   | ✅ Fait | Contenu onglets profil                                                    |
+| `lib/features/profile/presentation/widgets/plan_section.dart`          | ✅ Fait | Section plans                                                             |
+| `lib/features/profile/presentation/widgets/plan_card.dart`             | ✅ Fait | Card plan individuel                                                      |
+| `lib/features/profile/presentation/widgets/subscription_card.dart`     | ✅ Fait | Card abonnement actuel                                                    |
+| `lib/features/profile/presentation/widgets/kage_banner.dart`           | ✅ Fait | Bannière promo Kage                                                       |
+| `lib/features/profile/presentation/widgets/billing_toggle.dart`        | ✅ Fait | Toggle mensuel/annuel                                                     |
+| `lib/features/profile/presentation/widgets/settings_section.dart`      | ✅ Fait | Section paramètres                                                        |
+| `lib/features/profile/presentation/widgets/change_password_sheet.dart` | ✅ Fait | Sheet changement mot de passe + réauth Firebase + update password         |
+| `lib/features/profile/presentation/widgets/profile_logout_footer.dart` | ✅ Fait | Footer déconnexion Firebase + retour login                                |
 
 ### Features — Anime
 
@@ -220,7 +221,7 @@
 | ---------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `lib/features/character/presentation/gallery_screen.dart`  | ✅ Fait    | Galerie plein écran — PageView + InteractiveViewer 4×, watermark Genin/Jonin, miniatures bas, hint swipe, download gate Kage |
 | `lib/features/subscription/presentation/plans_screen.dart` | ❌ À faire | Page plans + CinetPay (route /subscription stub présente dans app_router)                                                    |
-| `docs/index.html`                                          | ✅ Fait    | Landing page complète — hero mockup, features, plans Genin/Jonin/Kage, section légale, footer, scroll reveal, nav mobile   |
+| `docs/index.html`                                          | ✅ Fait    | Landing page complète — hero mockup, features, plans Genin/Jonin/Kage, section légale, footer, scroll reveal, nav mobile     |
 | `docs/privacy-policy.html`                                 | ✅ Fait    | Politique de confidentialité FR/EN — toggle langue, conforme Play Store                                                      |
 | `docs/terms.html`                                          | ✅ Fait    | Conditions d'utilisation FR/EN — tableau plans, toggle langue                                                                |
 | `docs/account-deletion.html`                               | ✅ Fait    | Suppression de compte FR/EN — étapes in-app + email CTA, avertissement données                                               |
@@ -334,7 +335,8 @@ URLs Play Console :
 | 9 mai 2026  | Décision conformité Google Play : ajouter avant Firebase Auth des pages légales web publiques pour Politique de confidentialité, Conditions d'utilisation et Suppression de compte. Objectif : disposer d'URLs publiques compatibles Play Console, en plus des écrans légaux intégrés dans l'app.                                                             |
 | 10 mai 2026 | Task 11 : Pages légales web — docs/index.html, docs/privacy-policy.html, docs/terms.html, docs/account-deletion.html. Dark OTADEX theme, toggle FR/EN, conforme Play Store. GitHub Pages prêt (activation manuelle requise).                                                                                                                                  |
 | 10 mai 2026 | Task 12 : Firebase Auth réelle — dépendances `firebase_auth` + `cloud_firestore`, `firebase_auth_service.dart`, login/register email + Google branchés, logout profil branché, profil utilisateur créé dans Firestore à l'inscription, rang initial restauré depuis SharedPreferences. flutter analyze + dart analyze → 0 issue.                              |
-| 10 mai 2026 | Task 13 : Play Store preparation lancée — docs/play-store ajoutés (listing FR, Data Safety, test plan, screenshots), firestore.rules remplacé localement par des règles hors mode test. Actions manuelles restantes : GitHub Pages, providers Firebase, déploiement rules, tests Android, captures.                                                           |
+| 10 mai 2026 | Task 13 : Auth avancée — mot de passe oublié `password_reset_sheet.dart` implémenté (email + code reset), changement de mot de passe `change_password_sheet.dart` avec réauth Firebase, édition profil persistée dans Firestore / SharedPreferences. flutter analyze → 0 erreur.                                                                              |
+| 10 mai 2026 | Task 14 : Play Store preparation lancée — docs/play-store ajoutés (listing FR, Data Safety, test plan, screenshots), firestore.rules remplacé localement par des règles hors mode test. Actions manuelles restantes : GitHub Pages, providers Firebase, déploiement rules, tests Android, captures.                                                           |
 | 10 mai 2026 | Retours test auth/home — déconnexion redirige vers login, pseudo utilisateur restauré dans profil et HomeAppBar, page notifications avec état vide ajoutée, route `/notifications` créée, FirebaseAuthService persiste uid/email/pseudo/rang localement après login/register. flutter analyze + dart analyze → 0 issue.                                       |
 | 10 mai 2026 | Vérification accès invité/connecté — Home et Search restent accessibles publiquement, Collection et Notifications sont protégées en accès direct par AuthRequiredScreen, la réhydratation du profil local ne se fait que si l'utilisateur est connecté.                                                                                                       |
 

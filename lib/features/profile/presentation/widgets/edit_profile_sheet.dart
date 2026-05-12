@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/providers/user_profile_provider.dart';
+import '../../../../core/services/firebase_auth_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/otadex_theme.dart';
 
@@ -20,7 +22,9 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
   late final TextEditingController _pseudoCtrl;
   late final TextEditingController _bioCtrl;
   String? _pseudoError;
+  String? _authError;
   String? _pendingAvatarPath;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -56,23 +60,50 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
     }
   }
 
-  void _save() {
+  Future<void> _save() async {
     final pseudo = _pseudoCtrl.text.trim();
     final s = AppStrings.of(context);
+    setState(() {
+      _pseudoError = null;
+      _authError = null;
+    });
     if (pseudo.length < 3) {
       setState(() => _pseudoError = s.pseudoMinLength);
       return;
     }
-    ref.read(userProfileProvider.notifier).updateProfile(
-          pseudo: pseudo,
-          bio: _bioCtrl.text.trim(),
-        );
-    if (_isJonin && _pendingAvatarPath != null) {
-      ref.read(userProfileProvider.notifier).updateAvatar(_pendingAvatarPath);
+
+    setState(() => _isLoading = true);
+    try {
+      await FirebaseAuthService().updateUserProfile(
+        pseudo: pseudo,
+        bio: _bioCtrl.text.trim(),
+        avatarUrl: _pendingAvatarPath,
+      );
+      ref.read(userProfileProvider.notifier).updateProfile(
+            pseudo: pseudo,
+            bio: _bioCtrl.text.trim(),
+          );
+      if (_isJonin && _pendingAvatarPath != null) {
+        ref.read(userProfileProvider.notifier).updateAvatar(_pendingAvatarPath);
+      }
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(AppConstants.keyUserPseudo, pseudo);
+      await prefs.setString(AppConstants.keyUserDisplayName, pseudo);
+      if (_pendingAvatarPath != null) {
+        await prefs.setString(
+            AppConstants.keyUserAvatarUrl, _pendingAvatarPath!);
+      }
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(s.profileUpdated)));
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _authError = error.toString();
+        _isLoading = false;
+      });
     }
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(s.profileUpdated)));
   }
 
   @override
@@ -140,7 +171,8 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
           const SizedBox(height: 20),
 
           // ── Avatar section ──────────────────────────────────────────────
-          Center(child: _AvatarSection(
+          Center(
+              child: _AvatarSection(
             avatarPath: _pendingAvatarPath,
             isJonin: _isJonin,
             subscriptionPlan: profile.subscriptionPlan,
@@ -175,6 +207,12 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
             style: GoogleFonts.nunitoSans(color: theme.textPrimary),
             decoration: inputDeco(),
           ),
+          if (_authError != null) ...[
+            const SizedBox(height: 14),
+            Text(_authError!,
+                style: GoogleFonts.nunitoSans(
+                    fontSize: 13, color: AppColors.error)),
+          ],
           const SizedBox(height: 24),
 
           // ── Actions ─────────────────────────────────────────────────────
@@ -196,7 +234,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: _save,
+                onPressed: _isLoading ? null : _save,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.accentColor,
                   foregroundColor: Colors.white,
@@ -205,9 +243,19 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                       borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: Text(s.saveChanges,
-                    style:
-                        GoogleFonts.nunitoSans(fontWeight: FontWeight.w700)),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(s.saveChanges,
+                        style: GoogleFonts.nunitoSans(
+                            fontWeight: FontWeight.w700)),
               ),
             ),
           ]),
@@ -273,8 +321,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                   elevation: 0,
                 ),
                 child: Text('Voir les plans',
-                    style:
-                        GoogleFonts.rajdhani(fontWeight: FontWeight.w700)),
+                    style: GoogleFonts.rajdhani(fontWeight: FontWeight.w700)),
               ),
             ),
           ],

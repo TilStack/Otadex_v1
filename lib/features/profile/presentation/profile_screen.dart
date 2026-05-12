@@ -115,6 +115,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             },
             onEditProfile: _showEditProfile,
             onChangePassword: _showChangePassword,
+            email: profile.email,
           ),
           const SizedBox(height: 28),
           const ProfileLogoutFooter(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/services/firebase_auth_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/otadex_theme.dart';
 
@@ -18,9 +19,11 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
   bool _obscureCurrent = true;
   bool _obscureNew = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
   String? _currentError;
   String? _newError;
   String? _confirmError;
+  String? _generalError;
 
   @override
   void dispose() {
@@ -30,13 +33,14 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final s = AppStrings.of(context);
     bool valid = true;
     setState(() {
       _currentError = null;
       _newError = null;
       _confirmError = null;
+      _generalError = null;
     });
 
     if (_currentCtrl.text.isEmpty) {
@@ -53,9 +57,24 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
     }
     if (!valid) return;
 
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(s.passwordChanged)));
+    setState(() => _isLoading = true);
+    try {
+      await FirebaseAuthService().reauthenticateAndUpdatePassword(
+        currentPassword: _currentCtrl.text,
+        newPassword: _newCtrl.text,
+      );
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(s.passwordChanged)));
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _generalError = error.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -79,7 +98,9 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
           suffixIcon: onToggle != null
               ? IconButton(
                   icon: Icon(
-                    obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                    obscure
+                        ? Icons.visibility_off_rounded
+                        : Icons.visibility_rounded,
                     color: theme.textSecondary,
                     size: 18,
                   ),
@@ -185,6 +206,12 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
                   setState(() => _obscureConfirm = !_obscureConfirm),
             ),
           ),
+          if (_generalError != null) ...[
+            const SizedBox(height: 14),
+            Text(_generalError!,
+                style: GoogleFonts.nunitoSans(
+                    fontSize: 13, color: AppColors.error)),
+          ],
           const SizedBox(height: 24),
           Row(children: [
             Expanded(
@@ -204,7 +231,7 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: _save,
+                onPressed: _isLoading ? null : _save,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.accentColor,
                   foregroundColor: Colors.white,
@@ -213,8 +240,19 @@ class _ChangePasswordSheetState extends State<ChangePasswordSheet> {
                       borderRadius: BorderRadius.circular(12)),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                child: Text(s.saveChanges,
-                    style: GoogleFonts.nunitoSans(fontWeight: FontWeight.w700)),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : Text(s.saveChanges,
+                        style: GoogleFonts.nunitoSans(
+                            fontWeight: FontWeight.w700)),
               ),
             ),
           ]),
