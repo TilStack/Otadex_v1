@@ -4,7 +4,7 @@
 
 - Flutter SDK : `>=3.0.0 <4.0.0` (Flutter 3.x)
 - App version : `1.0.0+1`
-- Firebase configuré : **OUI (hors Storage)** — FlutterFire Android + Firebase Auth email/Google + Firestore profil utilisateur + Functions initialisés, Storage non utilisé
+- Firebase configuré : **OUI (Storage inclus)** — FlutterFire Android + Firebase Auth email/Google + Firestore profil utilisateur + Functions + Storage initialisés
 - Dernier écran complété : **ProfileScreen** (avatar picker + Jonin gate, mai 2026)
 
 ## Dépendances installées (`pubspec.yaml`)
@@ -26,6 +26,7 @@
 | firebase_core          | ^2.27.0 | Initialisation Firebase      |
 | firebase_auth          | ^4.17.0 | Auth email/password + Google |
 | cloud_firestore        | ^4.15.0 | Profil utilisateur Firestore |
+| firebase_storage       | ^11.6.0 | Images personnages Storage   |
 | gap                    | ^3.0.1  | Espacement                   |
 | image_picker           | ^1.1.0  | Avatar picker                |
 
@@ -393,6 +394,7 @@ URLs Play Console :
 | 10 mai 2026 | Task 14 : Play Store preparation lancée — docs/play-store ajoutés (listing FR, Data Safety, test plan, screenshots), firestore.rules remplacé localement par des règles hors mode test. Actions manuelles restantes : GitHub Pages, providers Firebase, déploiement rules, tests Android, captures.                                                           |
 | 10 mai 2026 | Retours test auth/home — déconnexion redirige vers login, pseudo utilisateur restauré dans profil et HomeAppBar, page notifications avec état vide ajoutée, route `/notifications` créée, FirebaseAuthService persiste uid/email/pseudo/rang localement après login/register. flutter analyze + dart analyze → 0 issue.                                       |
 | 10 mai 2026 | Vérification accès invité/connecté — Home et Search restent accessibles publiquement, Collection et Notifications sont protégées en accès direct par AuthRequiredScreen, la réhydratation du profil local ne se fait que si l'utilisateur est connecté.                                                                                                       |
+| 14 mai 2026 | Firebase Storage images — upload_images.js créé (Node.js, upload 131 images vers Storage bucket tilqui.appspot.com), firebase_storage ^11.6.0 ajouté, StorageService créé (getCharacterImages + getCharacterCover), storageServiceProvider + characterImagesProvider ajoutés dans anilist_providers.dart, _effectiveImages dans CharacterDetailScreen priorise Storage → images AniList → imagePath → fallback. dart analyze → 0 issue. |
 
 ---
 

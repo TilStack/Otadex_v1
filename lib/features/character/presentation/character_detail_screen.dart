@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/character.dart';
+import '../../../core/providers/anilist_providers.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/user_profile_provider.dart';
 import '../../../core/theme/app_colors.dart';
@@ -52,8 +53,15 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
   ];
 
   List<String> get _effectiveImages {
+    final storageAsync = ref.watch(characterImagesProvider({
+      'anime': c.animeName,
+      'character': c.name,
+    }));
+    if (storageAsync.hasValue && storageAsync.value!.isNotEmpty) {
+      return storageAsync.value!;
+    }
     if (c.images.isNotEmpty) return c.images;
-    if (c.imagePath != null) return [c.imagePath!];
+    if (c.imagePath?.isNotEmpty == true) return [c.imagePath!];
     return _kFallbackImages;
   }
 

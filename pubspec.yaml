@@ -33,10 +33,11 @@ dependencies:
   cached_network_image: ^3.3.0
   flutter_svg: ^2.0.0
 
-  # Auth
+  # Auth & Storage
   firebase_core: ^2.27.0
   firebase_auth: ^4.17.0
   cloud_firestore: ^4.15.0
+  firebase_storage: ^11.6.0
   google_sign_in: ^6.2.0
 
   # HTTP client (AniList GraphQL)

@@ -4,6 +4,7 @@ import '../models/anime_entry.dart';
 import '../models/featured_slide.dart';
 import '../theme/app_colors.dart';
 import '../services/anilist_service.dart';
+import '../services/storage_service.dart';
 import 'otadex_providers.dart';
 
 // ── AniList service singleton ────────────────────────────────────────────────
@@ -60,6 +61,20 @@ final characterDetailProvider =
   final anilistId = int.tryParse(id.replaceFirst('anilist-', ''));
   if (anilistId == null) return null;
   return ref.watch(anilistServiceProvider).getCharacterById(anilistId);
+});
+
+// ── Firebase Storage ─────────────────────────────────────────────────────────
+final storageServiceProvider = Provider<StorageService>(
+  (ref) => StorageService(),
+);
+
+final characterImagesProvider = FutureProvider.autoDispose
+    .family<List<String>, Map<String, String>>((ref, params) async {
+  final service = ref.watch(storageServiceProvider);
+  return service.getCharacterImages(
+    anime: params['anime']!,
+    character: params['character']!,
+  );
 });
 
 // ── Fallback slides when AniList is unreachable ──────────────────────────────
