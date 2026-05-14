@@ -47,5 +47,4 @@ app.*.map.json
 #Claude IA
 .claude/
 
-.serviceAccountKey.json
-serviceAccountKey.json
+serviceAccountkey.json
