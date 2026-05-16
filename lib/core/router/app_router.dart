@@ -18,6 +18,10 @@ import '../../features/legal/presentation/privacy_policy_screen.dart';
 import '../../features/legal/presentation/terms_screen.dart';
 import '../../features/search/presentation/search_screen.dart';
 import '../../features/subscription/presentation/plans_screen.dart';
+import '../../features/studio/presentation/studio_screen.dart';
+import '../../features/voice_actor/presentation/voice_actor_screen.dart';
+import '../../features/character/presentation/character_chat_screen.dart';
+import '../../features/character/presentation/character_quiz_screen.dart';
 import '../../core/models/character.dart';
 import '../constants/app_constants.dart';
 import '../widgets/auth_required_screen.dart';
@@ -141,6 +145,44 @@ class AppRouter {
         path: '/subscription',
         name: 'subscription',
         builder: (context, state) => const PlansScreen(),
+      ),
+      GoRoute(
+        path: '/studio/:id',
+        name: 'studio',
+        builder: (context, state) => StudioScreen(
+          studioId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/voice-actor/:id',
+        name: 'voice-actor',
+        builder: (context, state) => VoiceActorScreen(
+          staffId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/chat/:charId',
+        name: 'chat',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CharacterChatScreen(
+            charId: state.pathParameters['charId']!,
+            charName: extra['charName'] as String? ?? '',
+            charImageUrl: extra['charImageUrl'] as String? ?? '',
+            charBio: extra['charBio'] as String? ?? '',
+          );
+        },
+      ),
+      GoRoute(
+        path: '/quiz/:charId',
+        name: 'quiz',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return CharacterQuizScreen(
+            charId: state.pathParameters['charId']!,
+            charName: extra['charName'] as String? ?? '',
+          );
+        },
       ),
       GoRoute(
         path: '/terms',

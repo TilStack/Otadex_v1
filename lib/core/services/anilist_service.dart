@@ -187,6 +187,103 @@ class AniListService {
     return _mapCharacter(data['Character'] as Map<String, dynamic>);
   }
 
+  // ── Détail complet personnage ────────────────────────────────────────────────
+  Future<Map<String, dynamic>?> getFullCharacterData(int anilistId) async {
+    const gql = r'''
+      query ($id: Int) {
+        Character(id: $id) {
+          id
+          name { full native }
+          image { large }
+          description
+          favourites
+          age
+          gender
+          bloodType
+          dateOfBirth { year month day }
+          media(sort: POPULARITY_DESC, perPage: 3) {
+            edges {
+              characterRole
+              voiceActors(language: JAPANESE) {
+                id name { full native } image { large } languageV2
+              }
+              node {
+                id title { romaji french english }
+                format episodes seasonYear
+                coverImage { large }
+                studios(isMain: true) { nodes { id name siteUrl } }
+                staff(perPage: 3) {
+                  nodes {
+                    id name { full }
+                    image { large }
+                    primaryOccupations
+                  }
+                }
+              }
+            }
+          }
+          relations {
+            edges {
+              relationType
+              node { id name { full } image { large } }
+            }
+          }
+        }
+      }
+    ''';
+    final data = await _query(gql, {'id': anilistId});
+    return data?['Character'] as Map<String, dynamic>?;
+  }
+
+  // ── Détail studio ─────────────────────────────────────────────────────────
+  Future<Map<String, dynamic>?> getStudioById(int studioId) async {
+    const gql = r'''
+      query ($id: Int) {
+        Studio(id: $id) {
+          id name siteUrl
+          isAnimationStudio
+          media(sort: POPULARITY_DESC, perPage: 20) {
+            nodes {
+              id title { romaji french english }
+              format episodes seasonYear
+              averageScore
+              coverImage { large }
+            }
+          }
+        }
+      }
+    ''';
+    final data = await _query(gql, {'id': studioId});
+    return data?['Studio'] as Map<String, dynamic>?;
+  }
+
+  // ── Détail voice actor ────────────────────────────────────────────────────
+  Future<Map<String, dynamic>?> getVoiceActorById(int staffId) async {
+    const gql = r'''
+      query ($id: Int) {
+        Staff(id: $id) {
+          id
+          name { full native }
+          image { large }
+          description
+          languageV2
+          primaryOccupations
+          dateOfBirth { year month day }
+          homeTown
+          yearsActive
+          characters(sort: FAVOURITES_DESC, perPage: 20) {
+            nodes {
+              id name { full } image { large }
+              media(perPage: 1) { nodes { title { romaji french } } }
+            }
+          }
+        }
+      }
+    ''';
+    final data = await _query(gql, {'id': staffId});
+    return data?['Staff'] as Map<String, dynamic>?;
+  }
+
   // ── MAPPERS ────────────────────────────────────────────────────────────────
 
   Character _mapCharacter(Map<String, dynamic> c, {bool isTrending = false}) {

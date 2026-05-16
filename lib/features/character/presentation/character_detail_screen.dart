@@ -12,13 +12,17 @@ import '../../../core/theme/rank_theme.dart';
 import '../../../core/widgets/auth_gate_modal.dart';
 import '../../../core/widgets/otadex_image.dart';
 import '../../../core/widgets/subscription_modal.dart';
-import 'widgets/char_ai_card.dart';
 import 'widgets/char_circle_button.dart';
-import 'widgets/char_comment_card.dart';
 import 'widgets/char_pill.dart';
 
 // ─── Tab identifiers ───────────────────────────────────────────────
-enum _Tab { profil, combat, galerie, fans }
+enum _Tab { infos, galerie, relations, medias, exclusif }
+
+// ─── Provider données enrichies AniList (utilisé dans INFOS, RELATIONS, MEDIAS)
+final _charFullDataProvider =
+    FutureProvider.autoDispose.family<Map<String, dynamic>?, int>((ref, id) async {
+  return ref.read(anilistServiceProvider).getFullCharacterData(id);
+});
 
 class CharacterDetailScreen extends ConsumerStatefulWidget {
   final Character character;
@@ -32,10 +36,9 @@ class CharacterDetailScreen extends ConsumerStatefulWidget {
 class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     with SingleTickerProviderStateMixin {
   // ── State ────────────────────────────────────────────────────────
-  _Tab _activeTab = _Tab.profil;
+  _Tab _activeTab = _Tab.infos;
   bool _isLiked = false;
   bool _aboutExpanded = false;
-  int _userRating = 3;
 
   // ── Hero animation ───────────────────────────────────────────────
   late final AnimationController _heroCtrl;
@@ -66,11 +69,15 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
   }
 
   // ── Computed stats ───────────────────────────────────────────────
-  int get _commentCount => (c.likes * 0.30).round();
   int get _collectionCount => (c.likes * 0.20).round();
-  int get _voteCount => (c.likes * 0.08).round();
-  int get _quizCount => (c.likes * 0.35).round();
-  int get _ratingCount => (c.likes * 0.40).round();
+
+  // ── AniList ID helper ────────────────────────────────────────────
+  int? get _anilistId {
+    if (c.id.startsWith('anilist-')) {
+      return int.tryParse(c.id.replaceFirst('anilist-', ''));
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -128,7 +135,6 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     final mq = MediaQuery.of(context);
     final profile = ref.watch(userProfileProvider);
     final isCollected = ref.watch(isCollectedProvider(c.id));
-
     final collectionAsync = ref.watch(collectionStreamProvider);
 
     return Scaffold(
@@ -151,7 +157,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.only(bottom: mq.padding.bottom + 80),
-                    child: _buildTabContent(theme, mq),
+                    child: _buildTabContent(theme, mq, profile.rank),
                   ),
                 ),
               ],
@@ -293,7 +299,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
                 Text(
                   c.name.toUpperCase(),
                   style: GoogleFonts.rajdhani(
-                    fontSize: _heroNameSize(mq),
+                    fontSize: _heroNameSize(MediaQuery.of(context)),
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                     letterSpacing: 0.8,
@@ -446,137 +452,119 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
 
   // ── TAB CONTENT ──────────────────────────────────────────────────
 
-  Widget _buildTabContent(RankTheme theme, MediaQueryData mq) {
+  Widget _buildTabContent(RankTheme theme, MediaQueryData mq, String rank) {
     final isTablet = mq.size.width >= 600;
     return switch (_activeTab) {
-      _Tab.profil => _buildProfilTab(theme, isTablet),
-      _Tab.combat => _buildCombatTab(theme, isTablet),
+      _Tab.infos => _buildInfosTab(theme, isTablet, rank),
       _Tab.galerie => _buildGalerieTab(theme, isTablet),
-      _Tab.fans => _buildFansTab(theme, isTablet),
+      _Tab.relations => _buildRelationsTab(theme, rank),
+      _Tab.medias => _buildMediasTab(theme),
+      _Tab.exclusif => _buildExclusifTab(theme, rank),
     };
   }
 
-  // ── PROFIL TAB ────────────────────────────────────────────────────
+  // ── INFOS TAB ────────────────────────────────────────────────────
 
-  Widget _buildProfilTab(RankTheme theme, bool isTablet) {
+  Widget _buildInfosTab(RankTheme theme, bool isTablet, String rank) {
+    final isGenin = rank == 'genin';
+    final isKage = rank == 'kage';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildQuickStats(theme, isTablet),
-        _buildAbout(theme),
-        _buildQuoteCard(theme),
-        _buildSeriesSection(theme),
-        _buildOtherCharacters(theme),
+        // Section A — Identité
+        _buildIdentiteSection(theme),
+        // Section B — À propos
+        _buildAboutSection(theme, isGenin),
+        // Section C — Pouvoirs
+        if (c.powers.isNotEmpty) _buildPowersSection(theme, isGenin),
+        // Section D — Citations
+        if (c.quotes.isNotEmpty || isGenin || isKage)
+          _buildQuotesSection(theme, isGenin, isKage),
+        // Section E — Doubleurs
+        _buildVoiceActorsSection(theme, isGenin),
+        // Section F — Trivia
+        if (c.trivia.isNotEmpty || !isKage)
+          _buildTriviaSection(theme, isGenin, isKage),
       ],
     );
   }
 
-  Widget _buildQuickStats(RankTheme theme, bool isTablet) {
+  Widget _buildIdentiteSection(RankTheme theme) {
     final cells = [
-      ('ÂGE', '28 ans', false),
-      ('GENRE', 'Masculin ♂', false),
-      ('NATIONALITÉ', '🇯🇵 Japonaise', false),
-      ('STATUT', 'Actif', true),
+      ('ÂGE', c.age ?? '—'),
+      ('GENRE', c.gender ?? '—'),
+      ('STATUT', c.status ?? c.role ?? '—'),
+      ('NATIONALITÉ', c.nationality ?? '—'),
+      ('GROUPE SANGUIN', c.bloodType ?? '—'),
+      ('DATE NAISSANCE', c.birthday ?? c.dateOfBirth ?? '—'),
     ];
-    final crossAxis = isTablet ? 4 : 2;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionLabel(theme, 'INFORMATIONS'),
-          const SizedBox(height: 10),
-          GridView.count(
-            crossAxisCount: crossAxis,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: isTablet ? 2.2 : 2.8,
-            children: cells.map((cell) {
-              final (label, value, dot) = cell;
-              return Container(
-                decoration: BoxDecoration(
-                  color: theme.backgroundElevated,
-                  borderRadius: BorderRadius.circular(12),
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundElevated,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: GridView.count(
+        crossAxisCount: 2,
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        childAspectRatio: 2.5,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        children: cells.map((cell) {
+          final (label, value) = cell;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.nunitoSans(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.4,
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      label,
-                      style: GoogleFonts.nunitoSans(
-                        fontSize: 10,
-                        color: theme.textSecondary,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            value,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.nunitoSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: theme.textPrimary,
-                            ),
-                          ),
-                        ),
-                        if (dot) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.statGreen,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.statGreen
-                                      .withValues(alpha: 0.55),
-                                  blurRadius: 6,
-                                )
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.nunitoSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
                 ),
-              );
-            }).toList(),
-          ),
-        ],
+              ),
+            ],
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildAbout(RankTheme theme) {
-    const bio =
-        'Considéré comme le sorcier le plus puissant de son époque, ce maître des arts occultes '
-        'dirige la plus grande école de jujutsu. Il maîtrise une technique héréditaire unique qui '
-        'rend son corps physiquement intouchable. Derrière son attitude désinvolte se cache une '
-        'vision profonde : former une nouvelle génération de guerriers capables de faire face aux '
-        'menaces les plus obscures.';
+  Widget _buildAboutSection(RankTheme theme, bool isGenin) {
+    final bio = c.bio ?? 'Aucune description disponible.';
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel(theme, 'BIOGRAPHIE'),
+          Text(
+            'À propos',
+            style: GoogleFonts.dmSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
           const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
-              color: theme.backgroundElevated,
+              color: AppColors.backgroundElevated,
               borderRadius: BorderRadius.circular(14),
             ),
             padding: const EdgeInsets.all(16),
@@ -585,26 +573,41 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
               children: [
                 Text(
                   bio,
-                  maxLines: _aboutExpanded ? null : 4,
-                  overflow: _aboutExpanded ? null : TextOverflow.ellipsis,
+                  maxLines: isGenin ? 3 : (_aboutExpanded ? null : null),
+                  overflow: isGenin ? TextOverflow.ellipsis : null,
                   style: GoogleFonts.nunitoSans(
                     fontSize: 14,
-                    color: theme.textSecondary,
+                    color: AppColors.textSecondary,
                     height: 1.65,
                   ),
                 ),
                 const SizedBox(height: 10),
-                GestureDetector(
-                  onTap: () => setState(() => _aboutExpanded = !_aboutExpanded),
-                  child: Text(
-                    _aboutExpanded ? 'Réduire ↑' : 'Lire la suite →',
-                    style: GoogleFonts.nunitoSans(
-                      fontSize: 13,
-                      color: theme.accentColor,
-                      fontWeight: FontWeight.w600,
+                if (isGenin)
+                  GestureDetector(
+                    onTap: () =>
+                        showSubscriptionModal(context, SubscriptionPlan.jonin),
+                    child: Text(
+                      'Lire la suite 🔒',
+                      style: GoogleFonts.nunitoSans(
+                        fontSize: 13,
+                        color: theme.accentColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                else
+                  GestureDetector(
+                    onTap: () =>
+                        setState(() => _aboutExpanded = !_aboutExpanded),
+                    child: Text(
+                      _aboutExpanded ? 'Réduire ↑' : 'Lire la suite →',
+                      style: GoogleFonts.nunitoSans(
+                        fontSize: 13,
+                        color: theme.accentColor,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -613,536 +616,444 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     );
   }
 
-  Widget _buildQuoteCard(RankTheme theme) {
+  Widget _buildPowersSection(RankTheme theme, bool isGenin) {
+    final displayedPowers = isGenin && c.powers.length > 3
+        ? c.powers.sublist(0, 3)
+        : c.powers;
+    final hiddenCount = isGenin ? (c.powers.length - 3).clamp(0, 999) : 0;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel(theme, 'CITATION EMBLÉMATIQUE'),
-          const SizedBox(height: 10),
-          Container(
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(14),
-              border:
-                  Border.all(color: theme.accentColor.withValues(alpha: 0.15)),
-            ),
-            padding: const EdgeInsets.all(18),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: -8,
-                  left: 2,
-                  child: Text(
-                    '"',
-                    style: GoogleFonts.nunitoSans(
-                      fontSize: 64,
-                      fontWeight: FontWeight.w800,
-                      color: theme.accentColor.withValues(alpha: 0.16),
-                      height: 1,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 28, top: 2),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Dans ce monde, le talent bat le travail acharné. '
-                        'Et le talent né est battu par le talent éveillé.',
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
-                          color: theme.textPrimary,
-                          height: 1.6,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              '— ${c.name}, ${c.animeName}',
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.nunitoSans(
-                                  fontSize: 11, color: theme.textSecondary),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(Icons.ios_share_rounded,
-                              color: theme.textSecondary, size: 14),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          Text(
+            '⚔️ Pouvoirs & Capacités',
+            style: GoogleFonts.nunitoSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSeriesSection(RankTheme theme) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionLabel(theme, 'SÉRIE & CRÉATEUR'),
-          const SizedBox(height: 10),
-          // Series card
-          Container(
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        c.cardColor,
-                        c.accentColor.withValues(alpha: 0.4)
-                      ],
-                    ),
-                  ),
-                  child: Center(
-                    child: Container(
-                      width: 18,
-                      height: 26,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(9),
-                        color: Colors.white.withValues(alpha: 0.65),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        c.animeName,
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: theme.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Shōnen · 2020 · 24 épisodes · Studio Lumen',
-                        style: GoogleFonts.nunitoSans(
-                            fontSize: 11, color: theme.textSecondary),
-                      ),
-                      const SizedBox(height: 4),
-                      Wrap(
-                        spacing: 4,
-                        children: ['Action', 'Surnaturel', 'Shōnen']
-                            .map((g) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: theme.backgroundPrimary,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(g,
-                                      style: GoogleFonts.nunitoSans(
-                                          fontSize: 10,
-                                          color: theme.textSecondary)),
-                                ))
-                            .toList(),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right_rounded,
-                    color: theme.textSecondary, size: 18),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          // Creator card
-          Container(
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.statBlue,
-                      ),
-                      child: Center(
-                        child: Text(
-                          'AG',
-                          style: GoogleFonts.rajdhani(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: -5,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.statPurple,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            'Mangaka',
-                            style: GoogleFonts.nunitoSans(
-                              fontSize: 8,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Akari Goro',
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: theme.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'Né en 1992 · Studio Lumen · 2 œuvres',
-                        style: GoogleFonts.nunitoSans(
-                            fontSize: 12, color: theme.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: theme.accentColor),
-                  ),
-                  child: Text(
-                    'Biblio →',
-                    style: GoogleFonts.nunitoSans(
-                      fontSize: 11,
-                      color: theme.accentColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOtherCharacters(RankTheme theme) {
-    final others = [
-      (
-        'Yuto Akira',
-        'Protagoniste',
-        const Color(0xFF3d0505),
-        const Color(0xFF7c1515)
-      ),
-      (
-        'Mei Tsuki',
-        'Protagoniste',
-        const Color(0xFF050520),
-        const Color(0xFF1a1a4a)
-      ),
-      (
-        'Nora Kishi',
-        'Protagoniste',
-        const Color(0xFF201005),
-        const Color(0xFF4a2a10)
-      ),
-      (
-        'Ryomen Void',
-        'Antagoniste',
-        const Color(0xFF1a0000),
-        const Color(0xFF3d0000)
-      ),
-      (
-        'Naoki Kento',
-        'Allié',
-        const Color(0xFF0a1a0a),
-        const Color(0xFF1a3020)
-      ),
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 16, 0, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-            child: _sectionLabel(theme, 'AUTRES PERSONNAGES'),
-          ),
-          SizedBox(
-            height: 168,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: others.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
-              itemBuilder: (_, i) {
-                final (name, role, c1, c2) = others[i];
-                final isAntag = role == 'Antagoniste';
-                return Container(
-                  width: 110,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [c1, c2]),
-                    border:
-                        Border.all(color: Colors.white.withValues(alpha: 0.07)),
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        top: 22,
-                        bottom: 38,
-                        child: Center(
-                          child: Container(
-                            width: 34,
-                            height: 54,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(17),
-                              color: Colors.white.withValues(alpha: 0.40),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 2),
-                          decoration: BoxDecoration(
-                            color:
-                                isAntag ? AppColors.error : theme.accentColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            role.toUpperCase(),
-                            style: GoogleFonts.nunitoSans(
-                              fontSize: 7,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        height: 55,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.vertical(
-                                bottom: Radius.circular(14)),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withValues(alpha: 0.85)
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 8,
-                        right: 8,
-                        bottom: 12,
-                        child: Text(
-                          name,
-                          style: GoogleFonts.nunitoSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 8,
-                        bottom: 4,
-                        child: Text(
-                          c.animeName
-                              .substring(0, c.animeName.length.clamp(0, 8)),
-                          style: GoogleFonts.nunitoSans(
-                            fontSize: 9,
-                            color: Colors.white.withValues(alpha: 0.5),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── COMBAT TAB ────────────────────────────────────────────────────
-
-  Widget _buildCombatTab(RankTheme theme, bool isTablet) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildPowers(theme, isTablet),
-        _buildAttributeRadar(theme),
-        _buildRatingCard(theme),
-      ],
-    );
-  }
-
-  Widget _buildPowers(RankTheme theme, bool isTablet) {
-    final powers = [
-      ("L'Infini", AppColors.statPurple, AppColors.statPurplePastel),
-      ('Vide Illimité', AppColors.statPurple, AppColors.statPurplePastel),
-      ('Technique Inversée', AppColors.statGreen, AppColors.statGreenPastel),
-      ('Domaine Expansif', AppColors.statBlue, AppColors.statBluePastel),
-      ('Infini Pourpre', AppColors.error, AppColors.errorPastel),
-    ];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionLabel(theme, 'POUVOIRS & CAPACITÉS'),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: powers.map((p) {
-              final (name, border, textColor) = p;
-              return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: border.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: border.withValues(alpha: 0.55)),
-                ),
-                child: Text(
-                  name,
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: textColor,
+            children: [
+              ...displayedPowers.map((power) {
+                return Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.statPurple.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                        color: AppColors.statPurple.withValues(alpha: 0.55)),
+                  ),
+                  child: Text(
+                    power,
+                    style: GoogleFonts.nunitoSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.statPurplePastel,
+                    ),
+                  ),
+                );
+              }),
+              if (isGenin && hiddenCount > 0)
+                GestureDetector(
+                  onTap: () =>
+                      showSubscriptionModal(context, SubscriptionPlan.jonin),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundElevated,
+                      borderRadius: BorderRadius.circular(22),
+                      border:
+                          Border.all(color: AppColors.textDisabled),
+                    ),
+                    child: Text(
+                      '🔒 +$hiddenCount autres pouvoirs · Jonin',
+                      style: GoogleFonts.nunitoSans(
+                        fontSize: 13,
+                        color: AppColors.textDisabled,
+                      ),
+                    ),
                   ),
                 ),
-              );
-            }).toList(),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAttributeRadar(RankTheme theme) {
-    final attrs = [
-      ('Force', 0.75, AppColors.error),
-      ('Vitesse', 0.90, AppColors.statBlue),
-      ('Technique', 1.00, AppColors.statPurple),
-      ('Endurance', 0.70, AppColors.statGreen),
-      ('Intelligence', 0.95, AppColors.warning),
-    ];
+  Widget _buildQuotesSection(
+      RankTheme theme, bool isGenin, bool isKage) {
+    if (c.quotes.isEmpty && !isGenin) return const SizedBox.shrink();
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel(theme, 'ATTRIBUTS'),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(14),
+          Text(
+            '💬 Citations',
+            style: GoogleFonts.nunitoSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: attrs.map((a) {
-                final (label, val, color) = a;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ),
+          const SizedBox(height: 10),
+          if (isGenin)
+            GestureDetector(
+              onTap: () =>
+                  showSubscriptionModal(context, SubscriptionPlan.jonin),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundElevated,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                padding: const EdgeInsets.all(16),
+                height: 100,
+                child: Stack(
+                  children: [
+                    Opacity(
+                      opacity: 0.15,
+                      child: Text(
+                        '"Dans ce monde, le talent bat tout..."',
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(label,
-                              style: GoogleFonts.nunitoSans(
-                                  fontSize: 13, color: theme.textSecondary)),
+                          Text('🔒', style: TextStyle(fontSize: 24)),
+                          SizedBox(height: 6),
                           Text(
-                            '${(val * 100).round()}',
-                            style: GoogleFonts.nunitoSans(
+                            'Jonin pour les citations',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
                               fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: theme.textPrimary,
                             ),
                           ),
                         ],
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...c.quotes.map((quote) => _buildQuoteCard(theme, quote)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuoteCard(RankTheme theme, String quote) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundElevated,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Stack(
+        children: [
+          Positioned(
+            top: -8,
+            left: 2,
+            child: Text(
+              '"',
+              style: GoogleFonts.nunitoSans(
+                fontSize: 64,
+                fontWeight: FontWeight.w800,
+                color: AppColors.accent.withValues(alpha: 0.16),
+                height: 1,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 28, top: 2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  quote,
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 15,
+                    fontStyle: FontStyle.italic,
+                    color: AppColors.textPrimary,
+                    height: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '— ${c.name}, ${c.animeName}',
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.ios_share_rounded,
+                        color: AppColors.textSecondary, size: 14),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVoiceActorsSection(RankTheme theme, bool isGenin) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '🎙️ Doubleurs',
+            style: GoogleFonts.nunitoSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          if (isGenin)
+            GestureDetector(
+              onTap: () =>
+                  showSubscriptionModal(context, SubscriptionPlan.jonin),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundElevated,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: AppColors.textDisabled),
+                ),
+                child: Text(
+                  '🔒 Jonin pour voir les doubleurs',
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 13,
+                    color: AppColors.textDisabled,
+                  ),
+                ),
+              ),
+            )
+          else if (_anilistId != null)
+            _buildVoiceActorsList(theme)
+          else
+            Text(
+              'Aucun doubleur disponible',
+              style: GoogleFonts.nunitoSans(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVoiceActorsList(RankTheme theme) {
+    final anilistId = _anilistId!;
+    final dataAsync = ref.watch(_charFullDataProvider(anilistId));
+    return dataAsync.when(
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: CircularProgressIndicator(
+              color: AppColors.accent, strokeWidth: 2),
+        ),
+      ),
+      error: (_, __) => Text(
+        'Aucun doubleur disponible',
+        style: GoogleFonts.nunitoSans(
+            fontSize: 13, color: AppColors.textSecondary),
+      ),
+      data: (data) {
+        if (data == null) {
+          return Text(
+            'Aucun doubleur disponible',
+            style: GoogleFonts.nunitoSans(
+                fontSize: 13, color: AppColors.textSecondary),
+          );
+        }
+        final edges =
+            (data['media']?['edges'] as List<dynamic>?) ?? [];
+        final voiceActors = <Map<String, dynamic>>[];
+        for (final edge in edges) {
+          final vas = (edge['voiceActors'] as List<dynamic>?) ?? [];
+          for (final va in vas) {
+            final vaMap = va as Map<String, dynamic>;
+            final alreadyAdded =
+                voiceActors.any((v) => v['id'] == vaMap['id']);
+            if (!alreadyAdded) voiceActors.add(vaMap);
+          }
+        }
+        if (voiceActors.isEmpty) {
+          return Text(
+            'Aucun doubleur disponible',
+            style: GoogleFonts.nunitoSans(
+                fontSize: 13, color: AppColors.textSecondary),
+          );
+        }
+        return Column(
+          children: voiceActors.map((va) {
+            final name = (va['name']?['full'] as String?) ?? '—';
+            final lang = (va['languageV2'] as String?) ?? '';
+            final img = (va['image']?['large'] as String?) ?? '';
+            return GestureDetector(
+              onTap: () => context.push('/voice-actor/${va['id']}'),
+              child: Container(
+                height: 64,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundElevated,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    ClipOval(
+                      child: SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: OtadexImage(
+                          imagePath: img,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          name,
+                          style: GoogleFonts.nunitoSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          lang,
+                          style: GoogleFonts.nunitoSans(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildTriviaSection(
+      RankTheme theme, bool isGenin, bool isKage) {
+    if (c.trivia.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '⚡ Le savais-tu ?',
+            style: GoogleFonts.nunitoSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          if (!isKage)
+            GestureDetector(
+              onTap: () =>
+                  showSubscriptionModal(context, SubscriptionPlan.kage),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.statPurple.withValues(alpha: 0.15),
+                      AppColors.backgroundElevated,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        '👑 Exclusif Kage',
+                        style: GoogleFonts.rajdhani(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.statPurple,
+                        ),
+                      ),
                       const SizedBox(height: 6),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: val,
-                          minHeight: 6,
-                          backgroundColor: theme.backgroundPrimary,
-                          valueColor: AlwaysStoppedAnimation(color),
+                      Text(
+                        'Contenu réservé aux Kage',
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          else
+            Column(
+              children: c.trivia.map((fact) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '✦',
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 16,
+                          color: AppColors.accent,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          fact,
+                          style: GoogleFonts.nunitoSans(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ),
                     ],
@@ -1150,103 +1061,6 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
                 );
               }).toList(),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRatingCard(RankTheme theme) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionLabel(theme, 'NOTATION'),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            padding: const EdgeInsets.all(18),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Ta note',
-                        style: GoogleFonts.nunitoSans(
-                            fontSize: 13, color: theme.textSecondary),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: List.generate(5, (i) {
-                          return GestureDetector(
-                            onTap: () => _guardAuth(
-                                () => setState(() => _userRating = i + 1)),
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: Icon(
-                                i < _userRating
-                                    ? Icons.star_rounded
-                                    : Icons.star_outline_rounded,
-                                color: i < _userRating
-                                    ? AppColors.warning
-                                    : theme.borderSubtle,
-                                size: 30,
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '$_userRating / 5 — $_ratingCount notes',
-                        style: GoogleFonts.nunitoSans(
-                            fontSize: 12, color: theme.textSecondary),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 58,
-                  height: 58,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                        colors: [AppColors.warning, AppColors.gradientOrange]),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.warning.withValues(alpha: 0.35),
-                        blurRadius: 14,
-                        offset: const Offset(0, 4),
-                      )
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        c.rating.toStringAsFixed(1),
-                        style: GoogleFonts.rajdhani(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          height: 1,
-                        ),
-                      ),
-                      Text('/5',
-                          style: GoogleFonts.nunitoSans(
-                              fontSize: 10, color: Colors.white70)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -1293,79 +1107,774 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     );
   }
 
-  // ── FANS TAB ──────────────────────────────────────────────────────
+  // ── RELATIONS TAB ─────────────────────────────────────────────────
 
-  Widget _buildFansTab(RankTheme theme, bool isTablet) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildPopularity(theme),
-        _buildAISection(theme),
-        _buildComments(theme),
-      ],
-    );
-  }
+  Widget _buildRelationsTab(RankTheme theme, String rank) {
+    final isGenin = rank == 'genin';
 
-  Widget _buildPopularity(RankTheme theme) {
-    final likePct = (c.likes / 100).clamp(0.0, 1.0);
-    final commentPct = (_commentCount / 30.0).clamp(0.0, 1.0);
-    final votePct = (_voteCount / 10.0).clamp(0.0, 1.0);
-    final quizPct = (_quizCount / 35.0).clamp(0.0, 1.0);
+    if (isGenin) {
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            // 3 avatars floutés fictifs
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(3, (i) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.backgroundElevated,
+                    border: Border.all(
+                        color: AppColors.textDisabled, width: 1.5),
+                  ),
+                  child: const Icon(Icons.person,
+                      color: AppColors.textDisabled, size: 28),
+                );
+              }),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '🔒 Relations accessibles dès Jonin',
+              style: GoogleFonts.nunitoSans(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Découvre les alliés, rivaux et ennemis de ${c.name}',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunitoSans(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () =>
+                  showSubscriptionModal(context, SubscriptionPlan.jonin),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.statBlue,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Passer Jonin',
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_anilistId == null) {
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: Text(
+            'Relations non disponibles pour ce personnage',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.nunitoSans(
+                fontSize: 14, color: AppColors.textSecondary),
+          ),
+        ),
+      );
+    }
+
+    final anilistId = _anilistId!;
+    final dataAsync = ref.watch(_charFullDataProvider(anilistId));
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      padding: const EdgeInsets.fromLTRB(0, 20, 0, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel(theme, 'POPULARITÉ'),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(16),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+            child: _sectionLabel(theme, 'RELATIONS'),
+          ),
+          dataAsync.when(
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: CircularProgressIndicator(
+                    color: AppColors.accent, strokeWidth: 2),
+              ),
             ),
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _statBar('❤️', 'Likes', _formatLikes(c.likes), likePct,
-                    theme.accentColor, theme),
-                _statBar('💬', 'Commentaires', _commentCount.toString(),
-                    commentPct, AppColors.statBlue, theme),
-                _statBar('🗳️', 'Votes Fan du Mois', _voteCount.toString(),
-                    votePct, AppColors.statPurple, theme),
-                _statBar('🧠', 'Quiz réussis', _quizCount.toString(), quizPct,
-                    AppColors.statGreen, theme),
-                const SizedBox(height: 16),
-                _sectionLabel(theme, 'TOP 3 FANS CE MOIS-CI'),
-                const SizedBox(height: 8),
-                _fanRow('🥇', 'Jean-Paul_Otaku', 'JONIN', AppColors.statBlue,
-                    '482 pts', theme),
-                _fanRow('🥈', 'Awa_Fan25', 'GENIN', AppColors.textMuted,
-                    '310 pts', theme),
-                _fanRow('🥉', 'OtakuPro237', 'JONIN', AppColors.statBlue,
-                    '287 pts', theme),
-                const SizedBox(height: 16),
-                GestureDetector(
-                  onTap: () => _guardAuth(() {}),
+            error: (_, __) => Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Aucune relation connue',
+                style: GoogleFonts.nunitoSans(
+                    fontSize: 14, color: AppColors.textSecondary),
+              ),
+            ),
+            data: (data) {
+              if (data == null) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'Aucune relation connue',
+                    style: GoogleFonts.nunitoSans(
+                        fontSize: 14, color: AppColors.textSecondary),
+                  ),
+                );
+              }
+              final edges =
+                  (data['relations']?['edges'] as List<dynamic>?) ?? [];
+              if (edges.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    'Aucune relation connue',
+                    style: GoogleFonts.nunitoSans(
+                        fontSize: 14, color: AppColors.textSecondary),
+                  ),
+                );
+              }
+              return SizedBox(
+                height: 170,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: edges.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (_, i) {
+                    final edge = edges[i] as Map<String, dynamic>;
+                    final node =
+                        (edge['node'] as Map<String, dynamic>?) ?? {};
+                    final relType =
+                        (edge['relationType'] as String?) ?? 'ALLY';
+                    final name =
+                        (node['name']?['full'] as String?) ?? '—';
+                    final img =
+                        (node['image']?['large'] as String?) ?? '';
+
+                    final (badgeLabel, badgeColor) = switch (relType) {
+                      'FRIEND' => ('Ami', AppColors.statGreen),
+                      'RIVAL' => ('Rival', AppColors.warning),
+                      'ENEMY' => ('Ennemi', AppColors.error),
+                      'FAMILY' => ('Famille', AppColors.statBlue),
+                      _ => ('Allié', AppColors.textSecondary),
+                    };
+
+                    return SizedBox(
+                      width: 90,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.backgroundElevated,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ClipOval(
+                              child: SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: OtadexImage(
+                                  imagePath: img,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              name,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.nunitoSans(
+                                fontSize: 11,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color:
+                                    badgeColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color:
+                                        badgeColor.withValues(alpha: 0.4),
+                                    width: 0.8),
+                              ),
+                              child: Text(
+                                badgeLabel,
+                                style: GoogleFonts.nunitoSans(
+                                  fontSize: 9,
+                                  color: badgeColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── MÉDIAS TAB ────────────────────────────────────────────────────
+
+  Widget _buildMediasTab(RankTheme theme) {
+    if (_anilistId == null) {
+      return Padding(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: Text(
+            'Médias non disponibles',
+            style: GoogleFonts.nunitoSans(
+                fontSize: 14, color: AppColors.textSecondary),
+          ),
+        ),
+      );
+    }
+
+    final anilistId = _anilistId!;
+    final dataAsync = ref.watch(_charFullDataProvider(anilistId));
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: dataAsync.when(
+        loading: () => const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: CircularProgressIndicator(
+                color: AppColors.accent, strokeWidth: 2),
+          ),
+        ),
+        error: (_, __) => Text(
+          'Médias non disponibles',
+          style: GoogleFonts.nunitoSans(
+              fontSize: 14, color: AppColors.textSecondary),
+        ),
+        data: (data) {
+          if (data == null) {
+            return Text(
+              'Médias non disponibles',
+              style: GoogleFonts.nunitoSans(
+                  fontSize: 14, color: AppColors.textSecondary),
+            );
+          }
+          final edges =
+              (data['media']?['edges'] as List<dynamic>?) ?? [];
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Sous-section A — Animé/Manga
+              Text(
+                '📺 Apparitions',
+                style: GoogleFonts.nunitoSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ...edges.map((edge) {
+                final edgeMap = edge as Map<String, dynamic>;
+                final node =
+                    (edgeMap['node'] as Map<String, dynamic>?) ?? {};
+                final role =
+                    (edgeMap['characterRole'] as String?) ?? '';
+                final title = (node['title']?['french'] as String?) ??
+                    (node['title']?['romaji'] as String?) ??
+                    '—';
+                final format = (node['format'] as String?) ?? '';
+                final year =
+                    (node['seasonYear'] as int?)?.toString() ?? '';
+                final episodes =
+                    (node['episodes'] as int?)?.toString() ?? '?';
+                final cover =
+                    (node['coverImage']?['large'] as String?) ?? '';
+                final mediaId = (node['id'] as int?);
+
+                return GestureDetector(
+                  onTap: mediaId != null
+                      ? () => context
+                          .push('/anime/anilist-$mediaId')
+                      : null,
                   child: Container(
+                    height: 80,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundElevated,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: SizedBox(
+                            width: 60,
+                            height: 60,
+                            child: OtadexImage(
+                              imagePath: cover,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                title,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.nunitoSans(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '$format · $year · $episodes éps',
+                                style: GoogleFonts.nunitoSans(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.statBlue
+                                      .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  role,
+                                  style: GoogleFonts.nunitoSans(
+                                    fontSize: 10,
+                                    color: AppColors.statBluePastel,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(height: 16),
+
+              // Sous-section B — Staff/Mangaka
+              Text(
+                '✍️ Auteurs',
+                style: GoogleFonts.nunitoSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ...edges.expand((edge) {
+                final edgeMap = edge as Map<String, dynamic>;
+                final node =
+                    (edgeMap['node'] as Map<String, dynamic>?) ?? {};
+                final staffList =
+                    (node['staff']?['nodes'] as List<dynamic>?) ?? [];
+                return staffList.map((staff) {
+                  final staffMap = staff as Map<String, dynamic>;
+                  final name =
+                      (staffMap['name']?['full'] as String?) ?? '—';
+                  final img =
+                      (staffMap['image']?['large'] as String?) ?? '';
+                  final occupations =
+                      (staffMap['primaryOccupations'] as List<dynamic>?)
+                              ?.cast<String>() ??
+                          [];
+                  final occupation = occupations.isNotEmpty
+                      ? occupations.first
+                      : '';
+                  final staffId = (staffMap['id'] as int?);
+                  return GestureDetector(
+                    onTap: staffId != null
+                        ? () =>
+                            context.push('/creator/anilist-$staffId')
+                        : null,
+                    child: Container(
+                      height: 72,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.backgroundElevated,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        children: [
+                          ClipOval(
+                            child: SizedBox(
+                              width: 52,
+                              height: 52,
+                              child: OtadexImage(
+                                imagePath: img,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  name,
+                                  style: GoogleFonts.nunitoSans(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  occupation,
+                                  style: GoogleFonts.nunitoSans(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                });
+              }),
+              const SizedBox(height: 16),
+
+              // Sous-section C — Studios
+              Text(
+                '🎬 Studios',
+                style: GoogleFonts.nunitoSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ...edges.expand((edge) {
+                final edgeMap = edge as Map<String, dynamic>;
+                final node =
+                    (edgeMap['node'] as Map<String, dynamic>?) ?? {};
+                final studios =
+                    (node['studios']?['nodes'] as List<dynamic>?) ??
+                        [];
+                return studios.map((studio) {
+                  final studioMap = studio as Map<String, dynamic>;
+                  final name = (studioMap['name'] as String?) ?? '—';
+                  final studioId = (studioMap['id'] as int?);
+                  return GestureDetector(
+                    onTap: studioId != null
+                        ? () =>
+                            context.push('/studio/$studioId')
+                        : null,
+                    child: Container(
+                      height: 64,
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.backgroundElevated,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.backgroundCard,
+                            ),
+                            child: const Center(
+                              child: Text(
+                                '🎬',
+                                style: TextStyle(fontSize: 20),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              name,
+                              style: GoogleFonts.nunitoSans(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                });
+              }),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ── EXCLUSIF TAB ──────────────────────────────────────────────────
+
+  Widget _buildExclusifTab(RankTheme theme, String rank) {
+    final isKage = rank == 'kage';
+
+    if (!isKage) {
+      return Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            const Text('👑', style: TextStyle(fontSize: 64)),
+            const SizedBox(height: 16),
+            Text(
+              'Kage exclusif',
+              style: GoogleFonts.dmSans(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Accède au chatbot IA, génération d\'images et fiche PDF',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunitoSans(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.statPurple,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () => context.push('/subscription'),
+              child: const Text(
+                'Obtenir Kage Pass 👑',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Kage content
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Column(
+        children: [
+          // Card 1 — Chatbot
+          GestureDetector(
+            onTap: () => context.push(
+              '/chat/${c.id}',
+              extra: {
+                'charName': c.name,
+                'charImageUrl': c.imagePath ?? '',
+                'charBio': c.bio ?? '',
+              },
+            ),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundAIPurple,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                    color: AppColors.statPurple.withValues(alpha: 0.4)),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      if (c.imagePath != null)
+                        ClipOval(
+                          child: SizedBox(
+                            width: 64,
+                            height: 64,
+                            child: OtadexImage(
+                              imagePath: c.imagePath!,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.backgroundElevated,
+                          ),
+                          child: Center(
+                            child: Text(
+                              c.name.isNotEmpty
+                                  ? c.name[0].toUpperCase()
+                                  : '?',
+                              style: GoogleFonts.rajdhani(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Parle à ${c.name}',
+                              style: GoogleFonts.dmSans(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Chatbot IA · En temps réel',
+                              style: GoogleFonts.nunitoSans(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
                     height: 48,
                     decoration: BoxDecoration(
-                      color: theme.accentColor,
+                      gradient: const LinearGradient(
+                        colors: [
+                          AppColors.statPurple,
+                          Color(0xFF6D28D9),
+                        ],
+                      ),
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.accentColor.withValues(alpha: 0.28),
-                          blurRadius: 14,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
                     ),
                     child: Center(
                       child: Text(
-                        '🗳️ Voter pour ${c.name} ce mois-ci',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        'Démarrer la conversation 💬',
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Card 2 — Génération image
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundElevated,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: AppColors.accent.withValues(alpha: 0.4)),
+            ),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '🎨 Citation illustrée',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Génère une image stylisée avec une citation de ${c.name}',
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Fonctionnalité Kage — Bientôt disponible 🎨'),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.accent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Générer ✨',
                         style: GoogleFonts.nunitoSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -1375,193 +1884,62 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(
-                    'Ton vote rapporte 10 pts à ton score Fan',
-                    style: GoogleFonts.nunitoSans(
-                        fontSize: 11, color: theme.textSecondary),
-                  ),
-                ),
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildAISection(RankTheme theme) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _sectionLabel(theme, 'FONCTIONNALITÉS IA — JONIN+'),
-          const SizedBox(height: 12),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _guardJonin,
-                    child: CharAICard(
-                      bg: AppColors.backgroundAIBlue,
-                      border: AppColors.statBlue,
-                      icon: '💬',
-                      title: 'Parle à ${c.name}',
-                      subtitle: 'Chatbot IA · Jonin+',
-                      subtitleColor: AppColors.statBlue,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: _guardJonin,
-                    child: CharAICard(
-                      bg: AppColors.backgroundAIPurple,
-                      border: AppColors.statPurple,
-                      icon: '🧠',
-                      title: 'Quiz · ${c.name}?',
-                      subtitle: '5 questions · +5pts',
-                      subtitleColor: AppColors.statPurple,
-                    ),
-                  ),
-                ),
-              ],
+          // Card 3 — Quiz
+          GestureDetector(
+            onTap: () => context.push(
+              '/quiz/${c.id}',
+              extra: {'charName': c.name},
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildComments(RankTheme theme) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _sectionLabel(theme, 'COMMENTAIRES ($_commentCount)'),
-              GestureDetector(
-                onTap: () {},
-                child: Text(
-                  'Voir tout →',
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 13,
-                    color: theme.accentColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.backgroundAIBlue,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                    color: AppColors.statBlue.withValues(alpha: 0.4)),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Comment input
-          Container(
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                        colors: [AppColors.statBlue, AppColors.statPurple]),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '🧠 Quiz personnage',
+                    style: GoogleFonts.dmSans(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
-                  child: Center(
-                    child: Text('JP',
+                  const SizedBox(height: 6),
+                  Text(
+                    'Teste tes connaissances sur ${c.name} — 5 questions',
+                    style: GoogleFonts.nunitoSans(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.statBlue,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Lancer le quiz 🧠',
                         style: GoogleFonts.nunitoSans(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white)),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _guardAuth(() {}),
-                    child: Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: theme.backgroundPrimary,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Ajouter un commentaire...',
-                              style: GoogleFonts.nunitoSans(
-                                  fontSize: 13, color: theme.textSecondary),
-                            ),
-                          ),
-                          Icon(Icons.send_rounded,
-                              size: 15,
-                              color:
-                                  theme.textSecondary.withValues(alpha: 0.4)),
-                        ],
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          const CharCommentCard(
-            initials: 'JP',
-            name: 'Jean-Paul_Otaku',
-            tier: 'JONIN',
-            tierColor: AppColors.statBlue,
-            time: 'il y a 2h',
-            body:
-                "Ce personnage est clairement le plus stylé de tout l'animé. Son design, ses pouvoirs, son attitude... PARFAIT. 🔥",
-            likes: '24',
-          ),
-          const CharCommentCard(
-            initials: 'AW',
-            name: 'Awa_Fan',
-            tier: 'GENIN',
-            tierColor: AppColors.textMuted,
-            time: 'il y a 5h',
-            body: 'Même comme ça je reste fan numéro 1 ! 😭',
-            likes: '9',
-          ),
-          const CharCommentCard(
-            initials: 'OP',
-            name: 'OtakuPro237',
-            tier: 'JONIN',
-            tierColor: AppColors.statBlue,
-            time: 'hier',
-            body: 'La scène du Vide Illimité... incomparable.',
-            likes: '15',
-          ),
-          const SizedBox(height: 8),
-          Container(
-            height: 46,
-            decoration: BoxDecoration(
-              color: theme.backgroundElevated,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                'Voir tous les commentaires ($_commentCount)',
-                style: GoogleFonts.nunitoSans(
-                    fontSize: 14,
-                    color: theme.accentColor,
-                    fontWeight: FontWeight.w500),
+                ],
               ),
             ),
           ),
@@ -1743,91 +2121,6 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
       ),
     );
   }
-
-  Widget _statBar(String icon, String label, String value, double pct,
-      Color color, RankTheme theme) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('$icon  $label',
-                  style: GoogleFonts.nunitoSans(
-                      fontSize: 13, color: theme.textSecondary)),
-              Text(value,
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: theme.textPrimary,
-                  )),
-            ],
-          ),
-          const SizedBox(height: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: pct,
-              minHeight: 5,
-              backgroundColor: theme.backgroundPrimary,
-              valueColor: AlwaysStoppedAnimation(color),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _fanRow(String medal, String name, String tier, Color tierColor,
-      String pts, RankTheme theme) {
-    final initials = name.split('_')[0].substring(0, 2).toUpperCase();
-    return SizedBox(
-      height: 46,
-      child: Row(
-        children: [
-          SizedBox(
-              width: 28,
-              child: Text(medal, style: const TextStyle(fontSize: 18))),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                  colors: [AppColors.gradientOrange, AppColors.statPurple]),
-            ),
-            child: Center(
-              child: Text(initials,
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  )),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(name,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.nunitoSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: theme.textPrimary,
-                )),
-          ),
-          CharPill(tier, bg: tierColor, fontSize: 9),
-          const SizedBox(width: 8),
-          Text(pts,
-              style: GoogleFonts.nunitoSans(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: theme.accentColor,
-              )),
-        ],
-      ),
-    );
-  }
 }
 
 // ─── Tab bar delegate ─────────────────────────────────────────────────────────
@@ -1844,10 +2137,11 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   });
 
   static const _tabs = [
-    (_Tab.profil, 'Profil'),
-    (_Tab.combat, 'Combat'),
+    (_Tab.infos, 'Infos'),
     (_Tab.galerie, 'Galerie'),
-    (_Tab.fans, 'Fans'),
+    (_Tab.relations, 'Relations'),
+    (_Tab.medias, 'Médias'),
+    (_Tab.exclusif, 'Exclusif 👑'),
   ];
 
   @override
@@ -1872,8 +2166,9 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
                         Center(
                           child: Text(
                             label,
+                            textAlign: TextAlign.center,
                             style: GoogleFonts.nunitoSans(
-                              fontSize: 13,
+                              fontSize: 11,
                               fontWeight:
                                   active ? FontWeight.w700 : FontWeight.w500,
                               color: active
@@ -1885,8 +2180,8 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
                         if (active)
                           Positioned(
                             bottom: 0,
-                            left: 12,
-                            right: 12,
+                            left: 4,
+                            right: 4,
                             child: Container(
                               height: 2,
                               decoration: BoxDecoration(

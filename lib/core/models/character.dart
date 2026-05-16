@@ -32,6 +32,13 @@ class Character {
   final String? status;
   final String? role;
   final String? creatorId;
+  // ── Champs enrichis ──────────────────────────────────────────────────────────
+  final String? bloodType;
+  final String? dateOfBirth;
+  final List<String> quotes;
+  final List<String> trivia;
+  final String? aiPersonality;
+  final List<String> voiceActorIds;
 
   const Character({
     required this.id,
@@ -62,6 +69,12 @@ class Character {
     this.status,
     this.role,
     this.creatorId,
+    this.bloodType,
+    this.dateOfBirth,
+    this.quotes = const [],
+    this.trivia = const [],
+    this.aiPersonality,
+    this.voiceActorIds = const [],
   });
 
   factory Character.fromJson(Map<String, dynamic> json) {
@@ -97,6 +110,13 @@ class Character {
       status: json['status'] as String?,
       role: json['role'] as String?,
       creatorId: json['creator_id'] as String?,
+      bloodType: json['bloodType'] as String?,
+      dateOfBirth: json['dateOfBirth'] as String?,
+      quotes: (json['quotes'] as List<dynamic>?)?.cast<String>() ?? const [],
+      trivia: (json['trivia'] as List<dynamic>?)?.cast<String>() ?? const [],
+      aiPersonality: json['aiPersonality'] as String?,
+      voiceActorIds:
+          (json['voiceActorIds'] as List<dynamic>?)?.cast<String>() ?? const [],
     );
   }
 

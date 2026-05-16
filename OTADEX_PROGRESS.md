@@ -340,7 +340,23 @@
 - Pills modes de paiement + note légale bas de page
 - dart analyze → 0 erreur
 
-**Task 17 — Play Store soumission**
+**Task 18 — CharacterDetailScreen enrichi + nouveaux écrans** ✅ Fait
+
+- `CharacterDetailScreen` → 5 onglets (Infos / Galerie / Relations / Médias / Exclusif) rank-aware
+  - Onglet Infos : grille identité 2×3 (âge/genre/statut/nationalité/groupe sanguin/naissance), bio tronquée Genin, pouvoirs (3 max Genin), citations Jonin+, doubleurs AniList Jonin+, trivia Kage only
+  - Onglet Relations : réseau AniList avec badges Ami/Rival/Ennemi/Famille (verrouillé Genin)
+  - Onglet Médias : apparitions animé/manga + staff + studios depuis AniList (tous)
+  - Onglet Exclusif : chatbot IA / génération image / quiz Kage (gate Genin/Jonin)
+- `StudioScreen` → Créé (/studio/:id) — filmographie AniList, stats, grid 2 colonnes
+- `VoiceActorScreen` → Créé (/voice-actor/:id) — bio, stats, rôles connus AniList
+- `CharacterChatScreen` → Créé (/chat/:charId) — gate Kage, chatbot simulé, typing indicator
+- `CharacterQuizScreen` → Créé (/quiz/:charId) — gate Jonin, 5 QCM, score + Firestore
+- `Character` model enrichi : bloodType, dateOfBirth, quotes, trivia, aiPersonality, voiceActorIds
+- `AniListService` enrichi : getFullCharacterData, getStudioById, getVoiceActorById
+- `app_router` : 4 nouvelles routes (/studio/:id, /voice-actor/:id, /chat/:charId, /quiz/:charId)
+- dart analyze → 0 erreur, 0 warning
+
+**Task 19 — Play Store soumission**
 
 - APK signé, captures d'écran, soumission Google Play Console
 
@@ -402,6 +418,8 @@ URLs Play Console :
 | 14 mai 2026 | Firebase Storage images — upload_images.js créé (Node.js, upload 131 images vers Storage bucket tilqui.appspot.com), firebase_storage ^11.6.0 ajouté, StorageService créé (getCharacterImages + getCharacterCover), storageServiceProvider + characterImagesProvider ajoutés dans anilist_providers.dart, \_effectiveImages dans CharacterDetailScreen priorise Storage → images AniList → imagePath → fallback. dart analyze → 0 issue.                                                                                  |
 | 15 mai 2026 | Task 15 — Collection persistante Firestore — CollectionService créé (getCollection, collectionStream, addToCollection/removeFromCollection avec gate Genin 10 persos), collectionServiceProvider + collectionStreamProvider + isCollectedProvider ajoutés dans anilist_providers.dart, CharacterDetailScreen FAB branché sur Firestore (FieldValue.arrayUnion/Remove) + gate LIMIT_REACHED → modal upgrade Jonin, CollectionScreen migré vers collectionStreamProvider (when loading/error/data). dart analyze → 0 issue. |
 | 15 mai 2026 | Task 16 — PlansScreen complet — plans_screen.dart réécrit (ConsumerStatefulWidget), toggle BillingToggle réutilisé, Genin PlanCard + confirmation rétrograder, Jonin PlanCard + \_GlowWrapper bleu + badge POPULAIRE, Kage \_KageCard gradient violet + ShaderMask + boxShadow, \_showPaymentSheet (3 boutons paiement) + simulation succès 1 500ms + updateIdentity + SharedPreferences + Firestore, pills modes paiement, note légale. dart analyze → 0 issue.                                                          |
+
+| 16 mai 2026 | Task 18 — CharacterDetailScreen enrichi (5 onglets rank-aware : Infos / Galerie / Relations / Médias / Exclusif 👑), StudioScreen + VoiceActorScreen + CharacterChatScreen + CharacterQuizScreen créés, Character model enrichi (bloodType/dateOfBirth/quotes/trivia/aiPersonality/voiceActorIds), AniListService enrichi (getFullCharacterData/getStudioById/getVoiceActorById), app_router 4 nouvelles routes. dart analyze → 0 erreur, 0 warning. |
 
 ---
 
