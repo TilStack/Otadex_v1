@@ -356,7 +356,36 @@
 - `app_router` : 4 nouvelles routes (/studio/:id, /voice-actor/:id, /chat/:charId, /quiz/:charId)
 - dart analyze → 0 erreur, 0 warning
 
-**Task 19 — Play Store soumission**
+**Task 19 (correctif) — Stratégie freemium corrigée** ✅ Fait
+
+- Principe fondamental appliqué : le contenu encyclopédique est 100% accessible aux Genin
+- **Supprimé** : bio tronquée Genin → expand/collapse pour TOUS
+- **Supprimé** : limite 3 pouvoirs Genin → tous les pouvoirs visibles
+- **Supprimé** : citations verrouillées Genin → toutes visibles
+- **Supprimé** : doubleurs verrouillés Genin → tous visibles
+- **Supprimé** : relations verrouillées Genin → toutes visibles
+- **Gardé** : Trivia Kage uniquement (anecdotes exclusives)
+- **Onglet Exclusif refait** en 3 niveaux :
+  - Genin → écran verrouillé élégant avec liste des 4 fonctionnalités + CTA Kage + lien Jonin
+  - Jonin → quiz accessible + 3 bannières upsell Kage élégantes
+  - Kage → chatbot + génération image + quiz (inchangé)
+- **Ajouté** : `_buildUpsellBanner` — bannière contextuelle non-intrusive (lock icon + tier + bouton Débloquer)
+- **Ajouté** : `_exclusifFeatureRow` — ligne feature+tier dans l'écran Genin
+- **Ajouté** : `_buildQuizCard` — widget réutilisé Jonin + Kage
+- **Galerie** : note filigrane OTADEX pour Genin + bannière pub simulée 52px (Genin uniquement)
+- dart analyze → 0 erreur, 0 warning (4 hints info pré-existants hors périmètre)
+
+**Task 20 — Mock data enrichie** ✅ Fait
+
+- `CharacterRelation`, `VoiceActorMock`, `MediaAppearanceMock`, `QuizQuestion` créés dans `character.dart`
+- 8 personnages enrichis : quotes, trivia, aiPersonality, relations, voiceActors, mediaAppearances, quizQuestions
+- Luffy (One Piece) et Frieren (FBJ) ajoutés comme nouveaux personnages mock
+- `mockStudios` (5 studios) et `mockMangakas` (6 auteurs) ajoutés dans `MockData`
+- Onglets Relations / Médias / Doubleurs : priorité mock → AniList → fallback texte
+- `CharacterQuizScreen` accepte `List<QuizQuestion>` spécifique au personnage
+- Note : Remplacer mock par AniList API en **Task 21**
+
+**Task 21 — Play Store soumission**
 
 - APK signé, captures d'écran, soumission Google Play Console
 
@@ -420,6 +449,8 @@ URLs Play Console :
 | 15 mai 2026 | Task 16 — PlansScreen complet — plans_screen.dart réécrit (ConsumerStatefulWidget), toggle BillingToggle réutilisé, Genin PlanCard + confirmation rétrograder, Jonin PlanCard + \_GlowWrapper bleu + badge POPULAIRE, Kage \_KageCard gradient violet + ShaderMask + boxShadow, \_showPaymentSheet (3 boutons paiement) + simulation succès 1 500ms + updateIdentity + SharedPreferences + Firestore, pills modes paiement, note légale. dart analyze → 0 issue.                                                          |
 
 | 16 mai 2026 | Task 18 — CharacterDetailScreen enrichi (5 onglets rank-aware : Infos / Galerie / Relations / Médias / Exclusif 👑), StudioScreen + VoiceActorScreen + CharacterChatScreen + CharacterQuizScreen créés, Character model enrichi (bloodType/dateOfBirth/quotes/trivia/aiPersonality/voiceActorIds), AniListService enrichi (getFullCharacterData/getStudioById/getVoiceActorById), app_router 4 nouvelles routes. dart analyze → 0 erreur, 0 warning. |
+| 16 mai 2026 | Task 19 correctif — Stratégie freemium corrigée : contenu encyclopédique 100% libre pour Genin (bio complète, tous pouvoirs, citations, doubleurs, relations), Trivia Kage uniquement, onglet Exclusif refait en 3 niveaux (Genin locked / Jonin quiz + upsell banners / Kage all), _buildUpsellBanner contextuel, bannière ads simulée Genin en galerie. dart analyze → 0 erreur. |
+| 17 mai 2026 | Task 20 — Mock data enrichie : quotes, trivia, aiPersonality, relations, voiceActors, mediaAppearances, quizQuestions pour 8 personnages existants + ajout Luffy (One Piece) et Frieren (FBJ). Modèles CharacterRelation/VoiceActorMock/MediaAppearanceMock/QuizQuestion créés dans character.dart. mockStudios (5) et mockMangakas (6) ajoutés dans MockData. Onglets Relations/Médias/Doubleurs branchés sur mock data (priorité mock → AniList → fallback). Quiz screen accepte List<QuizQuestion> spécifique au personnage (fallback générique si absent). app_router passe quizQuestions via extra. dart analyze → 0 erreur. Note : Remplacer mock par AniList API live en Task 21. |
 
 ---
 

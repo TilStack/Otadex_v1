@@ -1,5 +1,79 @@
 import 'package:flutter/material.dart';
 
+// ── Relation mock ─────────────────────────────────────────────────────────────
+class CharacterRelation {
+  final String id;
+  final String nom;
+  final String imageUrl;
+  final String relationType;
+  final String relationColor; // 'green' | 'blue' | 'red' | 'amber'
+
+  const CharacterRelation({
+    required this.id,
+    required this.nom,
+    required this.imageUrl,
+    required this.relationType,
+    required this.relationColor,
+  });
+}
+
+// ── Doubleur mock ─────────────────────────────────────────────────────────────
+class VoiceActorMock {
+  final String nom;
+  final String langue;
+  final String imageUrl;
+
+  const VoiceActorMock({
+    required this.nom,
+    required this.langue,
+    required this.imageUrl,
+  });
+}
+
+// ── Apparition média mock ─────────────────────────────────────────────────────
+class MediaAppearanceMock {
+  final String animeId;
+  final String titre;
+  final String coverUrl;
+  final String format;
+  final int episodes;
+  final int annee;
+  final String role; // 'MAIN' | 'SUPPORTING'
+  final String mangakaId;
+  final String mangakaNom;
+  final String studioId;
+  final String studioNom;
+
+  const MediaAppearanceMock({
+    required this.animeId,
+    required this.titre,
+    required this.coverUrl,
+    required this.format,
+    required this.episodes,
+    required this.annee,
+    required this.role,
+    required this.mangakaId,
+    required this.mangakaNom,
+    required this.studioId,
+    required this.studioNom,
+  });
+}
+
+// ── Question quiz ─────────────────────────────────────────────────────────────
+class QuizQuestion {
+  final String question;
+  final List<String> options;
+  final int correctIndex;
+
+  const QuizQuestion({
+    required this.question,
+    required this.options,
+    required this.correctIndex,
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 enum CharacterTier { ss, s, a, b }
 
 class Character {
@@ -39,6 +113,11 @@ class Character {
   final List<String> trivia;
   final String? aiPersonality;
   final List<String> voiceActorIds;
+  // ── Mock data Task 20 ────────────────────────────────────────────────────────
+  final List<CharacterRelation> relations;
+  final List<VoiceActorMock> voiceActors;
+  final List<MediaAppearanceMock> mediaAppearances;
+  final List<QuizQuestion> quizQuestions;
 
   const Character({
     required this.id,
@@ -75,6 +154,10 @@ class Character {
     this.trivia = const [],
     this.aiPersonality,
     this.voiceActorIds = const [],
+    this.relations = const [],
+    this.voiceActors = const [],
+    this.mediaAppearances = const [],
+    this.quizQuestions = const [],
   });
 
   factory Character.fromJson(Map<String, dynamic> json) {
@@ -117,6 +200,10 @@ class Character {
       aiPersonality: json['aiPersonality'] as String?,
       voiceActorIds:
           (json['voiceActorIds'] as List<dynamic>?)?.cast<String>() ?? const [],
+      relations: const [],
+      voiceActors: const [],
+      mediaAppearances: const [],
+      quizQuestions: const [],
     );
   }
 

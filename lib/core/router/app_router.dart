@@ -178,9 +178,14 @@ class AppRouter {
         name: 'quiz',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
+          final raw = extra['quizQuestions'];
+          final quizQuestions = raw is List
+              ? raw.whereType<QuizQuestion>().toList()
+              : null;
           return CharacterQuizScreen(
             charId: state.pathParameters['charId']!,
             charName: extra['charName'] as String? ?? '',
+            quizQuestions: quizQuestions,
           );
         },
       ),

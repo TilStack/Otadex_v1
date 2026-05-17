@@ -4,34 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/models/character.dart';
 import '../../../core/providers/user_profile_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/subscription_modal.dart';
-
-// ── Data model ────────────────────────────────────────────────────────────────
-
-class _QuizQuestion {
-  final String question;
-  final List<String> options;
-  final int correctIndex;
-
-  const _QuizQuestion({
-    required this.question,
-    required this.options,
-    required this.correctIndex,
-  });
-}
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class CharacterQuizScreen extends ConsumerStatefulWidget {
   final String charId;
   final String charName;
+  final List<QuizQuestion>? quizQuestions;
 
   const CharacterQuizScreen({
     super.key,
     required this.charId,
     required this.charName,
+    this.quizQuestions,
   });
 
   @override
@@ -46,30 +35,33 @@ class _CharacterQuizScreenState extends ConsumerState<CharacterQuizScreen> {
   bool _validated = false;
   int _score = 0;
   bool _quizFinished = false;
-  late List<_QuizQuestion> _questions;
+  late List<QuizQuestion> _questions;
 
   @override
   void initState() {
     super.initState();
-    _questions = _buildQuestions();
+    final provided = widget.quizQuestions;
+    _questions = (provided != null && provided.isNotEmpty)
+        ? provided
+        : _buildGenericQuestions();
   }
 
-  // ── Questions ──────────────────────────────────────────────────────
+  // ── Questions génériques (fallback) ────────────────────────────────
 
-  List<_QuizQuestion> _buildQuestions() {
+  List<QuizQuestion> _buildGenericQuestions() {
     final name = widget.charName;
     return [
-      _QuizQuestion(
+      QuizQuestion(
         question: 'Quel est le niveau de puissance de $name ?',
         options: ['Très faible', 'Moyen', 'Extrêmement puissant', 'Inconnu'],
         correctIndex: 2,
       ),
-      _QuizQuestion(
+      QuizQuestion(
         question: 'Dans quel type d\'univers évolue $name ?',
         options: ['Science-fiction', 'Fantasy/Magie', 'Sport', 'Tranche de vie'],
         correctIndex: 1,
       ),
-      _QuizQuestion(
+      QuizQuestion(
         question: 'Quelle caractéristique définit le mieux $name ?',
         options: [
           'Courage et détermination',
@@ -79,7 +71,7 @@ class _CharacterQuizScreenState extends ConsumerState<CharacterQuizScreen> {
         ],
         correctIndex: 0,
       ),
-      _QuizQuestion(
+      QuizQuestion(
         question: 'Quel est le rôle de $name dans son histoire ?',
         options: [
           'Antagoniste principal',
@@ -89,7 +81,7 @@ class _CharacterQuizScreenState extends ConsumerState<CharacterQuizScreen> {
         ],
         correctIndex: 2,
       ),
-      _QuizQuestion(
+      QuizQuestion(
         question: 'Qu\'est-ce qui motive principalement $name ?',
         options: [
           'La vengeance',
@@ -373,7 +365,7 @@ class _CharacterQuizScreenState extends ConsumerState<CharacterQuizScreen> {
     );
   }
 
-  Widget _buildFeedback(_QuizQuestion question) {
+  Widget _buildFeedback(QuizQuestion question) {
     final isCorrect = _selectedAnswer == question.correctIndex;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),

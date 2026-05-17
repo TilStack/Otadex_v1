@@ -456,8 +456,8 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     final isTablet = mq.size.width >= 600;
     return switch (_activeTab) {
       _Tab.infos => _buildInfosTab(theme, isTablet, rank),
-      _Tab.galerie => _buildGalerieTab(theme, isTablet),
-      _Tab.relations => _buildRelationsTab(theme, rank),
+      _Tab.galerie => _buildGalerieTab(theme, isTablet, rank),
+      _Tab.relations => _buildRelationsTab(theme),
       _Tab.medias => _buildMediasTab(theme),
       _Tab.exclusif => _buildExclusifTab(theme, rank),
     };
@@ -466,26 +466,17 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
   // ── INFOS TAB ────────────────────────────────────────────────────
 
   Widget _buildInfosTab(RankTheme theme, bool isTablet, String rank) {
-    final isGenin = rank == 'genin';
     final isKage = rank == 'kage';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Section A — Identité
         _buildIdentiteSection(theme),
-        // Section B — À propos
-        _buildAboutSection(theme, isGenin),
-        // Section C — Pouvoirs
-        if (c.powers.isNotEmpty) _buildPowersSection(theme, isGenin),
-        // Section D — Citations
-        if (c.quotes.isNotEmpty || isGenin || isKage)
-          _buildQuotesSection(theme, isGenin, isKage),
-        // Section E — Doubleurs
-        _buildVoiceActorsSection(theme, isGenin),
-        // Section F — Trivia
-        if (c.trivia.isNotEmpty || !isKage)
-          _buildTriviaSection(theme, isGenin, isKage),
+        _buildAboutSection(theme),
+        if (c.powers.isNotEmpty) _buildPowersSection(theme),
+        if (c.quotes.isNotEmpty) _buildQuotesSection(theme),
+        _buildVoiceActorsSection(theme),
+        _buildTriviaSection(theme, isKage),
       ],
     );
   }
@@ -546,7 +537,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     );
   }
 
-  Widget _buildAboutSection(RankTheme theme, bool isGenin) {
+  Widget _buildAboutSection(RankTheme theme) {
     final bio = c.bio ?? 'Aucune description disponible.';
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -573,8 +564,8 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
               children: [
                 Text(
                   bio,
-                  maxLines: isGenin ? 3 : (_aboutExpanded ? null : null),
-                  overflow: isGenin ? TextOverflow.ellipsis : null,
+                  maxLines: _aboutExpanded ? null : 6,
+                  overflow: _aboutExpanded ? null : TextOverflow.ellipsis,
                   style: GoogleFonts.nunitoSans(
                     fontSize: 14,
                     color: AppColors.textSecondary,
@@ -582,32 +573,18 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
                   ),
                 ),
                 const SizedBox(height: 10),
-                if (isGenin)
-                  GestureDetector(
-                    onTap: () =>
-                        showSubscriptionModal(context, SubscriptionPlan.jonin),
-                    child: Text(
-                      'Lire la suite 🔒',
-                      style: GoogleFonts.nunitoSans(
-                        fontSize: 13,
-                        color: theme.accentColor,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                else
-                  GestureDetector(
-                    onTap: () =>
-                        setState(() => _aboutExpanded = !_aboutExpanded),
-                    child: Text(
-                      _aboutExpanded ? 'Réduire ↑' : 'Lire la suite →',
-                      style: GoogleFonts.nunitoSans(
-                        fontSize: 13,
-                        color: theme.accentColor,
-                        fontWeight: FontWeight.w600,
-                      ),
+                GestureDetector(
+                  onTap: () =>
+                      setState(() => _aboutExpanded = !_aboutExpanded),
+                  child: Text(
+                    _aboutExpanded ? 'Réduire ↑' : 'Lire la suite →',
+                    style: GoogleFonts.nunitoSans(
+                      fontSize: 13,
+                      color: theme.accentColor,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
+                ),
               ],
             ),
           ),
@@ -616,12 +593,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     );
   }
 
-  Widget _buildPowersSection(RankTheme theme, bool isGenin) {
-    final displayedPowers = isGenin && c.powers.length > 3
-        ? c.powers.sublist(0, 3)
-        : c.powers;
-    final hiddenCount = isGenin ? (c.powers.length - 3).clamp(0, 999) : 0;
-
+  Widget _buildPowersSection(RankTheme theme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
@@ -639,59 +611,34 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [
-              ...displayedPowers.map((power) {
-                return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.statPurple.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(22),
-                    border: Border.all(
-                        color: AppColors.statPurple.withValues(alpha: 0.55)),
-                  ),
-                  child: Text(
-                    power,
-                    style: GoogleFonts.nunitoSans(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.statPurplePastel,
-                    ),
-                  ),
-                );
-              }),
-              if (isGenin && hiddenCount > 0)
-                GestureDetector(
-                  onTap: () =>
-                      showSubscriptionModal(context, SubscriptionPlan.jonin),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundElevated,
-                      borderRadius: BorderRadius.circular(22),
-                      border:
-                          Border.all(color: AppColors.textDisabled),
-                    ),
-                    child: Text(
-                      '🔒 +$hiddenCount autres pouvoirs · Jonin',
-                      style: GoogleFonts.nunitoSans(
-                        fontSize: 13,
-                        color: AppColors.textDisabled,
-                      ),
-                    ),
+            children: c.powers.map((power) {
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.statPurple.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(
+                      color: AppColors.statPurple.withValues(alpha: 0.55)),
+                ),
+                child: Text(
+                  power,
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.statPurplePastel,
                   ),
                 ),
-            ],
+              );
+            }).toList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuotesSection(
-      RankTheme theme, bool isGenin, bool isKage) {
-    if (c.quotes.isEmpty && !isGenin) return const SizedBox.shrink();
+  Widget _buildQuotesSection(RankTheme theme) {
+    if (c.quotes.isEmpty) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -707,52 +654,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
             ),
           ),
           const SizedBox(height: 10),
-          if (isGenin)
-            GestureDetector(
-              onTap: () =>
-                  showSubscriptionModal(context, SubscriptionPlan.jonin),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundElevated,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                padding: const EdgeInsets.all(16),
-                height: 100,
-                child: Stack(
-                  children: [
-                    Opacity(
-                      opacity: 0.15,
-                      child: Text(
-                        '"Dans ce monde, le talent bat tout..."',
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 14,
-                          fontStyle: FontStyle.italic,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('🔒', style: TextStyle(fontSize: 24)),
-                          SizedBox(height: 6),
-                          Text(
-                            'Jonin pour les citations',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            ...c.quotes.map((quote) => _buildQuoteCard(theme, quote)),
+          ...c.quotes.map((quote) => _buildQuoteCard(theme, quote)),
         ],
       ),
     );
@@ -821,7 +723,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     );
   }
 
-  Widget _buildVoiceActorsSection(RankTheme theme, bool isGenin) {
+  Widget _buildVoiceActorsSection(RankTheme theme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Column(
@@ -836,27 +738,8 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
             ),
           ),
           const SizedBox(height: 10),
-          if (isGenin)
-            GestureDetector(
-              onTap: () =>
-                  showSubscriptionModal(context, SubscriptionPlan.jonin),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundElevated,
-                  borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: AppColors.textDisabled),
-                ),
-                child: Text(
-                  '🔒 Jonin pour voir les doubleurs',
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 13,
-                    color: AppColors.textDisabled,
-                  ),
-                ),
-              ),
-            )
+          if (c.voiceActors.isNotEmpty)
+            _buildMockVoiceActors()
           else if (_anilistId != null)
             _buildVoiceActorsList(theme)
           else
@@ -869,6 +752,69 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMockVoiceActors() {
+    return Column(
+      children: c.voiceActors.map((va) {
+        return Container(
+          height: 64,
+          margin: const EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: AppColors.backgroundElevated,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: [
+              ClipOval(
+                child: SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: va.imageUrl.isNotEmpty
+                      ? OtadexImage(imagePath: va.imageUrl, fit: BoxFit.cover)
+                      : Container(
+                          color: AppColors.backgroundCard,
+                          child: Center(
+                            child: Text(
+                              va.nom.isNotEmpty ? va.nom[0].toUpperCase() : '?',
+                              style: GoogleFonts.rajdhani(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    va.nom,
+                    style: GoogleFonts.nunitoSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    va.langue,
+                    style: GoogleFonts.nunitoSans(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 
@@ -974,8 +920,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     );
   }
 
-  Widget _buildTriviaSection(
-      RankTheme theme, bool isGenin, bool isKage) {
+  Widget _buildTriviaSection(RankTheme theme, bool isKage) {
     if (c.trivia.isEmpty) return const SizedBox.shrink();
 
     return Padding(
@@ -1068,15 +1013,28 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
 
   // ── GALERIE TAB ───────────────────────────────────────────────────
 
-  Widget _buildGalerieTab(RankTheme theme, bool isTablet) {
+  Widget _buildGalerieTab(RankTheme theme, bool isTablet, String rank) {
     final crossAxis = isTablet ? 4 : 3;
     final images = _effectiveImages;
+    final isGenin = rank == 'genin';
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _sectionLabel(theme, 'GALERIE — ${images.length} PHOTOS'),
+          if (isGenin) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Images avec filigrane OTADEX · Kage Pass pour télécharger sans',
+              style: GoogleFonts.nunitoSans(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
@@ -1102,6 +1060,26 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
               ),
             ),
           ),
+          if (isGenin) ...[
+            const SizedBox(height: 16),
+            Container(
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.backgroundElevated,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(
+                  'Publicité · Passe Jonin pour supprimer',
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1109,76 +1087,10 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
 
   // ── RELATIONS TAB ─────────────────────────────────────────────────
 
-  Widget _buildRelationsTab(RankTheme theme, String rank) {
-    final isGenin = rank == 'genin';
-
-    if (isGenin) {
-      return Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            // 3 avatars floutés fictifs
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (i) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 8),
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.backgroundElevated,
-                    border: Border.all(
-                        color: AppColors.textDisabled, width: 1.5),
-                  ),
-                  child: const Icon(Icons.person,
-                      color: AppColors.textDisabled, size: 28),
-                );
-              }),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '🔒 Relations accessibles dès Jonin',
-              style: GoogleFonts.nunitoSans(
-                fontSize: 15,
-                color: AppColors.textPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Découvre les alliés, rivaux et ennemis de ${c.name}',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunitoSans(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: () =>
-                  showSubscriptionModal(context, SubscriptionPlan.jonin),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: AppColors.statBlue,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'Passer Jonin',
-                  style: GoogleFonts.nunitoSans(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
+  Widget _buildRelationsTab(RankTheme theme) {
+    // Priorité aux mock relations
+    if (c.relations.isNotEmpty) {
+      return _buildMockRelations(theme);
     }
 
     if (_anilistId == null) {
@@ -1186,7 +1098,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
         padding: const EdgeInsets.all(24),
         child: Center(
           child: Text(
-            'Relations non disponibles pour ce personnage',
+            'Relations à venir via AniList',
             textAlign: TextAlign.center,
             style: GoogleFonts.nunitoSans(
                 fontSize: 14, color: AppColors.textSecondary),
@@ -1340,17 +1252,134 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     );
   }
 
+  Widget _buildMockRelations(RankTheme theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 20, 0, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+            child: _sectionLabel(theme, 'RELATIONS'),
+          ),
+          SizedBox(
+            height: 170,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: c.relations.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              itemBuilder: (_, i) {
+                final rel = c.relations[i];
+                final badgeColor = switch (rel.relationColor) {
+                  'green' => AppColors.statGreen,
+                  'blue' => AppColors.statBlue,
+                  'red' => AppColors.error,
+                  'amber' => AppColors.warning,
+                  _ => AppColors.textSecondary,
+                };
+                return SizedBox(
+                  width: 90,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundElevated,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ClipOval(
+                          child: SizedBox(
+                            width: 60,
+                            height: 60,
+                            child: OtadexImage(
+                              imagePath: rel.imageUrl,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          rel.nom,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.nunitoSans(
+                            fontSize: 11,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: badgeColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: badgeColor.withValues(alpha: 0.4),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Text(
+                            rel.relationType,
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 9,
+                              color: badgeColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── MÉDIAS TAB ────────────────────────────────────────────────────
 
   Widget _buildMediasTab(RankTheme theme) {
+    // Priorité aux mock media appearances
+    if (c.mediaAppearances.isNotEmpty) {
+      return _buildMockMedias(theme);
+    }
+
     if (_anilistId == null) {
       return Padding(
         padding: const EdgeInsets.all(24),
         child: Center(
-          child: Text(
-            'Médias non disponibles',
-            style: GoogleFonts.nunitoSans(
-                fontSize: 14, color: AppColors.textSecondary),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 80,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundElevated,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              Container(
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundElevated.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Médias à venir via AniList',
+                style: GoogleFonts.nunitoSans(
+                    fontSize: 13, color: AppColors.textSecondary),
+              ),
+            ],
           ),
         ),
       );
@@ -1658,12 +1687,240 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
     );
   }
 
+  Widget _buildMockMedias(RankTheme theme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Apparitions animé/manga
+          Text(
+            '📺 Apparitions',
+            style: GoogleFonts.nunitoSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...c.mediaAppearances.map((m) {
+            return Container(
+              height: 80,
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundElevated,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: 60,
+                      height: 60,
+                      child: OtadexImage(
+                        imagePath: m.coverUrl,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          m.titre,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.nunitoSans(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${m.format} · ${m.annee} · ${m.episodes} éps',
+                          style: GoogleFonts.nunitoSans(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.statBlue.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            m.role,
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 10,
+                              color: AppColors.statBluePastel,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+          const SizedBox(height: 16),
+
+          // Auteurs/Mangakas
+          Text(
+            '✍️ Auteurs',
+            style: GoogleFonts.nunitoSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...c.mediaAppearances.map((m) {
+            return GestureDetector(
+              onTap: () => context.push('/creator/${m.mangakaId}'),
+              child: Container(
+                height: 72,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundElevated,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.backgroundCard,
+                      ),
+                      child: Center(
+                        child: Text(
+                          m.mangakaNom.isNotEmpty
+                              ? m.mangakaNom[0].toUpperCase()
+                              : '?',
+                          style: GoogleFonts.rajdhani(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            m.mangakaNom,
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'Auteur',
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.textSecondary,
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+          const SizedBox(height: 16),
+
+          // Studios
+          Text(
+            '🎬 Studios',
+            style: GoogleFonts.nunitoSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...c.mediaAppearances.map((m) {
+            return GestureDetector(
+              onTap: () => context.push('/studio/${m.studioId}'),
+              child: Container(
+                height: 64,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundElevated,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.backgroundCard,
+                      ),
+                      child: const Center(
+                        child: Text('🎬', style: TextStyle(fontSize: 20)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        m.studioNom,
+                        style: GoogleFonts.nunitoSans(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.textSecondary,
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   // ── EXCLUSIF TAB ──────────────────────────────────────────────────
 
   Widget _buildExclusifTab(RankTheme theme, String rank) {
     final isKage = rank == 'kage';
+    final isJonin = rank == 'jonin';
 
-    if (!isKage) {
+    // ── Genin : tout verrouillé ──────────────────────────────────────
+    if (!isKage && !isJonin) {
       return Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
@@ -1672,37 +1929,51 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
             const Text('👑', style: TextStyle(fontSize: 64)),
             const SizedBox(height: 16),
             Text(
-              'Kage exclusif',
+              'Contenu réservé Kage',
               style: GoogleFonts.dmSans(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textPrimary,
               ),
             ),
+            const SizedBox(height: 12),
+            _exclusifFeatureRow(Icons.quiz_rounded, 'Quiz & scoring Fan du Mois', 'Jonin+'),
             const SizedBox(height: 8),
-            Text(
-              'Accède au chatbot IA, génération d\'images et fiche PDF',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunitoSans(
-                fontSize: 14,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.statPurple,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            _exclusifFeatureRow(Icons.smart_toy_rounded, 'Chatbot IA personnage', 'Kage'),
+            const SizedBox(height: 8),
+            _exclusifFeatureRow(Icons.auto_awesome_rounded, 'Génération d\'image citation', 'Kage'),
+            const SizedBox(height: 8),
+            _exclusifFeatureRow(Icons.bolt_rounded, 'Anecdotes exclusives', 'Kage'),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.statPurple,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () => context.push('/subscription'),
+                child: Text(
+                  'Obtenir Kage Pass 👑',
+                  style: GoogleFonts.nunitoSans(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
                 ),
               ),
-              onPressed: () => context.push('/subscription'),
-              child: const Text(
-                'Obtenir Kage Pass 👑',
-                style: TextStyle(
-                  color: Colors.white,
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => showSubscriptionModal(context, SubscriptionPlan.jonin),
+              child: Text(
+                'Commencer par Jonin — 2 000 FCFA/mois',
+                style: GoogleFonts.nunitoSans(
+                  color: AppColors.statBlue,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1712,7 +1983,38 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
       );
     }
 
-    // Kage content
+    // ── Jonin : quiz accessible, chatbot+image verrouillés ───────────
+    if (isJonin) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
+        child: Column(
+          children: [
+            _buildQuizCard(),
+            const SizedBox(height: 4),
+            _buildUpsellBanner(
+              feature: 'Discuter avec ${c.name} via IA',
+              tierLabel: 'Kage Pass (5 000 FCFA/mois)',
+              tierColor: AppColors.statPurple,
+              onTap: () => context.push('/subscription'),
+            ),
+            _buildUpsellBanner(
+              feature: 'Créer une image citation stylisée',
+              tierLabel: 'Kage Pass',
+              tierColor: AppColors.statPurple,
+              onTap: () => context.push('/subscription'),
+            ),
+            _buildUpsellBanner(
+              feature: 'Anecdotes exclusives sur ${c.name}',
+              tierLabel: 'Kage Pass',
+              tierColor: AppColors.statPurple,
+              onTap: () => context.push('/subscription'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // ── Kage : tout accessible ───────────────────────────────────────
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
       child: Column(
@@ -1741,38 +2043,27 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
                 children: [
                   Row(
                     children: [
-                      if (c.imagePath != null)
-                        ClipOval(
-                          child: SizedBox(
-                            width: 64,
-                            height: 64,
-                            child: OtadexImage(
-                              imagePath: c.imagePath!,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        )
-                      else
-                        Container(
+                      ClipOval(
+                        child: SizedBox(
                           width: 64,
                           height: 64,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.backgroundElevated,
-                          ),
-                          child: Center(
-                            child: Text(
-                              c.name.isNotEmpty
-                                  ? c.name[0].toUpperCase()
-                                  : '?',
-                              style: GoogleFonts.rajdhani(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ),
+                          child: c.imagePath != null
+                              ? OtadexImage(imagePath: c.imagePath!, fit: BoxFit.cover)
+                              : Container(
+                                  color: AppColors.backgroundElevated,
+                                  child: Center(
+                                    child: Text(
+                                      c.name.isNotEmpty ? c.name[0].toUpperCase() : '?',
+                                      style: GoogleFonts.rajdhani(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                         ),
+                      ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
@@ -1804,10 +2095,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
                     height: 48,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [
-                          AppColors.statPurple,
-                          Color(0xFF6D28D9),
-                        ],
+                        colors: [AppColors.statPurple, Color(0xFF6D28D9)],
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -1833,8 +2121,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
             decoration: BoxDecoration(
               color: AppColors.backgroundElevated,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: AppColors.accent.withValues(alpha: 0.4)),
+              border: Border.all(color: AppColors.accent.withValues(alpha: 0.4)),
             ),
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -1858,14 +2145,11 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
                 ),
                 const SizedBox(height: 16),
                 GestureDetector(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            'Fonctionnalité Kage — Bientôt disponible 🎨'),
-                      ),
-                    );
-                  },
+                  onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Fonctionnalité Kage — Bientôt disponible 🎨'),
+                    ),
+                  ),
                   child: Container(
                     height: 48,
                     decoration: BoxDecoration(
@@ -1889,61 +2173,166 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
           ),
 
           // Card 3 — Quiz
-          GestureDetector(
-            onTap: () => context.push(
-              '/quiz/${c.id}',
-              extra: {'charName': c.name},
+          _buildQuizCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _exclusifFeatureRow(IconData icon, String label, String tier) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.textSecondary, size: 18),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: GoogleFonts.nunitoSans(
+              fontSize: 13,
+              color: AppColors.textSecondary,
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.backgroundAIBlue,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                    color: AppColors.statBlue.withValues(alpha: 0.4)),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: (tier == 'Kage'
+                    ? AppColors.statPurple
+                    : AppColors.statBlue)
+                .withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            tier,
+            style: GoogleFonts.nunitoSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: tier == 'Kage' ? AppColors.statPurple : AppColors.statBlue,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuizCard() {
+    return GestureDetector(
+      onTap: () => context.push('/quiz/${c.id}', extra: {
+        'charName': c.name,
+        if (c.quizQuestions.isNotEmpty) 'quizQuestions': c.quizQuestions,
+      }),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: AppColors.backgroundAIBlue,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.statBlue.withValues(alpha: 0.4)),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '🧠 Quiz personnage',
+              style: GoogleFonts.dmSans(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
               ),
-              padding: const EdgeInsets.all(20),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Teste tes connaissances sur ${c.name} — 5 questions',
+              style: GoogleFonts.nunitoSans(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              height: 48,
+              decoration: BoxDecoration(
+                color: AppColors.statBlue,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Text(
+                  'Lancer le quiz 🧠',
+                  style: GoogleFonts.nunitoSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── UPSELL BANNER ────────────────────────────────────────────────
+
+  Widget _buildUpsellBanner({
+    required String feature,
+    required String tierLabel,
+    required Color tierColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: tierColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: tierColor.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.lock_outline_rounded, color: tierColor, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '🧠 Quiz personnage',
-                    style: GoogleFonts.dmSans(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Teste tes connaissances sur ${c.name} — 5 questions',
+                    feature,
                     style: GoogleFonts.nunitoSans(
+                      color: AppColors.textPrimary,
                       fontSize: 13,
-                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: AppColors.statBlue,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Lancer le quiz 🧠',
-                        style: GoogleFonts.nunitoSans(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
+                  Text(
+                    'Disponible avec $tierLabel',
+                    style: GoogleFonts.nunitoSans(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: tierColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Débloquer',
+                style: GoogleFonts.nunitoSans(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
