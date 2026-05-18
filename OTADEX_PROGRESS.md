@@ -398,7 +398,21 @@
 - Fonctions premium finalisées sans Cloud Function : chatbot local OTADEX, quiz variable selon nombre de questions, génération locale d'image citation Kage
 - `flutter analyze` → 0 issue
 
-**Task 22 — Play Store soumission**
+**Task 22 — Import JJK Firestore** ✅ Fait
+
+- `scripts/import_jjk.js` → Créé (1 415 lignes)
+- Structure Firestore définie : `animes` / `creators` / `studios` / `characters` / `quizzes`
+- 20 personnages JJK complets : nom, nomJaponais, description, pouvoirs, voixJaponaise, voixAnglaise, relations, citations, trivia, popularityRank
+- Créateur Gege Akutami : bio, bibliographie complète, récompenses, influences
+- Studio MAPPA : fondation, productions, description
+- 7 quiz créés (5+ questions chacun) : Gojo, Yuji, Sukuna, Megumi, Nobara, Geto, Nanami
+- `firestore.indexes.json` mis à jour : 3 index composites (animeId+popularityRank, animeId+statut, animeId+likesCount)
+- `scripts/README.md` créé : instructions d'exécution + template réutilisable pour futurs animés
+- Note : Lancer `node scripts/import_jjk.js` après avoir placé `serviceAccountkey.json` à la racine
+- Note : Template réutilisable pour chaque nouvel animé via `scripts/import_[anime_name].js`
+- Prochaine tâche → Brancher Flutter sur Firestore (remplacer mock_data par Firestore queries)
+
+**Task 23 — Play Store soumission**
 
 - APK signé, captures d'écran, soumission Google Play Console
 
@@ -465,6 +479,7 @@ URLs Play Console :
 | 16 mai 2026 | Task 19 correctif — Stratégie freemium corrigée : contenu encyclopédique 100% libre pour Genin (bio complète, tous pouvoirs, citations, doubleurs, relations), Trivia Kage uniquement, onglet Exclusif refait en 3 niveaux (Genin locked / Jonin quiz + upsell banners / Kage all), _buildUpsellBanner contextuel, bannière ads simulée Genin en galerie. dart analyze → 0 erreur. |
 | 17 mai 2026 | Task 20 — Mock data enrichie : quotes, trivia, aiPersonality, relations, voiceActors, mediaAppearances, quizQuestions pour 8 personnages existants + ajout Luffy (One Piece) et Frieren (FBJ). Modèles CharacterRelation/VoiceActorMock/MediaAppearanceMock/QuizQuestion créés dans character.dart. mockStudios (5) et `mockMangakas` (6) ajoutés dans MockData. Onglets Relations/Médias/Doubleurs branchés sur mock data (priorité mock → AniList → fallback). Quiz screen accepte List<QuizQuestion> spécifique au personnage (fallback générique si absent). app_router passe quizQuestions via extra. dart analyze → 0 erreur. |
 | 17 mai 2026 | Task 21 — Correctifs release + premium local : label Android `Otadex`, signing release sans secrets hardcodés, `.gitignore` renforcé, `upload_images.js` nettoyé, préférence monnaie profil ajoutée, prix plans multi-devises centralisés, Kage fixé à 5 000 FCFA/mois, activation licence Chariow locale Jonin/Kage, assistant local OTADEX, génération locale d'image citation Kage, quiz sans limite fixe à 5 questions. flutter analyze → 0 issue. |
+| 18 mai 2026 | Task 22 — Import JJK Firestore : `scripts/import_jjk.js` créé (20 personnages JJK, 1 animé, 1 créateur, 1 studio, 7 quiz). Données extraites depuis `JJK_Personnages_OTADEX_v2.docx` via mammoth/python XML. `firestore.indexes.json` mis à jour (3 index composites). `scripts/README.md` créé avec template réutilisable. |
 
 ---
 

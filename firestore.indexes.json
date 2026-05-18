@@ -1,4 +1,29 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "characters",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "animeId", "order": "ASCENDING" },
+        { "fieldPath": "popularityRank", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "characters",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "animeId", "order": "ASCENDING" },
+        { "fieldPath": "statut", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "characters",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "animeId", "order": "ASCENDING" },
+        { "fieldPath": "likesCount", "order": "DESCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }
