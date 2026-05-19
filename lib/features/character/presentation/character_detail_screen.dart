@@ -1453,43 +1453,141 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
 
   // ── MÉDIAS TAB ────────────────────────────────────────────────────
 
+  Widget _buildSameAnimeSection(RankTheme theme) {
+    final animeId = c.animeId;
+    if (animeId == null || animeId.isEmpty) return const SizedBox.shrink();
+    final sameAnimeAsync = ref.watch(sameAnimeCharactersProvider(
+        {'animeId': animeId, 'excludeId': c.id}));
+    return sameAnimeAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (chars) {
+        if (chars.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+              child: Text(
+                'Autres personnages de ${c.animeName}',
+                style: GoogleFonts.nunitoSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 200,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                itemCount: chars.length,
+                itemBuilder: (context, index) {
+                  final char = chars[index];
+                  final imgPath = char.images.isNotEmpty
+                      ? char.images.first
+                      : char.imagePath ?? '';
+                  return GestureDetector(
+                    onTap: () => context.push('/character/${char.id}',
+                        extra: char),
+                    child: SizedBox(
+                      width: 120,
+                      child: Column(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: OtadexImage(
+                              imagePath: imgPath,
+                              width: 120,
+                              height: 152,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            char.name,
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            char.role ?? '',
+                            style: GoogleFonts.nunitoSans(
+                              fontSize: 10,
+                              color: AppColors.textSecondary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildMediasTab(RankTheme theme) {
     // Priorité aux mock media appearances
     if (c.mediaAppearances.isNotEmpty) {
-      return _buildMockMedias(theme);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildMockMedias(theme),
+          _buildSameAnimeSection(theme),
+        ],
+      );
     }
 
     if (_anilistId == null) {
-      return Padding(
-        padding: const EdgeInsets.all(24),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                height: 80,
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundElevated,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    height: 80,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundElevated,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  Container(
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundElevated.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Médias à venir via AniList',
+                    style: GoogleFonts.nunitoSans(
+                        fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                ],
               ),
-              Container(
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.backgroundElevated.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Médias à venir via AniList',
-                style: GoogleFonts.nunitoSans(
-                    fontSize: 13, color: AppColors.textSecondary),
-              ),
-            ],
+            ),
           ),
-        ),
+          _buildSameAnimeSection(theme),
+        ],
       );
     }
 
@@ -1769,6 +1867,7 @@ class _CharacterDetailScreenState extends ConsumerState<CharacterDetailScreen>
                   );
                 });
               }),
+              _buildSameAnimeSection(theme),
             ],
           );
         },

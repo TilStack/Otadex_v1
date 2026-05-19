@@ -303,7 +303,7 @@ class _RechercheScreenState extends ConsumerState<RechercheScreen>
     // Watch AniList results for the debounced query
     final debouncedQuery = ref.watch(searchQueryProvider);
     final anilistAsync = debouncedQuery.length >= 2
-        ? ref.watch(searchResultsProvider(debouncedQuery))
+        ? ref.watch(searchCharactersProvider(debouncedQuery))
         : const AsyncValue<List<Character>>.data([]);
     // Sync results into local cache (triggers re-render of _filteredCharacters)
     final incoming = anilistAsync.valueOrNull ?? [];

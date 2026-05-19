@@ -5,8 +5,27 @@ import '../models/featured_slide.dart';
 import '../theme/app_colors.dart';
 import '../services/anilist_service.dart';
 import '../services/collection_service.dart';
+import '../services/firestore_character_service.dart';
 import '../services/storage_service.dart';
 import 'otadex_providers.dart';
+
+// ── Firestore character service singleton ────────────────────────────────────
+final firestoreCharacterServiceProvider = Provider<FirestoreCharacterService>(
+  (_) => FirestoreCharacterService(),
+);
+
+// ── JJK characters from Firestore ────────────────────────────────────────────
+final jjkCharactersProvider = FutureProvider<List<Character>>((ref) {
+  return ref
+      .watch(firestoreCharacterServiceProvider)
+      .getCharactersByAnime('jujutsu-kaisen');
+});
+
+// ── Quiz Firestore pour un personnage ────────────────────────────────────────
+final firestoreQuizProvider =
+    FutureProvider.autoDispose.family<List<QuizQuestion>, String>((ref, id) {
+  return ref.watch(firestoreCharacterServiceProvider).getQuizForCharacter(id);
+});
 
 // ── AniList service singleton ────────────────────────────────────────────────
 final anilistServiceProvider = Provider<AniListService>((_) => AniListService());
@@ -46,22 +65,80 @@ final featuredSlidesProvider =
 // ── Real-time search ─────────────────────────────────────────────────────────
 final searchQueryProvider = StateProvider<String>((_) => '');
 
-final searchResultsProvider =
-    FutureProvider.autoDispose.family<List<Character>, String>((ref, query) {
-  if (query.length < 2) return Future.value([]);
-  return ref.watch(anilistServiceProvider).searchCharacters(query, perPage: 20);
+final searchCharactersProvider =
+    FutureProvider.autoDispose.family<List<Character>, String>(
+        (ref, query) async {
+  if (query.trim().length < 2) return [];
+  final firestoreService = ref.watch(firestoreCharacterServiceProvider);
+  final anilistService = ref.watch(anilistServiceProvider);
+  final results = await Future.wait([
+    firestoreService.searchCharacters(query),
+    anilistService.searchCharacters(query, perPage: 15),
+  ]);
+  final firestoreChars = results[0];
+  final anilistChars = results[1];
+  final firestoreNames = firestoreChars.map((c) => c.name).toSet();
+  final anilistUniques =
+      anilistChars.where((c) => !firestoreNames.contains(c.name)).toList();
+  return [...firestoreChars, ...anilistUniques];
 });
 
-// ── Character detail (handles both local mock IDs and anilist-* IDs) ─────────
+final searchAnimesProvider =
+    FutureProvider.autoDispose.family<List<AnimeEntry>, String>(
+        (ref, query) async {
+  if (query.trim().length < 2) return [];
+  final firestoreService = ref.watch(firestoreCharacterServiceProvider);
+  final anilistService = ref.watch(anilistServiceProvider);
+  final results = await Future.wait([
+    firestoreService.searchAnimes(query),
+    anilistService.searchAnimes(query, perPage: 10),
+  ]);
+  final firestoreAnimes = results[0];
+  final anilistAnimes = results[1];
+  final firestoreTitres = firestoreAnimes.map((a) => a.name).toSet();
+  final anilistUniques =
+      anilistAnimes.where((a) => !firestoreTitres.contains(a.name)).toList();
+  return [...firestoreAnimes, ...anilistUniques];
+});
+
+final sameAnimeCharactersProvider = FutureProvider.autoDispose
+    .family<List<Character>, Map<String, String>>((ref, params) async {
+  final animeId = params['animeId'] ?? '';
+  final excludeId = params['excludeId'] ?? '';
+  if (animeId.isEmpty) return [];
+  final firestoreService = ref.watch(firestoreCharacterServiceProvider);
+  final firestoreChars = await firestoreService.getSameAnimeCharacters(
+    animeId: animeId,
+    excludeCharacterId: excludeId,
+    limit: 5,
+  );
+  if (firestoreChars.isNotEmpty) return firestoreChars;
+  if (animeId.startsWith('anilist-')) {
+    final anilistId = int.tryParse(animeId.replaceFirst('anilist-', ''));
+    if (anilistId != null) {
+      return ref
+          .watch(anilistServiceProvider)
+          .getCharactersByAnimeId(anilistId, perPage: 5);
+    }
+  }
+  return [];
+});
+
+// ── Character detail (jjk-* → Firestore, anilist-* → AniList, sinon mock) ───
 final characterDetailProvider =
     FutureProvider.autoDispose.family<Character?, String>((ref, id) async {
-  if (!id.startsWith('anilist-')) {
-    final service = await ref.read(otadexServiceProvider.future);
-    return service.characterById(id);
+  if (id.startsWith('jjk-')) {
+    return ref
+        .watch(firestoreCharacterServiceProvider)
+        .getCharacterById(id);
   }
-  final anilistId = int.tryParse(id.replaceFirst('anilist-', ''));
-  if (anilistId == null) return null;
-  return ref.watch(anilistServiceProvider).getCharacterById(anilistId);
+  if (id.startsWith('anilist-')) {
+    final anilistId = int.tryParse(id.replaceFirst('anilist-', ''));
+    if (anilistId == null) return null;
+    return ref.watch(anilistServiceProvider).getCharacterById(anilistId);
+  }
+  final service = await ref.read(otadexServiceProvider.future);
+  return service.characterById(id);
 });
 
 // ── Firebase Storage ─────────────────────────────────────────────────────────

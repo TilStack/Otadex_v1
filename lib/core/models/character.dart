@@ -106,6 +106,7 @@ class Character {
   final String? status;
   final String? role;
   final String? creatorId;
+  final String? animeId;
   // ── Champs enrichis ──────────────────────────────────────────────────────────
   final String? bloodType;
   final String? dateOfBirth;
@@ -148,6 +149,7 @@ class Character {
     this.status,
     this.role,
     this.creatorId,
+    this.animeId,
     this.bloodType,
     this.dateOfBirth,
     this.quotes = const [],

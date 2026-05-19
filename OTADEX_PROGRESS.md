@@ -416,7 +416,54 @@
 - Note : Template réutilisable pour chaque nouvel animé via `scripts/import_[anime_name].js`
 - Prochaine tâche → Brancher Flutter sur Firestore (remplacer mock_data par Firestore queries)
 
-**Task 23 — Play Store soumission**
+**Task 23 — Firestore Flutter integration** ✅ Fait
+
+- `lib/core/services/firestore_character_service.dart` → Créé
+  - `getCharactersByAnime(animeId)` — requête Firestore ordonnée par `popularityRank`
+  - `getCharacterById(id)` — fetch direct par ID Firestore
+  - `getQuizForCharacter(characterId)` — quiz Firestore → `List<QuizQuestion>`
+  - `getAllAnimes()` / `getAnimeById()` — collection Firestore `animes`
+  - `getAllCreators()` / `getCreatorById()` — collection Firestore `creators`
+  - Mapping complet : `nom`→`name`, `description`→`bio`, `pouvoirs`→`powers`, `citations`→`quotes`, `statut`→`status`, `rang`→`tier`, relations→`CharacterRelation`, voix→`VoiceActorMock`
+- `lib/core/providers/anilist_providers.dart` mis à jour :
+  - `firestoreCharacterServiceProvider` — singleton du service
+  - `jjkCharactersProvider` — FutureProvider JJK depuis Firestore
+  - `firestoreQuizProvider` — quiz Firestore par personnage ID
+  - `characterDetailProvider` : `jjk-*` → Firestore, `anilist-*` → AniList, sinon mock
+- `lib/core/providers/otadex_providers.dart` mis à jour :
+  - `allCharactersProvider` → FutureProvider fusionné (Firestore JJK + mock autres séries)
+  - `newCharactersProvider` → FutureProvider.family filtre sur allCharactersProvider
+  - `recommendedCharactersProvider` → filtre préférences utilisateur sur allCharactersProvider
+  - `allAnimesProvider` → Firestore en priorité, fallback mock
+  - `allCreatorsProvider` → Firestore en priorité, fallback mock
+- dart analyze → 0 erreur, 0 warning
+
+**Task 24 — Architecture multi-animés + Recherche unifiée** ✅ Fait
+
+- `Character` model : champ `animeId` ajouté (nullable, passe par Firestore → tous animés futurs)
+- `firestore_character_service.dart` :
+  - `getAllCharacters({int limit = 100})` — tous animés Firestore triés par `animeId`+`popularityRank`
+  - `searchCharacters(query)` — recherche client-side sur `name`, `animeName`, `role`, `powers`
+  - `searchAnimes(query)` — recherche client-side sur `name`, `genres`
+  - `getSameAnimeCharacters({animeId, excludeCharacterId, limit})` — personnages du même animé (excluant le courant)
+  - `getAllAnimesWithCharacterCount()` — alias de `getAllAnimes()`
+  - `_characterFromFirestore` : passe `animeId` au modèle Character
+- `anilist_service.dart` :
+  - `getCharactersByAnimeId(anilistId, {perPage})` — personnages d'un animé AniList (fallback futur)
+- `anilist_providers.dart` :
+  - `searchCharactersProvider` remplace `searchResultsProvider` — fusion Firestore + AniList, dédupliqué par `name`
+  - `searchAnimesProvider` — fusion Firestore + AniList, dédupliqué par `name`
+  - `sameAnimeCharactersProvider` — Firestore prioritaire, fallback AniList si `animeId.startsWith('anilist-')`
+- `otadex_providers.dart` :
+  - `allCharactersProvider` → `getAllCharacters(limit: 100)` (tous animés Firestore) + mock uniquement pour IDs non présents dans Firestore
+- `search_screen.dart` : utilise `searchCharactersProvider` (était `searchResultsProvider`)
+- `character_detail_screen.dart` :
+  - `_buildSameAnimeSection(theme)` — section horizontal scroll "Autres personnages de [animé]" dans l'onglet Médias
+  - Présente pour les 3 branches du tab Médias (mock, no-anilist, AniList)
+- Note : "Chaque `scripts/import_[anime].js` ajoute un animé complet — aucune modification de code Flutter requise"
+- dart analyze → 0 erreur, 0 warning
+
+**Task 25 — Play Store soumission**
 
 - APK signé, captures d'écran, soumission Google Play Console
 
@@ -484,6 +531,8 @@ URLs Play Console :
 | 17 mai 2026 | Task 20 — Mock data enrichie : quotes, trivia, aiPersonality, relations, voiceActors, mediaAppearances, quizQuestions pour 8 personnages existants + ajout Luffy (One Piece) et Frieren (FBJ). Modèles CharacterRelation/VoiceActorMock/MediaAppearanceMock/QuizQuestion créés dans character.dart. mockStudios (5) et `mockMangakas` (6) ajoutés dans MockData. Onglets Relations/Médias/Doubleurs branchés sur mock data (priorité mock → AniList → fallback). Quiz screen accepte List<QuizQuestion> spécifique au personnage (fallback générique si absent). app_router passe quizQuestions via extra. dart analyze → 0 erreur. |
 | 17 mai 2026 | Task 21 — Correctifs release + premium local : label Android `Otadex`, signing release sans secrets hardcodés, `.gitignore` renforcé, `upload_images.js` nettoyé, préférence monnaie profil ajoutée, prix plans multi-devises centralisés, Kage fixé à 5 000 FCFA/mois, activation licence Chariow locale Jonin/Kage, assistant local OTADEX, génération locale d'image citation Kage, quiz sans limite fixe à 5 questions. flutter analyze → 0 issue. |
 | 18 mai 2026 | Task 22 — Import JJK Firestore : `scripts/import_jjk.js` créé (20 personnages JJK, 1 animé, 1 créateur, 1 studio, 7 quiz). Données extraites depuis `JJK_Personnages_OTADEX_v2.docx` via mammoth/python XML. `firestore.indexes.json` mis à jour (3 index composites). `scripts/README.md` créé avec template réutilisable. |
+| 19 mai 2026 | Task 23 — Firestore Flutter integration : `FirestoreCharacterService` créé (mapping Firestore→Character/AnimeEntry/CreatorEntry/QuizQuestion). `jjkCharactersProvider` + `firestoreQuizProvider` ajoutés. `characterDetailProvider` mis à jour (jjk-*→Firestore). `allCharactersProvider` fusionné (JJK Firestore + mock autres séries). `allAnimesProvider` / `allCreatorsProvider` priorité Firestore + fallback mock. dart analyze → 0 erreur. |
+| 19 mai 2026 | Task 24 — Architecture multi-animés : `Character.animeId` ajouté. `searchCharacters`/`searchAnimes`/`getSameAnimeCharacters` ajoutés au service Firestore. `getCharactersByAnimeId` ajouté à AniList service. `searchCharactersProvider` + `searchAnimesProvider` (fusion Firestore+AniList) + `sameAnimeCharactersProvider` créés. `allCharactersProvider` migré vers `getAllCharacters(limit:100)`. Section "Autres personnages de [animé]" dans onglet Médias. dart analyze → 0 erreur. |
 
 ---
 

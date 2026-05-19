@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/models/character.dart';
+import '../../../core/providers/anilist_providers.dart';
 import '../../../core/providers/user_profile_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/subscription_modal.dart';
@@ -35,15 +36,41 @@ class _CharacterQuizScreenState extends ConsumerState<CharacterQuizScreen> {
   bool _validated = false;
   int _score = 0;
   bool _quizFinished = false;
+  bool _loadingQuestions = false;
   late List<QuizQuestion> _questions;
 
   @override
   void initState() {
     super.initState();
     final provided = widget.quizQuestions;
-    _questions = (provided != null && provided.isNotEmpty)
-        ? provided
-        : _buildGenericQuestions();
+    if (provided != null && provided.isNotEmpty) {
+      _questions = provided;
+    } else if (widget.charId.startsWith('jjk-')) {
+      _questions = [];
+      _loadingQuestions = true;
+      Future.microtask(_loadFirestoreQuestions);
+    } else {
+      _questions = _buildGenericQuestions();
+    }
+  }
+
+  Future<void> _loadFirestoreQuestions() async {
+    try {
+      final fsQuestions =
+          await ref.read(firestoreQuizProvider(widget.charId).future);
+      if (!mounted) return;
+      setState(() {
+        _questions =
+            fsQuestions.isNotEmpty ? fsQuestions : _buildGenericQuestions();
+        _loadingQuestions = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _questions = _buildGenericQuestions();
+        _loadingQuestions = false;
+      });
+    }
   }
 
   // ── Questions génériques (fallback) ────────────────────────────────
@@ -154,6 +181,13 @@ class _CharacterQuizScreenState extends ConsumerState<CharacterQuizScreen> {
     // Gate: Genin cannot access this screen
     if (profile.rank == 'genin') {
       return _buildGeninGate(context);
+    }
+
+    if (_loadingQuestions) {
+      return const Scaffold(
+        backgroundColor: AppColors.backgroundDeep,
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     if (_quizFinished) {

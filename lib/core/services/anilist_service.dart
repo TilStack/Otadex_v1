@@ -284,6 +284,30 @@ class AniListService {
     return data?['Staff'] as Map<String, dynamic>?;
   }
 
+  // ── Personnages d'un animé par ID ─────────────────────────────────────────
+  Future<List<Character>> getCharactersByAnimeId(int anilistId,
+      {int perPage = 5}) async {
+    const gql = r'''
+      query($id: Int, $perPage: Int) {
+        Media(id: $id, type: ANIME) {
+          characters(sort: FAVOURITES_DESC, perPage: $perPage) {
+            nodes {
+              id name { full native } image { large }
+              favourites gender age
+            }
+          }
+        }
+      }
+    ''';
+    final data = await _query(gql, {'id': anilistId, 'perPage': perPage});
+    if (data == null || data['Media'] == null) return [];
+    final nodes =
+        (data['Media']['characters']['nodes'] as List<dynamic>?) ?? [];
+    return nodes
+        .map((n) => _mapCharacter(n as Map<String, dynamic>))
+        .toList();
+  }
+
   // ── MAPPERS ────────────────────────────────────────────────────────────────
 
   Character _mapCharacter(Map<String, dynamic> c, {bool isTrending = false}) {
